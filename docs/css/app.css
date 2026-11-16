@@ -146,6 +146,7 @@ header.top {
 .dial .temp { font-size: 6.4rem; font-weight: 200; line-height: .95; letter-spacing: -.03em; }
 .tn { position: relative; display: inline-block; }
 .tdeg { position: absolute; left: 100%; top: 0; font-style: normal; }
+.tneg { position: absolute; right: 100%; top: 0; font-style: normal; }
 .dial .feels { font-size: 1.1rem; color: var(--muted); margin-top: .1rem; }
 .dial-mid { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; margin: .5rem 0 .2rem; }
 .dcol { width: 34%; text-align: right; font-size: .95rem; }

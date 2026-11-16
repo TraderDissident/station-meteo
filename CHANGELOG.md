@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.11.1 · 17/11/2026
+
+- Températures négatives : le signe moins déborde à gauche comme le ° à droite. Le nombre reste centré et le ° ne frôle plus le cercle du cadran.
+
 ## 1.11.0 · 17/11/2026
 
 - Singapour et Tokyo rejoignent les lieux d'origine, à leur place d'ouest en est. Sur un appareil déjà installé, ils s'ajoutent une fois à la liste enregistrée.

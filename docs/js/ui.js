@@ -312,7 +312,11 @@
   var R = { editing: false };
 
   // Température centrée sur ses chiffres, le ° en débord à droite (comme Météo d'Apple).
-  function hang(v) { return '<span class="tn">' + I.num(v) + '<i class="tdeg">°</i></span>'; }
+  // Le signe moins déborde à gauche comme le ° à droite : le nombre reste centré et l'ensemble symétrique.
+  function hang(v) {
+    var n = I.num(v), neg = n.charAt(0) === '−';
+    return '<span class="tn">' + (neg ? '<i class="tneg">−</i>' + n.slice(1) : n) + '<i class="tdeg">°</i></span>';
+  }
 
   function tile(id, icon, title, body, cls) {
     return { id: id, icon: icon, title: title,
