@@ -230,7 +230,7 @@
         if (ts - slowSince > 10000 && quality > 0.3) {
           quality = quality > 0.6 ? 0.5 : 0.3;
           slowSince = 0;
-          SM.diag.warn('animation ralentie (' + S.fps + ' i/s), qualité ' + quality);
+          SM.diag.warn('animation slow (' + S.fps + ' fps), quality ' + quality);
           if (S.scene) { buildClouds(true); S.apply(S.scene, true); }
         }
       } else slowSince = 0;

@@ -12,7 +12,7 @@
 
   function hoursOptions() {
     var o = [];
-    for (var h = 0; h < 24; h++) o.push([h, h + ' h']);
+    for (var h = 0; h < 24; h++) o.push([h, t().hourOpt(h)]);
     return o;
   }
 
@@ -29,7 +29,7 @@
     html +=
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
-      field(tt.language, seg('lang', [['auto', tt.auto], ['fr', 'Français'], ['en', 'English']], s.lang)) +
+      field(tt.language, seg('lang', [['en', 'English'], ['fr', 'Français'], ['auto', tt.auto]], s.lang)) +
       field(tt.about, '<p class="about">' + tt.version + ' ' + SM.VERSION + '<br>' + U.esc(tt.source) + '</p>' +
         '<button class="btn" data-open="diag">' + tt.diagnostic + '</button>');
     return html;
@@ -61,17 +61,17 @@
 
   /* ---------- diagnostic ---------- */
   function diagHTML() {
-    var tt = t(), d = SM.diag, demo = SM.app.demo;
+    var tt = t(), g = tt.diag, d = SM.diag, demo = SM.app.demo;
     var rows = [
-      ['Version', SM.VERSION],
-      ['Navigateur', navigator.userAgent],
-      ['Écran', screen.width + '×' + screen.height + ' · fenêtre ' + innerWidth + '×' + innerHeight + ' · ×' + (window.devicePixelRatio || 1)],
-      ['Écran d’accueil', navigator.standalone ? 'oui' : 'non'],
-      ['Animation', (SM.sky.fps || '–') + ' i/s · qualité ' + SM.sky.quality() + ' · ' + SM.app.settings.motion],
-      ['Dernier appel', d.lastFetch || '–'],
-      ['Réseau', navigator.onLine ? 'en ligne' : 'hors ligne'],
-      ['Allumé depuis', Math.round((Date.now() - d.started) / 60000) + ' min'],
-      ['Erreurs', d.errors()]
+      [g.version, SM.VERSION],
+      [g.browser, navigator.userAgent],
+      [g.screen, screen.width + '×' + screen.height + ' · ' + g.window + ' ' + innerWidth + '×' + innerHeight + ' · ×' + (window.devicePixelRatio || 1)],
+      [g.home, navigator.standalone ? tt.yes : tt.no],
+      [g.anim, (SM.sky.fps || '–') + ' ' + g.fps + ' · ' + g.quality + ' ' + SM.sky.quality() + ' · ' + g.motion[SM.app.settings.motion]],
+      [g.lastCall, d.lastFetch || '–'],
+      [g.network, navigator.onLine ? g.online : g.offline],
+      [g.uptime, Math.round((Date.now() - d.started) / 60000) + ' min'],
+      [g.errors, d.errors()]
     ];
     var times = ['reel', 'nuit', 'aube', 'lever', 'matin', 'midi', 'soir', 'coucher', 'crepuscule'];
     var weathers = Object.keys(tt.demoWeathers);

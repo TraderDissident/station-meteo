@@ -34,11 +34,11 @@
   };
 
   window.addEventListener('error', function (e) {
-    SM.diag.error((e.message || 'erreur') + ' @ ' + (e.filename || '').split('/').pop() + ':' + (e.lineno || 0));
+    SM.diag.error((e.message || 'error') + ' @ ' + (e.filename || '').split('/').pop() + ':' + (e.lineno || 0));
   });
   window.addEventListener('unhandledrejection', function (e) {
     var r = e.reason;
-    SM.diag.error('promesse : ' + (r && r.message ? r.message : r));
+    SM.diag.error('promise: ' + (r && r.message ? r.message : r));
   });
-  SM.diag.info('démarrage ' + SM.VERSION + ' · ' + innerWidth + '×' + innerHeight);
+  SM.diag.info('start ' + SM.VERSION + ' · ' + innerWidth + '×' + innerHeight);
 })();

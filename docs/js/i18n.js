@@ -55,6 +55,10 @@
       version: 'Version', clearLog: 'Vider le journal', demo: 'Démonstration', demoTime: 'Moment', demoWeather: 'Temps',
       demoCycle: 'Journée en 60 s', demoStop: 'Arrêter la démonstration', reload: 'Recharger',
       veilHint: 'Touchez l’écran pour rallumer',
+      badge: 'DÉMO', close: 'Fermer', hourOpt: function (h) { return h + ' h'; },
+      diag: { version: 'Version', browser: 'Navigateur', screen: 'Écran', window: 'fenêtre', home: 'Écran d’accueil',
+        anim: 'Animation', fps: 'i/s', quality: 'qualité', lastCall: 'Dernier appel', network: 'Réseau',
+        online: 'en ligne', offline: 'hors ligne', uptime: 'Allumé depuis', errors: 'Erreurs', motion: { auto: 'auto', reduced: 'réduites', off: 'coupées' } },
       demoTimes: { nuit: 'Nuit', aube: 'Aube', lever: 'Lever', matin: 'Matin', midi: 'Midi', soir: 'Soir', coucher: 'Coucher', crepuscule: 'Crépuscule' },
       demoWeathers: { reel: 'Réel', clair: 'Clair', voile: 'Voilé', nuageux: 'Nuageux', couvert: 'Couvert', brouillard: 'Brouillard', bruine: 'Bruine', pluie: 'Pluie', averse: 'Averses', orage: 'Orage', neige: 'Neige', grele: 'Grêle' }
     },
@@ -112,6 +116,10 @@
       version: 'Version', clearLog: 'Clear log', demo: 'Demo', demoTime: 'Time of day', demoWeather: 'Weather',
       demoCycle: 'A day in 60 s', demoStop: 'Stop demo', reload: 'Reload',
       veilHint: 'Touch the screen to brighten',
+      badge: 'DEMO', close: 'Close', hourOpt: function (h) { return (h < 10 ? '0' : '') + h + ':00'; },
+      diag: { version: 'Version', browser: 'Browser', screen: 'Screen', window: 'window', home: 'Home screen',
+        anim: 'Animation', fps: 'fps', quality: 'quality', lastCall: 'Last request', network: 'Network',
+        online: 'online', offline: 'offline', uptime: 'Running for', errors: 'Errors', motion: { auto: 'auto', reduced: 'reduced', off: 'off' } },
       demoTimes: { nuit: 'Night', aube: 'Dawn', lever: 'Sunrise', matin: 'Morning', midi: 'Noon', soir: 'Evening', coucher: 'Sunset', crepuscule: 'Dusk' },
       demoWeathers: { reel: 'Real', clair: 'Clear', voile: 'Hazy', nuageux: 'Cloudy', couvert: 'Overcast', brouillard: 'Fog', bruine: 'Drizzle', pluie: 'Rain', averse: 'Showers', orage: 'Storm', neige: 'Snow', grele: 'Hail' }
     }
@@ -125,6 +133,12 @@
     document.documentElement.lang = I.lang;
   };
   I.t = function () { return T[I.lang]; };
+
+  /* Nom, région et pays d'un lieu dans la langue affichée (lieux d'origine), sinon tels qu'enregistrés. */
+  I.place = function (p) {
+    var n = p.names && p.names[I.lang];
+    return n ? { name: n[0], region: n[1], country: n[2] } : { name: p.name, region: p.region || '', country: p.country || '' };
+  };
 
   /* Nombres : virgule décimale en français, vrai signe moins. */
   I.num = function (v, dec) {

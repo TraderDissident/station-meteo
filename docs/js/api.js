@@ -63,7 +63,7 @@
   A.forecast = function (p) {
     var t0 = Date.now();
     return SM.U.fetchJSON(A.forecastURL(p), 20000).then(function (j) {
-      if (j.error) throw new Error(j.reason || 'réponse invalide');
+      if (j.error) throw new Error(j.reason || 'invalid response');
       SM.diag.lastFetch = p.name + ' · ' + (Date.now() - t0) + ' ms · ' + new Date().toTimeString().slice(0, 8);
       return normalize(j);
     });

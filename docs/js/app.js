@@ -17,6 +17,13 @@
     grele: { code: 96, cover: 100, rate: 5 }
   };
 
+  /* Mots anglais acceptés dans ?demo= */
+  var DEMO_ALIASES = {
+    night: 'nuit', dawn: 'aube', sunrise: 'lever', morning: 'matin', noon: 'midi', evening: 'soir', sunset: 'coucher', dusk: 'crepuscule',
+    clear: 'clair', hazy: 'voile', cloudy: 'nuageux', overcast: 'couvert', fog: 'brouillard', drizzle: 'bruine', rain: 'pluie',
+    showers: 'averse', storm: 'orage', snow: 'neige', hail: 'grele'
+  };
+
   /* Instant du jour où le soleil atteint la hauteur voulue, au lieu affiché. */
   function demoMs(place, key) {
     var now = Date.now(), lat = place.lat, lon = place.lon, best = null, maxAlt = -90, minAlt = 90, tMax = now, tMin = now;
@@ -87,7 +94,7 @@
     try {
       html = w ? SM.ui.view(p, w, now) : SM.ui.empty(p, A.failures[p.id] ? I.t().offline : I.t().loading, !!A.failures[p.id]);
     } catch (e) {
-      SM.diag.error('rendu : ' + e.message);
+      SM.diag.error('render: ' + e.message);
       html = SM.ui.empty(p, I.t().noData, true);
     }
     el.pages.innerHTML = html;
@@ -98,8 +105,13 @@
       if (s) s.scrollTop = keepScroll;
       v.scrollTop = keepView;
     }
-    el.pname.textContent = p.name;
-    el.pcountry.textContent = p.country || '';
+    var pl = I.place(p), tt = I.t();
+    el.pname.textContent = pl.name;
+    el.pcountry.textContent = pl.country;
+    el.badge.textContent = tt.badge;
+    U.$('[data-sheet=places]').setAttribute('aria-label', tt.places);
+    U.$('[data-sheet=settings]').setAttribute('aria-label', tt.settings);
+    U.$('.sheet-close').setAttribute('aria-label', tt.close);
     el.dots.innerHTML = A.places.length > 1 ? A.places.map(function (q, i) { return '<i' + (i === A.idx ? ' class="on"' : '') + '></i>'; }).join('') : '';
     A.hourKey = w ? hourKey(w) : '';
     clock();
@@ -150,13 +162,13 @@
       SM.store.saveWeather(p.id, nw);
       if (!nw.air) {
         return SM.api.air(p).then(function (air) { nw.air = air; nw.airAt = Date.now(); SM.store.saveWeather(p.id, nw); })
-          .catch(function (e) { SM.diag.warn('qualité de l’air ' + p.name + ' : ' + e.message); });
+          .catch(function (e) { SM.diag.warn('air quality ' + p.name + ': ' + e.message); });
       }
     }).catch(function (e) {
       var n = (A.failures[p.id] || 0) + 1;
       A.failures[p.id] = n;
       A.retryAt[p.id] = Date.now() + [30, 60, 120, 300][Math.min(n - 1, 3)] * 1000;
-      SM.diag.warn('prévisions ' + p.name + ' : ' + e.message);
+      SM.diag.warn('forecast ' + p.name + ': ' + e.message);
     }).then(function () {
       A.inflight[p.id] = false;
       if (A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) { render(0); scene(false); }
@@ -214,7 +226,7 @@
   A.setSetting = function (key, v) {
     A.settings[key] = v;
     SM.store.saveSettings(A.settings);
-    if (key === 'lang') { I.setLang(v); if (A.sheet) A.open(A.sheet); }
+    if (key === 'lang') { A.settings.langChosen = true; SM.store.saveSettings(A.settings); I.setLang(v); if (A.sheet) A.open(A.sheet); }
     if (key === 'motion') SM.sky.setMotion(v);
     if (key === 'veil' || key === 'veilLevel' || key === 'veilFrom' || key === 'veilTo') veil();
   };
@@ -288,7 +300,7 @@
     // Rechargement quotidien vers 4 h pour repartir d'une mémoire propre.
     var d = new Date();
     if (d.getHours() === 4 && Date.now() - SM.diag.started > 3 * 3600000 && navigator.onLine && !A.sheet) {
-      SM.diag.info('rechargement quotidien');
+      SM.diag.info('daily reload');
       location.reload();
     }
   }
@@ -304,18 +316,40 @@
 
   /* ---------- gestes ---------- */
   function bindGestures() {
-    var sx = 0, sy = 0, st = 0, ok = false;
+    /* Glisser horizontal : la page suit le doigt, puis change de lieu au-delà de 60 px (ou d'un geste vif). */
+    var sx = 0, sy = 0, st = 0, ok = false, mode = '', dx = 0, view = null;
+    function setShift(x, anim) {
+      if (!view) return;
+      var tr = x ? 'translate3d(' + x.toFixed(0) + 'px,0,0)' : '';
+      view.style.webkitTransition = view.style.transition = anim ? '-webkit-transform .25s ease-out, transform .25s ease-out, opacity .25s' : 'none';
+      view.style.webkitTransform = view.style.transform = tr;
+      view.style.opacity = x ? String(1 - Math.min(Math.abs(x) / innerWidth, 0.5)) : '';
+    }
     el.pages.addEventListener('touchstart', function (e) {
       A.lastTouch = Date.now();
       var tch = e.touches[0];
-      ok = e.touches.length === 1 && !e.target.closest('.hscroll');
-      sx = tch.clientX; sy = tch.clientY; st = Date.now();
+      ok = e.touches.length === 1 && A.places.length > 1 && !e.target.closest('.hscroll');
+      sx = tch.clientX; sy = tch.clientY; st = Date.now(); mode = ''; dx = 0;
+      view = U.$('.view', el.pages);
     }, { passive: true });
-    el.pages.addEventListener('touchend', function (e) {
-      if (!ok) return;
-      var tch = e.changedTouches[0], dx = tch.clientX - sx, dy = tch.clientY - sy;
-      if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - st < 700) step(dx < 0 ? 1 : -1);
-    }, { passive: true });
+    el.pages.addEventListener('touchmove', function (e) {
+      if (!ok || e.touches.length !== 1) return;
+      var tch = e.touches[0], mx = tch.clientX - sx, my = tch.clientY - sy;
+      if (!mode && (Math.abs(mx) > 10 || Math.abs(my) > 10)) mode = Math.abs(mx) > Math.abs(my) * 1.2 ? 'h' : 'v';
+      if (mode !== 'h') return;
+      e.preventDefault();
+      dx = mx;
+      setShift(dx * 0.6, false);
+    }, { passive: false });
+    function endSwipe() {
+      if (!ok || mode !== 'h') return;
+      var fast = Math.abs(dx) > 30 && Date.now() - st < 300;
+      if (Math.abs(dx) > 60 || fast) step(dx < 0 ? 1 : -1);
+      else setShift(0, true);
+      mode = '';
+    }
+    el.pages.addEventListener('touchend', endSwipe, { passive: true });
+    el.pages.addEventListener('touchcancel', function () { if (mode === 'h') setShift(0, true); mode = ''; }, { passive: true });
     document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
     document.addEventListener('keydown', function (e) {
       if (A.sheet) { if (e.keyCode === 27) A.close(); return; }
@@ -359,6 +393,7 @@
     if (!m) return;
     decodeURIComponent(m[1]).split(',').forEach(function (k) {
       k = k.trim().toLowerCase().replace('é', 'e').replace('ê', 'e');
+      k = DEMO_ALIASES[k] || k;
       if (k === 'cycle') { A.demo.cycle = true; }
       else if (I.t().demoTimes[k]) A.demo.time = k;
       else if (DEMO_WX[k]) A.demo.weather = k;
@@ -377,14 +412,14 @@
       '<div id="sky"></div>' +
       '<div id="ui">' +
         '<header class="top">' +
-          '<button class="iconbtn" data-sheet="places" aria-label="Lieux">' + IC.ui('pin') + '</button>' +
-          '<div class="ptitle"><div><span id="pname"></span><span id="pcountry"></span><span id="badge">DÉMO</span></div><div id="dots"></div></div>' +
-          '<button class="iconbtn" data-sheet="settings" aria-label="Réglages">' + IC.ui('gear') + '</button>' +
+          '<button class="iconbtn" data-sheet="places" aria-label="Places">' + IC.ui('pin') + '</button>' +
+          '<div class="ptitle"><div><span id="pname"></span><span id="pcountry"></span><span id="badge"></span></div><div id="dots"></div></div>' +
+          '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button>' +
         '</header>' +
         '<main id="pages"></main>' +
       '</div>' +
       '<div id="veil"></div>' +
-      '<div class="sheet" id="sheet"><div class="sheet-in"><header><h2></h2><button class="iconbtn sheet-close" aria-label="Fermer">' + IC.ui('close') + '</button></header><div class="sheet-body"></div></div></div>' +
+      '<div class="sheet" id="sheet"><div class="sheet-in"><header><h2></h2><button class="iconbtn sheet-close" aria-label="Close">' + IC.ui('close') + '</button></header><div class="sheet-body"></div></div></div>' +
       '<div id="toast"></div>';
     el.pages = U.$('#pages'); el.pname = U.$('#pname'); el.pcountry = U.$('#pcountry'); el.dots = U.$('#dots');
     el.badge = U.$('#badge'); el.veil = U.$('#veil'); el.sheet = U.$('#sheet'); el.toast = U.$('#toast');
@@ -430,12 +465,12 @@
     veil();
 
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-      navigator.serviceWorker.register('sw.js').catch(function (e) { SM.diag.warn('service worker : ' + e.message); });
+      navigator.serviceWorker.register('sw.js').catch(function (e) { SM.diag.warn('service worker: ' + e.message); });
     }
   };
 
   SM.app = A;
   document.addEventListener('DOMContentLoaded', function () {
-    try { A.init(); } catch (e) { SM.diag.error('démarrage : ' + e.message); throw e; }
+    try { A.init(); } catch (e) { SM.diag.error('start: ' + e.message); throw e; }
   });
 })();

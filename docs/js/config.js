@@ -2,12 +2,15 @@
 var SM = window.SM || {};
 window.SM = SM;
 
-SM.VERSION = '1.0.0';
+SM.VERSION = '1.1.0';
 
 SM.DEFAULT_PLACES = [
-  { id: 'dublin', name: 'Dublin', region: 'Leinster', country: 'Irlande', lat: 53.33306, lon: -6.24889, tz: 'Europe/Dublin' },
-  { id: 'paris', name: 'Paris', region: 'Île-de-France', country: 'France', lat: 48.85341, lon: 2.3488, tz: 'Europe/Paris' },
-  { id: 'moscou', name: 'Moscou', region: 'Moscou', country: 'Russie', lat: 55.75204, lon: 37.61781, tz: 'Europe/Moscow' }
+  { id: 'dublin', name: 'Dublin', region: 'Leinster', country: 'Ireland', lat: 53.33306, lon: -6.24889, tz: 'Europe/Dublin',
+    names: { en: ['Dublin', 'Leinster', 'Ireland'], fr: ['Dublin', 'Leinster', 'Irlande'] } },
+  { id: 'paris', name: 'Paris', region: 'Île-de-France', country: 'France', lat: 48.85341, lon: 2.3488, tz: 'Europe/Paris',
+    names: { en: ['Paris', 'Île-de-France', 'France'], fr: ['Paris', 'Île-de-France', 'France'] } },
+  { id: 'moscou', name: 'Moscow', region: 'Moscow', country: 'Russia', lat: 55.75204, lon: 37.61781, tz: 'Europe/Moscow',
+    names: { en: ['Moscow', 'Moscow', 'Russia'], fr: ['Moscou', 'Moscou', 'Russie'] } }
 ];
 
 SM.DEFAULT_SETTINGS = {
@@ -18,7 +21,7 @@ SM.DEFAULT_SETTINGS = {
   veilLevel: 0.55,
   motion: 'auto',       // 'auto' | 'reduced' | 'off'
   seconds: false,
-  lang: 'auto'          // 'auto' | 'fr' | 'en'
+  lang: 'en'            // 'en' | 'fr' | 'auto' (langue de l'iPad)
 };
 
 SM.REFRESH_MS = 10 * 60 * 1000;

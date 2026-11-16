@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -19,7 +19,7 @@
 </style>
 </head>
 <body>
-<h1>Sonde de la Station Météo</h1>
+<h1>Weather Station test page</h1>
 <div id="out"></div>
 <canvas id="bench"></canvas>
 <script>
@@ -32,32 +32,32 @@
     out.appendChild(d);
     return d.lastChild;
   }
-  row('Navigateur', navigator.userAgent);
-  row('Écran', screen.width + ' × ' + screen.height + ' · fenêtre ' + innerWidth + ' × ' + innerHeight + ' · densité ' + (window.devicePixelRatio || 1));
-  row('Plein écran (écran d’accueil)', navigator.standalone ? 'oui' : 'non', navigator.standalone ? 'ok' : 'wait');
-  row('Fuseau', (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { return 'inconnu'; } })());
+  row('Browser', navigator.userAgent);
+  row('Screen', screen.width + ' × ' + screen.height + ' · window ' + innerWidth + ' × ' + innerHeight + ' · density ' + (window.devicePixelRatio || 1));
+  row('Full screen (home screen)', navigator.standalone ? 'yes' : 'no', navigator.standalone ? 'ok' : 'wait');
+  row('Time zone', (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { return 'unknown'; } })());
 
   var tests = [
-    ['Prévisions', 'https://api.open-meteo.com/v1/forecast?latitude=48.85&longitude=2.35&current=temperature_2m&timezone=auto', function (j) { return 'Paris ' + j.current.temperature_2m + ' °C'; }],
-    ['Recherche de lieux', 'https://geocoding-api.open-meteo.com/v1/search?name=Dublin&count=1&language=fr', function (j) { return j.results[0].name + ', ' + j.results[0].country; }],
-    ['Qualité de l’air', 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=55.75&longitude=37.62&current=european_aqi', function (j) { return 'Moscou, indice ' + j.current.european_aqi; }]
+    ['Forecast', 'https://api.open-meteo.com/v1/forecast?latitude=48.85&longitude=2.35&current=temperature_2m&timezone=auto', function (j) { return 'Paris ' + j.current.temperature_2m + ' °C'; }],
+    ['Place search', 'https://geocoding-api.open-meteo.com/v1/search?name=Dublin&count=1&language=en', function (j) { return j.results[0].name + ', ' + j.results[0].country; }],
+    ['Air quality', 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=55.75&longitude=37.62&current=european_aqi', function (j) { return 'Moscow, index ' + j.current.european_aqi; }]
   ];
   tests.forEach(function (t) {
-    var cell = row(t[0], 'en cours…', 'wait');
+    var cell = row(t[0], 'running…', 'wait');
     var t0 = Date.now();
     fetch(t[1]).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     }).then(function (j) {
       cell.className = 'ok';
-      cell.textContent = 'réussi · ' + t[2](j) + ' · ' + (Date.now() - t0) + ' ms';
+      cell.textContent = 'success · ' + t[2](j) + ' · ' + (Date.now() - t0) + ' ms';
     }).catch(function (e) {
       cell.className = 'ko';
-      cell.textContent = 'échec · ' + (e && e.message ? e.message : e);
+      cell.textContent = 'failed · ' + (e && e.message ? e.message : e);
     });
   });
 
-  var fpsCell = row('Animation (250 gouttes, 10 nuages)', 'mesure dans 3 s…', 'wait');
+  var fpsCell = row('Animation (250 drops, 10 clouds)', 'measuring in 3 s…', 'wait');
   setTimeout(function () {
     for (var i = 0; i < 10; i++) {
       var c = document.createElement('div');
@@ -85,11 +85,11 @@
         }
         g.stroke();
       }
-      if (ts - start < 20000) { requestAnimationFrame(tick); fpsCell.textContent = 'en cours… ' + Math.round((ts - start) / 1000) + ' s'; }
+      if (ts - start < 20000) { requestAnimationFrame(tick); fpsCell.textContent = 'running… ' + Math.round((ts - start) / 1000) + ' s'; }
       else {
         var fps = Math.round(frames / ((ts - start) / 1000));
         fpsCell.className = fps >= 24 ? 'ok' : (fps >= 18 ? 'wait' : 'ko');
-        fpsCell.textContent = fps + ' images par seconde (objectif 30)';
+        fpsCell.textContent = fps + ' frames per second (target 30)';
       }
     }
     requestAnimationFrame(tick);

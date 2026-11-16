@@ -40,7 +40,7 @@
   U.fetchJSON = function (url, ms) {
     var timer;
     var timeout = new Promise(function (resolve, reject) {
-      timer = setTimeout(function () { reject(new Error('délai dépassé')); }, ms || 15000);
+      timer = setTimeout(function () { reject(new Error('timed out')); }, ms || 15000);
     });
     var req = fetch(url, { cache: 'no-store' }).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);

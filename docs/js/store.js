@@ -8,7 +8,7 @@
   }
   function write(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) {
-      SM.diag.warn('stockage impossible : ' + key);
+      SM.diag.warn('cannot store ' + key);
       return false;
     }
   }
@@ -18,13 +18,19 @@
   S.places = function () {
     var p = read('sm.places', null);
     if (!p || !p.length) p = SM.DEFAULT_PLACES.slice();
+    // Les lieux d'origine enregistrés avant la 1.1.0 n'avaient leurs noms qu'en français.
+    p.forEach(function (q) {
+      SM.DEFAULT_PLACES.forEach(function (d) { if (d.id === q.id && !q.names) q.names = d.names; });
+    });
     return p;
   };
   S.savePlaces = function (list) { write('sm.places', list); };
 
   S.settings = function () {
     var s = read('sm.settings', {});
-    var out = {};
+    // Avant la 1.1.0, la langue par défaut suivait l'iPad ; sans choix explicite, on passe à l'anglais.
+    if (s.lang === 'auto' && !s.langChosen) delete s.lang;
+    var out = { langChosen: !!s.langChosen };
     Object.keys(SM.DEFAULT_SETTINGS).forEach(function (k) { out[k] = s[k] !== undefined ? s[k] : SM.DEFAULT_SETTINGS[k]; });
     return out;
   };

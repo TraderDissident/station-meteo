@@ -10,7 +10,7 @@
     return places.map(function (p, i) {
       return '<div class="prow" data-id="' + U.esc(p.id) + '">' +
         '<button class="mini star' + (p.id === start ? ' on' : '') + '" data-act="start" title="' + U.esc(tt.startHere) + '">' + IC.ui('star') + '</button>' +
-        '<div class="pn" data-act="go"><b>' + U.esc(p.name) + '</b><small>' + U.esc([p.region, p.country].filter(Boolean).join(', ')) + '</small></div>' +
+        '<div class="pn" data-act="go"><b>' + U.esc(I.place(p).name) + '</b><small>' + U.esc([I.place(p).region, I.place(p).country].filter(Boolean).join(', ')) + '</small></div>' +
         '<button class="mini" data-act="up"' + (i === 0 ? ' disabled' : '') + '>' + IC.ui('up') + '</button>' +
         '<button class="mini" data-act="down"' + (i === places.length - 1 ? ' disabled' : '') + '>' + IC.ui('down') + '</button>' +
         '<button class="mini danger" data-act="del" title="' + U.esc(tt.remove) + '">' + IC.ui('trash') + '</button>' +
@@ -58,7 +58,7 @@
       results = r;
       box.innerHTML = resultsHTML();
     }).catch(function (e) {
-      SM.diag.warn('recherche : ' + e.message);
+      SM.diag.warn('search: ' + e.message);
       box.innerHTML = resultsHTML('error');
     });
   }
