@@ -401,6 +401,8 @@
     el.app.addEventListener('click', function (e) {
       A.lastTouch = Date.now();
       if (e.target.closest('[data-act=map]')) { A.toggleMap(); return; }
+      var mv = e.target.closest('.mview button');
+      if (mv) { SM.map.setView(mv.getAttribute('data-view')); return; }
       var ms = e.target.closest('.mstyle button');
       if (ms) { SM.map.setStyle(ms.getAttribute('data-style')); return; }
       var mc = e.target.closest('.mswitch button');

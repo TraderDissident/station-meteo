@@ -387,7 +387,10 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 @-webkit-keyframes ping { from { -webkit-transform: scale(.4); opacity: .9; } to { -webkit-transform: scale(1.6); opacity: 0; } }
 @keyframes ping { from { transform: scale(.4); opacity: .9; } to { transform: scale(1.6); opacity: 0; } }
 
-.mks { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 3; }
+.mks { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none; }
+.mks .mk { pointer-events: auto; }
+.mapbox .gcv { position: absolute; left: 50%; top: 50%; z-index: 1; cursor: grab; touch-action: none; }
+.mapbox.globe .mapcredit { z-index: 4; }
 .mk { position: absolute; width: 0; height: 0; cursor: pointer; }
 .mk.night::before { content: ""; position: absolute; width: 2.6rem; height: 2.6rem; margin: -1.3rem 0 0 -1.3rem; border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 200, 110, .55) 0%, rgba(255, 170, 70, .18) 40%, rgba(255, 160, 60, 0) 70%); }
@@ -406,7 +409,8 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 /* Sélecteur et cartes de villes */
 .mbottom { width: 100%; -webkit-flex: none; flex: none; padding: .55rem 0 .8rem; }
 .mbar { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-justify-content: center; justify-content: center; margin-bottom: .45rem; }
-.mbar .seg { margin: 0 .7rem .25rem; }
+.mbar .seg { margin: 0 .55rem .25rem; }
+.mview button { margin: 0 .2rem; padding: .28rem .85rem; font-size: .8rem; }
 .mstyle button { margin: 0 .2rem; padding: .28rem .8rem; font-size: .8rem; }
 .mswitch { -webkit-justify-content: center; justify-content: center; }
 .mswitch button { margin: 0 .25rem; padding: .28rem .9rem; font-size: .8rem; }

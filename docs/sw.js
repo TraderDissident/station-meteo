@@ -1,11 +1,11 @@
 /* Garde la coquille de l'app pour démarrer sans réseau. Les données météo ne passent jamais par ici. */
-var VERSION = 'sm-1.3.0';
+var VERSION = 'sm-1.4.0';
 var SHELL = [
-  './', 'index.html', 'css/app.css?v=1.3.0',
-  'js/config.js?v=1.3.0', 'js/diag.js?v=1.3.0', 'js/compat.js?v=1.3.0', 'js/store.js?v=1.3.0', 'js/i18n.js?v=1.3.0',
-  'js/api.js?v=1.3.0', 'js/astro.js?v=1.3.0', 'js/codes.js?v=1.3.0', 'js/icons.js?v=1.3.0', 'js/sky.js?v=1.3.0',
-  'js/ui.js?v=1.3.0', 'js/places.js?v=1.3.0', 'js/settings.js?v=1.3.0', 'js/world.js?v=1.3.0', 'js/borders.js?v=1.3.0', 'js/map.js?v=1.3.0', 'js/app.js?v=1.3.0',
-  'img/icon-180.png'
+  './', 'index.html', 'css/app.css?v=1.4.0',
+  'js/config.js?v=1.4.0', 'js/diag.js?v=1.4.0', 'js/compat.js?v=1.4.0', 'js/store.js?v=1.4.0', 'js/i18n.js?v=1.4.0',
+  'js/api.js?v=1.4.0', 'js/astro.js?v=1.4.0', 'js/codes.js?v=1.4.0', 'js/icons.js?v=1.4.0', 'js/sky.js?v=1.4.0',
+  'js/ui.js?v=1.4.0', 'js/places.js?v=1.4.0', 'js/settings.js?v=1.4.0', 'js/world.js?v=1.4.0', 'js/borders.js?v=1.4.0', 'js/globe.js?v=1.4.0', 'js/map.js?v=1.4.0', 'js/app.js?v=1.4.0',
+  'img/icon-180.png', 'img/earth-day.jpg', 'img/earth-night.jpg'
 ];
 
 self.addEventListener('install', function (e) {

@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.4.0 · 16/11/2026
+
+- Le style Satellite montre maintenant de vraies images, les mêmes que la carte des trajets de Travel Hub : NASA Blue Marble avec relief et fonds marins le jour, lumières des villes vues par le satellite VIIRS la nuit. Les images sont rangées dans l'app (420 Ko) : elles marchent hors connexion. Plus de relief inventé ni de faux nuages.
+- Nouveau sélecteur Carte | Globe : la Terre en 3D (WebGL), éclairée par le soleil à la minute, avec halo d'atmosphère, dans chacun des cinq styles. Elle tourne doucement (selon le réglage Animations) et se fait tourner au doigt ; elle reprend sa rotation 20 s après. Les villes, le soleil et la lune suivent la rotation.
+
 ## 1.3.0 · 16/11/2026
 
 - Cinq styles pour la carte du monde, au choix sous la carte et mémorisés :

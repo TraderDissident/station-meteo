@@ -10,7 +10,8 @@
   var MT = miller(LAT_N), MB = miller(LAT_S);
   var ASPECT = (MT - MB) / (2 * PI);
   function fx(lon) { return (((lon - LON0) % 360) + 360) % 360 / 360; }
-  function fy(lat) { return (MT - miller(U.clamp(lat, -85, 85))) / (MT - MB); }
+  var EQ = false; // vrai pendant le dessin des textures du globe (projection équirectangulaire, Terre entière)
+  function fy(lat) { return EQ ? (90 - lat) / 180 : (MT - miller(U.clamp(lat, -85, 85))) / (MT - MB); }
   function latAt(f) { var m = MT - f * (MT - MB); return (2.5 * Math.atan(Math.exp(0.8 * m)) - 0.625 * PI) / RAD; }
 
   /* ---------- tracé des terres, décodé une fois ---------- */
@@ -61,57 +62,35 @@
   function traceLand(g, w, h, pr) { if (!rings) rings = decodeList(SM.WORLD); trace(g, rings, w, h, pr, true); }
   function traceBorders(g, w, h, pr) { if (!borders) borders = decodeList(SM.BORDERS); trace(g, borders, w, h, pr, false); }
 
-  /* ---------- bruit fractal, raccordé horizontalement pour que la couture ne se voie pas ---------- */
-  function fbm(w, h, seed, base, octaves) {
-    var rnd = U.seeded(seed), out = new Float32Array(w * h), norm = 0, amp = 1;
-    for (var o = 0; o < octaves; o++) {
-      var gx = base << o, gy = Math.ceil(gx * h / w) + 1, grid = new Float32Array(gx * gy);
-      for (var q = 0; q < grid.length; q++) grid[q] = rnd();
-      for (var y = 0; y < h; y++) {
-        var fyv = y / h * (gy - 1), y0 = Math.floor(fyv), ty = fyv - y0, sy = ty * ty * (3 - 2 * ty), y1 = Math.min(y0 + 1, gy - 1);
-        for (var x = 0; x < w; x++) {
-          var fxv = x / w * gx, x0 = Math.floor(fxv), tx = fxv - x0, sx = tx * tx * (3 - 2 * tx), x1 = (x0 + 1) % gx;
-          var a = grid[y0 * gx + x0], b = grid[y0 * gx + x1], c = grid[y1 * gx + x0], d = grid[y1 * gx + x1];
-          out[y * w + x] += amp * (a + (b - a) * sx + (c - a + (a - b - c + d) * sx) * sy);
-        }
-      }
-      norm += amp; amp *= 0.5;
+  /* ---------- images NASA (domaine public), rangées dans l'app : Blue Marble le jour, lumières des villes la nuit ---------- */
+  var EARTH = { day: null, night: null, ready: false, waiting: [] };
+  function loadEarth(cb) {
+    if (EARTH.ready) { cb(); return; }
+    EARTH.waiting.push(cb);
+    if (EARTH.day) return;
+    var n = 0;
+    function done() {
+      if (++n < 2) return;
+      EARTH.ready = true;
+      var w = EARTH.waiting; EARTH.waiting = [];
+      w.forEach(function (f) { f(); });
     }
-    for (var k = 0; k < out.length; k++) out[k] /= norm;
-    return out;
+    EARTH.day = new Image(); EARTH.night = new Image();
+    EARTH.day.onload = EARTH.night.onload = done;
+    EARTH.day.onerror = EARTH.night.onerror = function () { SM.diag.warn('images satellite introuvables'); };
+    EARTH.day.src = 'img/earth-day.jpg'; EARTH.night.src = 'img/earth-night.jpg';
   }
 
-  /* Relief des terres : taches claires et sombres, posées seulement sur les terres. */
-  function textureCanvas() {
-    var w = 512, h = Math.round(512 * ASPECT), n = fbm(w, h, 'relief-sat', 8, 5), c = canvas(w, h), g = c.getContext('2d');
-    var img = g.createImageData(w, h);
-    for (var i = 0; i < n.length; i++) {
-      var v = (n[i] - 0.5) * 2.2, o = i * 4;
-      if (v > 0) { img.data[o] = img.data[o + 1] = img.data[o + 2] = 255; img.data[o + 3] = Math.round(Math.min(v, 1) * 70); }
-      else { img.data[o + 3] = Math.round(Math.min(-v, 1) * 110); }
+  /* Reprojette une image équirectangulaire (Terre entière, 180° O à gauche) ligne par ligne. */
+  function drawEquirect(g, img, cw, ch) {
+    var iw = img.naturalWidth, ih = img.naturalHeight;
+    var x0 = (LON0 + 180) / 360 * iw, d1 = (iw - x0) / iw * cw;
+    for (var y = 0; y < ch; y++) {
+      var lat = EQ ? 90 - (y + 0.5) / ch * 180 : latAt((y + 0.5) / ch);
+      var sy = U.clamp((90 - lat) / 180 * ih, 0, ih - 1);
+      g.drawImage(img, x0, sy, iw - x0, 1, 0, y, d1, 1);
+      if (x0 > 0) g.drawImage(img, 0, sy, x0, 1, d1, y, cw - d1, 1);
     }
-    g.putImageData(img, 0, 0);
-    return c;
-  }
-
-  /* Voile de nuages : plus dense sous l'équateur et aux latitudes des tempêtes, rare sous les tropiques. */
-  function cloudCanvas() {
-    var w = 512, h = Math.round(512 * ASPECT), n = fbm(w, h, 'nuages-sat', 6, 5);
-    var white = canvas(w, h), black = canvas(w, h), gw = white.getContext('2d'), gb = black.getContext('2d');
-    var iw = gw.createImageData(w, h), ib = gb.createImageData(w, h);
-    for (var y = 0; y < h; y++) {
-      // Pondération continue : zone équatoriale et latitudes des tempêtes plus nuageuses, tropiques plus dégagés.
-      var al = Math.abs(latAt((y + 0.5) / h));
-      var band = U.clamp(0.3 + 0.7 * (Math.exp(-Math.pow(al / 9, 2)) + Math.exp(-Math.pow((al - 52) / 15, 2))), 0, 1);
-      for (var x = 0; x < w; x++) {
-        var v = U.clamp((n[y * w + x] - 0.54 + (1 - band) * 0.08) / 0.15, 0, 1) * band, o = (y * w + x) * 4;
-        var a = Math.round(v * v * (3 - 2 * v) * 210);
-        iw.data[o] = iw.data[o + 1] = iw.data[o + 2] = 255; iw.data[o + 3] = a;
-        ib.data[o + 3] = a;
-      }
-    }
-    gw.putImageData(iw, 0, 0); gb.putImageData(ib, 0, 0);
-    return { white: white, black: black };
   }
 
   /* ---------- les styles ---------- */
@@ -131,19 +110,11 @@
       oceanNight: [[75, '#02060f'], [0, '#061329'], [-58, '#02060f']],
       landNight: [[75, '#1a2840'], [0, '#0f1b30'], [-58, '#1a2840']],
       coastNight: 'rgba(130,170,235,0.32)', bordersNight: 'rgba(130,170,235,0.14)',
-      stars: true, soft: true, twilight: [255, 140, 80, 92], glint: 0.30, grid: 'rgba(255,255,255,0.08)', grid2: 'rgba(255,255,255,0.12)', bg: '#04091a'
+      stars: true, soft: true, twilight: [255, 140, 80, 92], glint: 0.30, atm: [0.35, 0.6, 1], grid: 'rgba(255,255,255,0.08)', grid2: 'rgba(255,255,255,0.12)', bg: '#04091a'
     },
     satellite: {
-      oceanDay: [[75, '#071a2f'], [45, '#0a2747'], [0, '#0c335d'], [-45, '#0a2747'], [-58, '#071a2f']],
-      landDay: [[75, '#eef2f4'], [70, '#c9ccc4'], [64, '#6f735d'], [58, '#2d452a'], [50, '#3d5b30'], [42, '#5e6c3b'],
-        [35, '#8c8053'], [28, '#c6a36b'], [20, '#b99464'], [13, '#7c7b46'], [6, '#25491f'], [-6, '#23461f'],
-        [-14, '#606c36'], [-22, '#aa8b5b'], [-30, '#b89660'], [-38, '#5e6e3f'], [-48, '#506046'], [-55, '#a9ada1'], [-58, '#e7ecef']],
-      shelf: true, texture: true, clouds: true,
-      coastDay: null, bordersDay: null,
-      oceanNight: [[75, '#010309'], [0, '#020611'], [-58, '#010309']],
-      landNight: [[75, '#0b0e14'], [0, '#07090f'], [-58, '#0b0e14']],
-      coastNight: 'rgba(120,140,180,0.12)', bordersNight: null,
-      stars: false, soft: true, twilight: [255, 150, 90, 70], glint: 0.42, grid: 'rgba(255,255,255,0.05)', grid2: 'rgba(255,255,255,0.07)', bg: '#020611'
+      imagery: true, stars: false, soft: true, twilight: [255, 150, 90, 70], glint: 0.14,
+      grid: 'rgba(255,255,255,0.06)', grid2: null, bg: '#000000', atm: [0.38, 0.62, 1]
     },
     flat: {
       oceanDay: [[75, '#060607'], [-58, '#060607']],
@@ -152,7 +123,7 @@
       oceanNight: [[75, '#000000'], [-58, '#000000']],
       landNight: [[75, '#2d2d31'], [-58, '#2d2d31']],
       coastNight: null, bordersNight: null,
-      stars: false, soft: false, twilight: null, glint: 0, terminator: 'rgba(255,255,255,0.75)',
+      stars: false, soft: false, twilight: null, glint: 0, terminator: 'rgba(255,255,255,0.75)', atm: [0.55, 0.55, 0.6],
       grid: 'rgba(255,255,255,0.07)', grid2: null, bg: '#000000'
     },
     atlas: {
@@ -162,7 +133,7 @@
       oceanNight: [[75, '#2d3d54'], [0, '#34465f'], [-58, '#2d3d54']],
       landNight: [[75, '#56617a'], [0, '#4b566e'], [-58, '#56617a']],
       coastNight: 'rgba(205,215,240,0.45)', bordersNight: 'rgba(205,215,240,0.22)',
-      stars: false, soft: true, twilight: [255, 170, 110, 70], glint: 0.12, grid: 'rgba(90,80,60,0.18)', grid2: 'rgba(90,80,60,0.25)', bg: '#c3d7e1'
+      stars: false, soft: true, twilight: [255, 170, 110, 70], glint: 0.12, atm: [0.62, 0.78, 0.95], grid: 'rgba(90,80,60,0.18)', grid2: 'rgba(90,80,60,0.25)', bg: '#c3d7e1'
     },
     neon: {
       oceanDay: [[75, '#03040c'], [0, '#050816'], [-58, '#03040c']],
@@ -171,16 +142,21 @@
       oceanNight: [[75, '#020208'], [0, '#03030c'], [-58, '#020208']],
       landNight: [[75, '#07081a'], [0, '#060716'], [-58, '#07081a']],
       coastNight: 'rgba(160,110,255,0.75)', coastNightGlow: 'rgba(140,90,255,0.8)', bordersNight: 'rgba(160,110,255,0.16)',
-      stars: true, soft: true, twilight: [200, 90, 255, 85], glint: 0.10, grid: 'rgba(63,224,255,0.08)', grid2: 'rgba(63,224,255,0.14)', bg: '#03040c'
+      stars: true, soft: true, twilight: [200, 90, 255, 85], glint: 0.10, atm: [0.25, 0.85, 1], grid: 'rgba(63,224,255,0.08)', grid2: 'rgba(63,224,255,0.14)', bg: '#03040c'
     }
   };
   var STYLE_ORDER = ['nature', 'satellite', 'flat', 'atlas', 'neon'];
 
-  function paintLayer(g, S, night, cw, ch) {
+  function paintLayer(g, S, night, cw, ch, noStars) {
     var w = st.w, h = st.h, pr = st.pr;
+    if (S.imagery) {
+      if (EARTH.ready) { g.imageSmoothingEnabled = true; drawEquirect(g, night ? EARTH.night : EARTH.day, cw, ch); }
+      else { g.fillStyle = night ? '#02040c' : '#0b2a4c'; g.fillRect(0, 0, cw, ch); }
+      return;
+    }
     g.fillStyle = stops(g, ch, night ? S.oceanNight : S.oceanDay);
     g.fillRect(0, 0, cw, ch);
-    if (night && S.stars) {
+    if (night && S.stars && !noStars) {
       var rnd = U.seeded('carte-etoiles');
       for (var i = 0; i < 420; i++) {
         g.fillStyle = 'rgba(220,230,255,' + (0.15 + rnd() * 0.6).toFixed(2) + ')';
@@ -188,21 +164,8 @@
       }
     }
     traceLand(g, w, h, pr);
-    // Plateau continental : eaux plus claires le long des côtes.
-    if (S.shelf && !night) {
-      g.lineJoin = 'round';
-      [[14, 'rgba(40,120,160,0.22)'], [8, 'rgba(55,150,180,0.28)'], [3.5, 'rgba(90,185,200,0.35)']].forEach(function (s) {
-        g.lineWidth = s[0] * pr; g.strokeStyle = s[1]; g.stroke();
-      });
-    }
     g.fillStyle = stops(g, ch, night ? S.landNight : S.landDay);
     g.fill();
-    if (S.texture && !night) {
-      g.save(); g.clip();
-      g.imageSmoothingEnabled = true;
-      g.drawImage(st.texture || (st.texture = textureCanvas()), 0, 0, cw, ch);
-      g.restore();
-    }
     var coast = night ? S.coastNight : S.coastDay, glow = night ? S.coastNightGlow : S.coastGlow;
     if (coast) {
       traceLand(g, w, h, pr);
@@ -215,20 +178,45 @@
       traceBorders(g, w, h, pr);
       g.lineWidth = 0.6 * pr; g.strokeStyle = bc; g.stroke();
     }
-    if (S.clouds) {
-      var cl = st.clouds || (st.clouds = cloudCanvas());
-      g.save();
-      g.imageSmoothingEnabled = true;
-      // Ombre portée des nuages le jour, puis les nuages, plus ternes la nuit.
-      if (!night) { g.globalAlpha = 0.28; g.drawImage(cl.black, 3 * pr, 4 * pr, cw, ch); }
-      g.globalAlpha = night ? 0.1 : 0.78;
-      g.drawImage(cl.white, 0, 0, cw, ch);
-      g.restore();
-    }
+  }
+
+  /* Textures du globe : la Terre entière en équirectangulaire 2048 × 1024, au style choisi. */
+  function globeTexture(S, night) {
+    if (S.imagery) return night ? EARTH.night : EARTH.day;
+    var keep = [st.w, st.h, st.pr, LON0];
+    st.w = 2048; st.h = 1024; st.pr = 1; LON0 = -180; EQ = true;
+    var c = canvas(2048, 1024);
+    try { paintLayer(c.getContext('2d'), S, night, 2048, 1024, true); }
+    finally { st.w = keep[0]; st.h = keep[1]; st.pr = keep[2]; LON0 = keep[3]; EQ = false; }
+    return c;
+  }
+
+  function globeParams(S) {
+    var tw = S.twilight;
+    return {
+      soft: S.soft ? 1 : 0,
+      tw: tw ? [tw[0] / 255, tw[1] / 255, tw[2] / 255, tw[3] / 255] : [0, 0, 0, 0],
+      term: S.terminator ? [1, 1, 1, 0.75] : [1, 1, 1, 0],
+      atm: S.atm || [0.35, 0.6, 1]
+    };
   }
 
   function buildLayers() {
     var S = STYLES[st.style] || STYLES.nature;
+    if (S.imagery && !EARTH.ready) {
+      var styleAsked = st.style;
+      loadEarth(function () { if (st.root && st.style === styleAsked) { buildLayers(); M.tick(true); } });
+    }
+    if (st.view === 'globe' && SM.globe.active()) {
+      if (st.box) st.box.style.background = '#000';
+      if (!S.imagery || EARTH.ready) SM.globe.setTextures(globeTexture(S, false), globeTexture(S, true));
+      SM.globe.setStyle(globeParams(S));
+      drawSpace();
+      st.day = st.night = st.tmp = null;
+      st.mask = true;
+      st.minuteKey = '';
+      return;
+    }
     var cw = Math.round(st.w * st.pr), ch = Math.round(st.h * st.pr);
     st.day = canvas(cw, ch); st.night = canvas(cw, ch); st.tmp = canvas(cw, ch);
     paintLayer(st.day.getContext('2d'), S, false, cw, ch);
@@ -241,7 +229,27 @@
     st.minuteKey = '';
   }
 
+  function drawSpace() {
+    var c = st.ctx, cw = st.cv.width, ch = st.cv.height, pr = st.pr;
+    var bg = c.createRadialGradient(cw / 2, ch / 2, 0, cw / 2, ch / 2, Math.max(cw, ch) * 0.7);
+    bg.addColorStop(0, '#0a1430'); bg.addColorStop(0.6, '#03060f'); bg.addColorStop(1, '#000000');
+    c.globalCompositeOperation = 'source-over';
+    c.fillStyle = bg; c.fillRect(0, 0, cw, ch);
+    var rnd = U.seeded('espace');
+    for (var i = 0; i < 380; i++) {
+      c.fillStyle = 'rgba(225,232,255,' + (0.12 + rnd() * 0.7).toFixed(2) + ')';
+      c.beginPath(); c.arc(rnd() * cw, rnd() * ch, (0.25 + rnd() * rnd() * 1.4) * pr, 0, 6.283); c.fill();
+    }
+  }
+
+  function drawGlobeSky(ms) {
+    var sun = SM.astro.subSolar(ms);
+    SM.globe.setSun(sun.lat, sun.lon);
+    SM.globe.draw();
+  }
+
   function drawSky(ms) {
+    if (st.view === 'globe' && SM.globe.active()) { drawGlobeSky(ms); return; }
     if (!st.ctx || !st.day || !st.mask) return;
     var S = STYLES[st.style] || STYLES.nature;
     var w = st.w, h = st.h, pr = st.pr, cw = st.cv.width, ch = st.cv.height;
@@ -411,9 +419,28 @@
       '<div class="mcs">' + hl + '</div>' + dayBar(ci) + '</div>';
   }
 
+  var lastLayout = 0;
+  function placeOnGlobe(final) {
+    if (!st.root || st.view !== 'globe') return;
+    var cx = st.w / 2, cy = st.h / 2, G = SM.globe;
+    U.$$('.mk', st.box).forEach(function (mk, i) {
+      var ci = st.infos && st.infos[i];
+      if (!ci) return;
+      var p = G.project(ci.p.lat, ci.p.lon);
+      mk.style.display = p.front ? '' : 'none';
+      mk.style.left = (cx + p.x).toFixed(1) + 'px'; mk.style.top = (cy + p.y).toFixed(1) + 'px';
+    });
+    var ms = SM.app.nowMs(), sun = SM.astro.subSolar(ms), moon = SM.astro.subLunar(ms);
+    var ps = G.project(sun.lat, sun.lon), pm = G.project(moon.lat, moon.lon);
+    st.sunEl.style.display = ps.front ? '' : 'none'; place(st.sunEl, cx + ps.x, cy + ps.y);
+    st.moonEl.style.display = pm.front ? '' : 'none'; place(st.moonEl, cx + pm.x, cy + pm.y);
+    if (final || Date.now() - lastLayout > 700) { lastLayout = Date.now(); layoutLabels(); }
+  }
+
   /* Étiquettes : à droite, sinon à gauche, au-dessus ou au-dessous, sans chevauchement ni débordement. */
   function layoutLabels() {
-    var W = st.w, H = st.h, mks = U.$$('.mk', st.box), lines = '';
+    var W = st.w, H = st.h, lines = '';
+    var mks = U.$$('.mk', st.box).filter(function (mk) { return mk.style.display !== 'none'; });
     // Les points des villes sont des obstacles pour toutes les étiquettes.
     var placed = mks.map(function (mk) { return [mk.offsetLeft - 9, mk.offsetTop - 9, 18, 18]; });
     mks.forEach(function (mk) {
@@ -472,7 +499,11 @@
     try { st.cards = localStorage.getItem('sm.mapCards') || 'clocks'; } catch (e) { st.cards = 'clocks'; }
     try { st.style = localStorage.getItem('sm.mapStyle') || 'nature'; } catch (e) { st.style = 'nature'; }
     if (!STYLES[st.style]) st.style = 'nature';
+    try { st.view = localStorage.getItem('sm.mapView') || 'map'; } catch (e) { st.view = 'map'; }
+    if (st.view === 'globe' && !SM.globe.supported()) st.view = 'map';
     st.places = places;
+    // Nouveau cadre : l'ancien globe y serait resté accroché.
+    SM.globe.detach();
     container.innerHTML =
       '<div class="mapview"><div class="mapwrap">' +
         '<div class="zones">' + rulerHTML() + '</div>' +
@@ -481,7 +512,8 @@
       '</div>' +
       '<div class="mbottom"><div class="mbar"><div class="seg mstyle">' + STYLE_ORDER.map(function (k) {
         return '<button data-style="' + k + '"' + (k === st.style ? ' class="on"' : '') + '>' + tt.mapStyles[k] + '</button>';
-      }).join('') + '</div><div class="seg mswitch"><button data-cards="clocks"' + (st.cards === 'clocks' ? ' class="on"' : '') + '>' + tt.clocks + '</button>' +
+      }).join('') + '</div>' + (SM.globe.supported() ? '<div class="seg mview"><button data-view="map"' + (st.view === 'map' ? ' class="on"' : '') + '>' + tt.viewMap + '</button>' +
+        '<button data-view="globe"' + (st.view === 'globe' ? ' class="on"' : '') + '>' + tt.viewGlobe + '</button></div>' : '') + '<div class="seg mswitch"><button data-cards="clocks"' + (st.cards === 'clocks' ? ' class="on"' : '') + '>' + tt.clocks + '</button>' +
         '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div></div>' +
         '<div class="mcards"></div></div></div>';
     st.root = U.$('.mapview', container);
@@ -501,6 +533,8 @@
     var ms = SM.app.nowMs();
     var infos = st.places.map(function (p) { return cityInfo(p, ms); });
     U.$('.mks', st.box).innerHTML = infos.map(markerHTML).join('');
+    st.infos = infos;
+    if (st.view === 'globe') placeOnGlobe(true);
     U.$('.mcards', st.root).innerHTML = infos.map(cardHTML).join('');
     st.infos = infos;
     st.minuteKey = '';
@@ -512,6 +546,16 @@
     st.cards = mode;
     try { localStorage.setItem('sm.mapCards', mode); } catch (e) { /* rien */ }
     U.$$('.mswitch button', st.root).forEach(function (b) { b.className = b.getAttribute('data-cards') === mode ? 'on' : ''; });
+    M.refresh();
+    M.resize(true);
+  };
+
+  M.setView = function (view) {
+    if (!st.root || (view === 'globe' && !SM.globe.supported())) return;
+    st.view = view;
+    try { localStorage.setItem('sm.mapView', view); } catch (e) { /* rien */ }
+    U.$$('.mview button', st.root).forEach(function (b) { b.className = b.getAttribute('data-view') === view ? 'on' : ''; });
+    if (view === 'map') { SM.globe.detach(); U.$$('.mk', st.box).forEach(function (mk) { mk.style.display = ''; }); st.sunEl.style.display = st.moonEl.style.display = ''; }
     M.refresh();
     M.resize(true);
   };
@@ -538,6 +582,8 @@
     }
     W = Math.floor(Math.max(W, 280));
     var H = Math.round(W * ASPECT);
+    // En portrait, le globe prend la hauteur libre au lieu de celle de la carte plate.
+    if (st.view === 'globe' && !land) H = Math.round(Math.max(H, Math.min(W * 0.85, st.root.clientHeight - bottom.offsetHeight - 60)));
     if (!force && W === st.w && H === st.h) return;
     st.w = W; st.h = H;
     st.pr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -545,9 +591,23 @@
     st.box.style.width = W + 'px'; st.box.style.height = H + 'px';
     st.cv.width = Math.round(W * st.pr); st.cv.height = Math.round(H * st.pr);
     st.cv.style.width = W + 'px'; st.cv.style.height = H + 'px';
+    st.box.className = 'mapbox' + (st.view === 'globe' ? ' globe' : '');
+    if (st.view === 'globe') {
+      if (!SM.globe.active()) {
+        if (SM.globe.attach(st.box, placeOnGlobe)) {
+          var cur = SM.app.places[SM.app.idx] || st.places[0];
+          SM.globe.lon = cur ? cur.lon : 0;
+          SM.globe.lat = 25;
+        } else { st.view = 'map'; }
+      }
+      var motion = SM.app.settings.motion;
+      SM.globe.spin = motion === 'off' ? 0 : (motion === 'reduced' ? 0.6 : 2);
+      SM.globe.resize(Math.min(W, H) * 1.0);
+      SM.globe.run();
+    }
     buildLayers();
     M.tick(true);
-    layoutLabels();
+    if (st.view === 'globe') placeOnGlobe(true); else layoutLabels();
   };
 
   /* Chaque seconde : aiguilles. Chaque minute (ou si forcé) : ciel de la carte, heures, règle. */
@@ -587,7 +647,7 @@
   };
 
   M.active = function () { return !!(st.root && document.body.contains(st.root)); };
-  M.leave = function () { st.root = null; st.infos = null; st.day = st.night = st.tmp = st.mask = st.tw = null; st.w = st.h = 0; };
+  M.leave = function () { SM.globe.detach(); st.root = null; st.infos = null; st.day = st.night = st.tmp = st.mask = st.tw = null; st.w = st.h = 0; };
 
   SM.map = M;
 })();

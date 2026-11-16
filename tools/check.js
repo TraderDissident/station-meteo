@@ -84,7 +84,10 @@ const BANNED_CSS = [
   [/(^|[^-])backdrop-filter/m, 'backdrop-filter sans préfixe'], [/(^|[^-])mask-image/m, 'mask-image sans préfixe']
 ];
 for (const [name, src] of cssSources) {
-  const code = name.endsWith('.js (styles en ligne)') ? src.replace(/\.clamp\(/g, '.clampJS(') : src;
+  // Dans le JavaScript : ni U.clamp ni le code GLSL du globe (ses clamp() sont du GLSL, pas du CSS).
+  const code = name.endsWith('.js (styles en ligne)')
+    ? src.replace(/var FS = \[[\s\S]*?\]\.join\('\\n'\);/, '').replace(/\.clamp\(/g, '.clampJS(')
+    : src;
   let bad = false;
   for (const [re, label] of BANNED_CSS) {
     if (re.test(code)) { fail(name + ' : ' + label); bad = true; }

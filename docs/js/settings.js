@@ -30,7 +30,7 @@
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
       field(tt.language, seg('lang', [['en', 'English'], ['fr', 'Français'], ['auto', tt.auto]], s.lang)) +
-      field(tt.about, '<p class="about">' + tt.version + ' ' + SM.VERSION + '<br>' + U.esc(tt.source) + '</p>' +
+      field(tt.about, '<p class="about">' + tt.version + ' ' + SM.VERSION + '<br>' + U.esc(tt.source) + '<br>' + U.esc(tt.mapCredit) + '</p>' +
         '<button class="btn" data-open="diag">' + tt.diagnostic + '</button>');
     return html;
   }
