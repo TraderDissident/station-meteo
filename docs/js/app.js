@@ -442,6 +442,8 @@
       if (b) { A.open(b.getAttribute('data-sheet')); return; }
       if (e.target.closest('.sheet-close')) { A.close(); return; }
       if (e.target === el.sheet) { A.close(); return; }
+      var hv = e.target.closest('[data-hview]');
+      if (hv) { A.setSetting('hourView', hv.getAttribute('data-hview')); render(0); return; }
       if (e.target.closest('.retry')) { var p = A.places[A.idx]; A.retryAt[p.id] = 0; load(p, true); return; }
       if (e.target.closest('#dots i')) { var dots = U.$$('#dots i'); show(dots.indexOf(e.target.closest('#dots i')), 1); return; }
       var row = e.target.closest('.drow');

@@ -495,3 +495,10 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 .tadds span { display: block; margin-bottom: .45rem; font-size: .76rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
 .tadd { display: inline-block; margin: 0 .45rem .45rem 0; padding: .35rem .8rem; border-radius: 1rem; border: 1px dashed rgba(255, 255, 255, .35); background: rgba(255, 255, 255, .05); font-size: .85rem; }
 .tadd .ic { width: .95rem; height: .95rem; margin-right: .3rem; vertical-align: -.15rem; }
+
+/* Heure par heure : choix Conditions / Précipitations / Vent */
+.hview { margin-left: auto; display: -webkit-flex; display: flex; padding: .12rem; border-radius: 1rem; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); }
+.hview button { padding: .22rem .7rem; border: 0; border-radius: .85rem; background: none; font-size: .74rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted); }
+.hview button.on { background: #fff; color: #0b1226; }
+.pbar { position: absolute; left: 30%; right: 30%; top: .3rem; bottom: .3rem; display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; border-bottom: 1px solid var(--line); }
+.pbar i { display: block; width: 100%; border-radius: 3px 3px 0 0; background: -webkit-linear-gradient(top, #8fd3ff, #3d86ff); background: linear-gradient(to bottom, #8fd3ff, #3d86ff); }

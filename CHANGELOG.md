@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.7.0 · 17/11/2026
+
+- Heure par heure : choix d'affichage Conditions, Précipitations ou Vent, comme l'app Météo d'Apple. Conditions : la courbe des températures (comme avant). Précipitations : barres de pluie par heure, probabilité et millimètres. Vent : courbe de la vitesse colorée selon la force, direction et rafales. Le choix est gardé et vaut aussi pour les heures d'un jour ouvert dans les 10 jours.
+
 ## 1.6.0 · 16/11/2026
 
 - Détails modifiables, comme les tableaux de bord du Socle : bouton Modifier (ou appui long sur un bloc), les blocs tremblent, « − » pour en retirer, « + » sous la grille pour les remettre, glisser au doigt ou à la souris pour les réordonner. Terminé pour sortir. L'ordre et les blocs retirés sont gardés, pour tous les lieux.
