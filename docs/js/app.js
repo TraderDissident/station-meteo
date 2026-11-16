@@ -401,6 +401,8 @@
     el.app.addEventListener('click', function (e) {
       A.lastTouch = Date.now();
       if (e.target.closest('[data-act=map]')) { A.toggleMap(); return; }
+      var ms = e.target.closest('.mstyle button');
+      if (ms) { SM.map.setStyle(ms.getAttribute('data-style')); return; }
       var mc = e.target.closest('.mswitch button');
       if (mc) { SM.map.setCards(mc.getAttribute('data-cards')); return; }
       var city = e.target.closest('.mk, .mcard');

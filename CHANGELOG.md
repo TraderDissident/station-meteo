@@ -1,5 +1,15 @@
 # Journal des modifications
 
+## 1.3.0 · 16/11/2026
+
+- Cinq styles pour la carte du monde, au choix sous la carte et mémorisés :
+  - Nature : couleurs des climats, frontières discrètes ;
+  - Satellite : océans profonds et plateaux continentaux plus clairs, terres texturées, banquise, voile de nuages avec leur ombre, nuit noire vue de l'espace ;
+  - Épuré : mer noire, terres grises unies sans frontières, nuit gris foncé, limite jour/nuit en trait blanc ;
+  - Atlas : carte papier claire, la nuit posée comme une ombre bleutée ;
+  - Néon : fond noir, côtes lumineuses cyan le jour et violettes la nuit.
+- Frontières entre pays : Natural Earth (domaine public).
+
 ## 1.2.0 · 16/11/2026
 
 - Nouvelle vue Carte du monde (bouton globe, en haut à droite) :

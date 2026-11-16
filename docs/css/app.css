@@ -405,7 +405,10 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 
 /* Sélecteur et cartes de villes */
 .mbottom { width: 100%; -webkit-flex: none; flex: none; padding: .55rem 0 .8rem; }
-.mswitch { -webkit-justify-content: center; justify-content: center; margin-bottom: .45rem; }
+.mbar { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-justify-content: center; justify-content: center; margin-bottom: .45rem; }
+.mbar .seg { margin: 0 .7rem .25rem; }
+.mstyle button { margin: 0 .2rem; padding: .28rem .8rem; font-size: .8rem; }
+.mswitch { -webkit-justify-content: center; justify-content: center; }
 .mswitch button { margin: 0 .25rem; padding: .28rem .9rem; font-size: .8rem; }
 .mcards { display: -webkit-flex; display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: .2rem 1rem .4rem; }
 .mcards::-webkit-scrollbar { display: none; }
