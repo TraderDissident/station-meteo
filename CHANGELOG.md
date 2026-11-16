@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.8.1 · 17/11/2026
+
+- Points de la courbe des températures : la courbe se recale aussi après une rotation, un changement de taille de fenêtre et le chargement des polices, au sous-pixel près. Avant, elle gardait la position du premier affichage.
+
 ## 1.8.0 · 17/11/2026
 
 - Conditions, Précipitations, Vent refait d'après Météo d'Apple sur iOS 27 : sélecteur à trois icônes (nuage, goutte, vent), titre et sous-titre selon le mode. Le cadran ne change pas, comme chez Apple.

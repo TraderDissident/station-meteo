@@ -140,6 +140,8 @@
     }
     el.pages.innerHTML = html;
     SM.ui.align(el.pages);
+    // Polices et icônes peuvent encore bouger la mise en page : on recale un peu après.
+    setTimeout(function () { SM.ui.align(el.pages); }, 400);
     var v = U.$('.view', el.pages);
     if (dir) v.className += dir > 0 ? ' enter-r' : ' enter-l';
     else {
@@ -382,6 +384,7 @@
     appClass();
     SM.sky.resize();
     if (A.mode === 'map') SM.map.resize();
+    SM.ui.align(el.pages);
   }
 
   /* ---------- gestes ---------- */
@@ -564,6 +567,7 @@
     setTimeout(SM.update.check, 5000);
   };
 
+  window.addEventListener('load', function () { if (SM.ui) SM.ui.align(); });
   SM.app = A;
   document.addEventListener('DOMContentLoaded', function () {
     try { A.init(); } catch (e) { SM.diag.error('start: ' + e.message); throw e; }

@@ -450,8 +450,11 @@
     [].forEach.call((root || document).querySelectorAll('.hstrip'), function (st) {
       var svg = st.querySelector('.tcurve'), hv = st.querySelector('.hv');
       if (!svg || !hv) return;
-      svg.style.top = hv.offsetTop + 'px';
-      svg.style.height = hv.offsetHeight + 'px';
+      // Mesures au sous-pixel (offsetTop arrondit au pixel entier).
+      var a = st.getBoundingClientRect(), b = hv.getBoundingClientRect();
+      if (!b.height) return;
+      svg.style.top = (b.top - a.top).toFixed(2) + 'px';
+      svg.style.height = b.height.toFixed(2) + 'px';
     });
   };
 
