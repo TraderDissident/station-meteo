@@ -549,3 +549,6 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 .port .mkt b { font-size: .8rem; margin-right: .25rem; }
 .port .mkt span { font-size: .68rem; }
 .port .mkt small { font-size: .58rem; }
+/* Étiquettes de la carte déplaçables à la main */
+.mapbox:not(.globe) .mkl { cursor: grab; touch-action: none; }
+.mkl.dragging { cursor: grabbing; z-index: 10; box-shadow: 0 .8rem 2rem rgba(0, 0, 0, .55); border-color: rgba(255, 255, 255, .45); }

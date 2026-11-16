@@ -120,7 +120,10 @@
           document.head.appendChild(s);
         });
       });
-    }, Promise.resolve()).catch(function (e) {
+    }, Promise.resolve()).then(function () {
+      // Fichiers chargés mais carte absente (erreur dans son code) : échec franc, sinon on relancerait sans fin.
+      if (!SM.map) throw new Error('map.js did not start');
+    }).catch(function (e) {
       mapLoading = null;
       SM.diag.warn('map code: ' + e.message);
       throw e;
@@ -487,6 +490,7 @@
       if (ms) { SM.map.setStyle(ms.getAttribute('data-style')); return; }
       var mc = e.target.closest('.mswitch button');
       if (mc) { SM.map.setCards(mc.getAttribute('data-cards')); return; }
+      if (SM.map && SM.map.labelDragging()) return;
       var city = e.target.closest('.mk, .mcard');
       if (city) { A.goTo(city.getAttribute('data-place')); return; }
       var b = e.target.closest('[data-sheet]');

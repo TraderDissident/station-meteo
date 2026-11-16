@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.13.0 · 17/11/2026
+
+- Carte du monde : les étiquettes de villes se placent à la main. On glisse une étiquette (doigt ou souris) où l'on veut, le trait de rappel suit ; avec Maj enfoncée, le trait se cale à 0°, 45°, 90°… Position retenue par ville et par orientation (paysage, portrait), en proportion de la carte. Reposée sur son point, l'étiquette repasse au placement automatique, qui s'arrange autour des étiquettes placées à la main. Un glisser n'ouvre pas la ville.
+- La carte ne peut plus bloquer l'app si son code ne démarre pas : retour aux prévisions avec un message, au lieu de relancer le chargement sans fin.
+
 ## 1.12.0 · 17/11/2026
 
 - Carte du monde : nouveau placement des étiquettes de villes. Elles se posent tout autour de leur point, à droite comme à gauche, au-dessus ou au-dessous, plus loin avec un trait de rappel quand la place manque. Jamais l'une sur l'autre, au moins 10 px entre deux étiquettes, jamais sur un point de ville ; les traits évitent de se croiser et de traverser une étiquette, sauf s'il n'y a pas d'autre place.

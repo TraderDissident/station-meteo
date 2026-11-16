@@ -455,10 +455,16 @@
     var W = st.w, H = st.h;
     var mks = U.$$('.mk', st.box).filter(function (mk) { return mk.style.display !== 'none'; });
     if (!mks.length) { U.$('.mklines', st.box).innerHTML = ''; return; }
+    // Positions choisies à la main (carte à plat seulement) : fixes, les autres étiquettes s'arrangent autour.
+    var saved = st.view === 'map' ? manualPos() : {};
     var pts = mks.map(function (mk) {
-      var lab = U.$('.mkl', mk);
-      return { lab: lab, x: mk.offsetLeft, y: mk.offsetTop, w: lab.offsetWidth, h: lab.offsetHeight, box: null, off: null };
+      var lab = U.$('.mkl', mk), id = mk.getAttribute('data-place');
+      var p = { id: id, lab: lab, x: mk.offsetLeft, y: mk.offsetTop, w: lab.offsetWidth, h: lab.offsetHeight, box: null, off: null, fixed: false };
+      var m = saved[id];
+      if (m) { p.fixed = true; p.off = [m[0] * W, m[1] * H, 0, 0]; p.box = [p.x + p.off[0], p.y + p.off[1], p.w, p.h]; }
+      return p;
     });
+    st.labels = pts;
     // Candidats : 24 directions à 9 distances, des plus proches aux plus lointaines.
     function candidates(p) {
       var out = [], k = 0;
@@ -515,6 +521,7 @@
       return s;
     }
     function best(p, i) {
+      if (p.fixed) return;
       var bo = null, bs = 1e12;
       candidates(p).forEach(function (o) { var v = score(p, o, i); if (v < bs) { bs = v; bo = o; } });
       p.off = bo; p.box = [p.x + bo[0], p.y + bo[1], p.w, p.h];
@@ -532,7 +539,9 @@
     for (var round = 0; round < (light ? 0 : 4); round++) {
       var changed = false;
       for (var i = 0; i < pts.length; i++) for (var j = i + 1; j < pts.length; j++) {
-        var P = pts[i], Q = pts[j], pa = anchor(P, P.box), qa = anchor(Q, Q.box);
+        var P = pts[i], Q = pts[j];
+        if (P.fixed || Q.fixed) continue;
+        var pa = anchor(P, P.box), qa = anchor(Q, Q.box);
         if (!segX(P.x, P.y, pa[0], pa[1], Q.x, Q.y, qa[0], qa[1])) continue;
         var before = cost(i) + cost(j), po = P.off, qo = Q.off, pb = P.box, qb = Q.box;
         // Chaque étiquette prend l'emplacement de l'autre, centrée sur le même centre.
@@ -552,6 +561,7 @@
     var cur = total(), bestT = cur, keep = pts.map(function (q) { return q.off; });
     for (var it = 0, N = light ? 0 : 5000; it < N; it++) {
       var k = Math.floor(rnd() * pts.length), q = pts[k], c = cands[k][Math.floor(rnd() * cands[k].length)];
+      if (q.fixed) continue;
       var before = score(q, q.off, k), oldOff = q.off, oldBox = q.box;
       q.off = c; q.box = [q.x + c[0], q.y + c[1], q.w, q.h];
       var after = score(q, c, k), temp = 600 * (1 - it / N);
@@ -561,16 +571,91 @@
       } else { q.off = oldOff; q.box = oldBox; }
     }
     pts.forEach(function (q, k) { q.off = keep[k]; q.box = [q.x + q.off[0], q.y + q.off[1], q.w, q.h]; });
+    pts.forEach(function (p) { p.lab.style.left = p.off[0].toFixed(0) + 'px'; p.lab.style.top = p.off[1].toFixed(0) + 'px'; p.lab.className = 'mkl' + (p.fixed ? ' fixed' : ''); });
+    drawLines();
+  }
+
+  /* Traits de rappel : du point au bord le plus proche de l'étiquette. */
+  function drawLines() {
     var lines = '';
-    pts.forEach(function (p) {
-      p.lab.style.left = p.off[0].toFixed(0) + 'px'; p.lab.style.top = p.off[1].toFixed(0) + 'px';
-      var an = anchor(p, p.box);
-      if (Math.abs(an[0] - p.x) + Math.abs(an[1] - p.y) > 20) {
-        lines += '<line x1="' + p.x.toFixed(1) + '" y1="' + p.y.toFixed(1) + '" x2="' + an[0].toFixed(1) + '" y2="' + an[1].toFixed(1) + '"/>';
+    (st.labels || []).forEach(function (p) {
+      if (!p.box) return;
+      var ax = U.clamp(p.x, p.box[0], p.box[0] + p.box[2]), ay = U.clamp(p.y, p.box[1], p.box[1] + p.box[3]);
+      if (Math.abs(ax - p.x) + Math.abs(ay - p.y) > 20) {
+        lines += '<line x1="' + p.x.toFixed(1) + '" y1="' + p.y.toFixed(1) + '" x2="' + ax.toFixed(1) + '" y2="' + ay.toFixed(1) + '"/>';
       }
     });
     U.$('.mklines', st.box).innerHTML = lines;
   }
+
+  /* ---------- étiquettes placées à la main ----------
+     On glisse une étiquette (doigt ou souris) ; Maj enfoncée, le trait se cale à 0°, 45°, 90°… ; reposée sur son
+     point, elle repasse au placement automatique. Position gardée par lieu et par orientation, en proportion de la carte. */
+  var MKEY = 'sm.labelPos';
+  function orient() { return document.getElementById('app').className.indexOf('land') >= 0 ? 'land' : 'port'; }
+  function manualAll() { try { return JSON.parse(localStorage.getItem(MKEY)) || {}; } catch (e) { return {}; } }
+  function manualPos() { return manualAll()[orient()] || {}; }
+  function saveManual(id, v) {
+    var all = manualAll(), o = orient();
+    all[o] = all[o] || {};
+    if (v) all[o][id] = v; else delete all[o][id];
+    try { localStorage.setItem(MKEY, JSON.stringify(all)); } catch (e) { /* plein */ }
+  }
+
+  var drag = null;
+  function labelAt(t) {
+    if (!st.root || st.view !== 'map' || !t.closest) return null;
+    var lab = t.closest('.mkl'), mk = lab && lab.parentNode;
+    if (!lab || !st.labels) return null;
+    for (var i = 0; i < st.labels.length; i++) if (st.labels[i].lab === lab) return st.labels[i];
+    return null;
+  }
+  function pointOf(e) { var t = e.touches ? e.touches[0] || e.changedTouches[0] : e; return [t.clientX, t.clientY]; }
+  function dragStart(e) {
+    var p = labelAt(e.target);
+    if (!p) return;
+    var pt = pointOf(e);
+    drag = { p: p, sx: pt[0], sy: pt[1], ox: p.off[0], oy: p.off[1], moved: false };
+    if (e.type === 'mousedown') e.preventDefault();
+  }
+  function dragMove(e) {
+    if (!drag) return;
+    var pt = pointOf(e), dx = pt[0] - drag.sx, dy = pt[1] - drag.sy, p = drag.p;
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 6) return;
+    drag.moved = true;
+    if (e.cancelable) e.preventDefault();
+    var ox = drag.ox + dx, oy = drag.oy + dy;
+    if (e.shiftKey) {
+      // Trait calé : le centre de l'étiquette sur la demi-droite à 0°, 45°, 90°… partant du point, à la même distance.
+      var cx = ox + p.w / 2, cy = oy + p.h / 2, d = Math.sqrt(cx * cx + cy * cy), a = Math.round(Math.atan2(cy, cx) / (Math.PI / 4)) * (Math.PI / 4);
+      ox = Math.cos(a) * d - p.w / 2; oy = Math.sin(a) * d - p.h / 2;
+    }
+    // Toujours dans la carte.
+    ox = U.clamp(ox, 2 - p.x, st.w - 2 - p.w - p.x); oy = U.clamp(oy, 2 - p.y, st.h - 2 - p.h - p.y);
+    p.off = [ox, oy, 0, 0]; p.box = [p.x + ox, p.y + oy, p.w, p.h];
+    p.lab.style.left = ox.toFixed(0) + 'px'; p.lab.style.top = oy.toFixed(0) + 'px';
+    p.lab.className = 'mkl fixed dragging';
+    drawLines();
+  }
+  function dragEnd() {
+    if (!drag) return;
+    var d = drag;
+    // Le clic qui suit le relâchement ne doit pas ouvrir la ville.
+    setTimeout(function () { drag = null; }, 400);
+    if (!d.moved) return;
+    // Ramenée tout contre son point : l'étiquette repasse au placement automatique.
+    var b = d.p.box, ax = U.clamp(d.p.x, b[0], b[0] + b[2]), ay = U.clamp(d.p.y, b[1], b[1] + b[3]);
+    var near = Math.abs(ax - d.p.x) + Math.abs(ay - d.p.y) < 6;
+    saveManual(d.p.id, near ? null : [d.p.off[0] / st.w, d.p.off[1] / st.h]);
+    layoutLabels();
+  }
+  document.addEventListener('mousedown', dragStart);
+  document.addEventListener('mousemove', dragMove);
+  document.addEventListener('mouseup', dragEnd);
+  document.addEventListener('touchstart', dragStart, { passive: true });
+  document.addEventListener('touchmove', dragMove, { passive: false });
+  document.addEventListener('touchend', dragEnd);
+  document.addEventListener('touchcancel', dragEnd);
 
   /* ---------- règle des fuseaux ---------- */
   function rulerHTML() {
@@ -748,5 +833,6 @@
   M.active = function () { return !!(st.root && document.body.contains(st.root)); };
   M.leave = function () { SM.globe.detach(); freeLayers(); free(st.cv); st.root = null; st.infos = null; st.cv = st.ctx = null; st.w = st.h = 0; };
 
+  M.labelDragging = function () { return !!(drag && drag.moved); };
   SM.map = M;
 })();
