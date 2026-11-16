@@ -1,5 +1,18 @@
 # Journal des modifications
 
+## 1.2.0 · 16/11/2026
+
+- Nouvelle vue Carte du monde (bouton globe, en haut à droite) :
+  - jour, nuit et crépuscule calculés à la minute sur toute la Terre, avec un liseré de crépuscule dégradé ;
+  - soleil et lune placés à leur aplomb, lune à sa phase réelle, reflet du soleil sur l'océan ;
+  - couleurs des climats sur les terres le jour, océan profond et étoiles la nuit ;
+  - règle des 24 fuseaux en haut, avec l'heure de chacun et celle de l'iPad en blanc ;
+  - chaque ville marquée de sa météo, sa température et son heure, étiquettes placées sans chevauchement ;
+  - sous la carte, au choix : horloges à aiguilles (claires le jour, sombres la nuit) ou cartes météo peintes aux couleurs du ciel de chaque ville, avec écart horaire, lever, coucher et position dans la journée.
+- Toucher une ville sur la carte ou sous la carte ouvre sa page. La vue affichée est retenue au redémarrage.
+- Tracé des terres : Natural Earth (domaine public).
+- Le service worker ne s'installe plus en local, pour que les essais voient toujours les derniers fichiers.
+
 ## 1.1.0 · 16/11/2026
 
 - Anglais par défaut, français au choix dans Réglages, Langue (ou langue de l'iPad avec « Automatic »).

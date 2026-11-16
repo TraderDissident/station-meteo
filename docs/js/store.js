@@ -39,6 +39,9 @@
   S.current = function () { return read('sm.current', null); };
   S.saveCurrent = function (id) { write('sm.current', id); };
 
+  S.mode = function () { return read('sm.mode', 'place'); };
+  S.saveMode = function (m) { write('sm.mode', m); };
+
   S.startPlace = function () { return read('sm.start', null); };
   S.saveStartPlace = function (id) { write('sm.start', id); };
 

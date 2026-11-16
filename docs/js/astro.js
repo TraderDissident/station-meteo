@@ -55,6 +55,15 @@
 
   A.phaseIndex = function (phase) { return Math.round(phase * 8) % 8; };
 
+  /* Point de la Terre où l'astre est au zénith : latitude = déclinaison, longitude = ascension droite − temps sidéral de Greenwich. */
+  function subPoint(c, d) {
+    var lon = (c.ra - sidereal(d, 0)) / rad;
+    lon = ((lon + 540) % 360 + 360) % 360 - 180;
+    return { lat: c.dec / rad, lon: lon };
+  }
+  A.subSolar = function (ms) { var d = days(ms); return subPoint(sunCoords(d), d); };
+  A.subLunar = function (ms) { var d = days(ms); return subPoint(moonCoords(d), d); };
+
   /* Lever et coucher (hauteur −0,833°) autour d'un instant, par recherche minute à minute puis affinage. */
   A.crossings = function (fromMs, lat, lon, hours) {
     var out = [], step = 10 * 60000, prev = A.sun(fromMs, lat, lon).alt + 0.833;

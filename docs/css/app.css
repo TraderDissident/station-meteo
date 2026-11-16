@@ -84,7 +84,11 @@ header.top {
   display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: space-between; justify-content: space-between;
   height: 3.6rem; padding: 0 1rem; -webkit-flex: none; flex: none;
 }
-.ptitle { text-align: center; text-shadow: 0 1px 6px rgba(0, 0, 0, .3); }
+.hside { -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; }
+.hside.r { -webkit-justify-content: flex-end; justify-content: flex-end; }
+.hside.r .iconbtn { margin-left: .6rem; }
+.iconbtn.on { background: #fff; color: #0b1226; border-color: #fff; }
+.ptitle { text-align: center; text-shadow: 0 1px 6px rgba(0, 0, 0, .3); -webkit-flex: none; flex: none; max-width: 60%; }
 #pname { font-size: 1.45rem; font-weight: 600; letter-spacing: .01em; }
 #pcountry { font-size: .95rem; color: var(--muted); margin-left: .5rem; }
 #badge { font-size: .65rem; font-weight: 700; letter-spacing: .1em; margin-left: .6rem; padding: .15rem .45rem; border-radius: .4rem; background: #ffd23f; color: #1b1b1b; vertical-align: .2rem; }
@@ -347,3 +351,112 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
   .dw { display: none; }
   .tile.wide { grid-column: auto; }
 }
+
+/* ---------- carte du monde ---------- */
+#app.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050a16 60%, #02040a 100%); }
+.mapmode #sky { display: none; }
+.mapview { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: center; align-items: center; }
+.mapwrap { width: 100%; padding: 0 1rem; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: center; align-items: center; -webkit-flex: none; flex: none; }
+.zones { display: -webkit-flex; display: flex; height: 1.5rem; -webkit-align-items: flex-end; align-items: flex-end; }
+.zones span { -webkit-flex: 1; flex: 1; text-align: center; font-size: .66rem; color: rgba(150, 170, 210, .6); font-variant-numeric: tabular-nums; padding-bottom: .25rem; white-space: nowrap; }
+.zones span.t { color: rgba(255, 190, 140, .85); }
+.zones span.d { color: rgba(255, 236, 190, .95); }
+.zones span.me { color: #0b1226; font-weight: 700; }
+.zones span.me::before { content: ""; }
+.zones span.me { background: #fff; border-radius: .5rem .5rem 0 0; padding-top: .1rem; }
+.mapbox { position: relative; border-radius: .9rem; overflow: hidden; background: #04091a;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .12), 0 1.2rem 3rem rgba(0, 0, 0, .55), 0 0 4rem rgba(60, 120, 220, .12); }
+.mapbox canvas { position: absolute; top: 0; left: 0; display: block; }
+.mapbox::after { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; border-radius: .9rem;
+  background: radial-gradient(130% 120% at 50% 50%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, .35) 100%); }
+.mapcredit { position: absolute; right: .7rem; bottom: .35rem; z-index: 4; margin: 0; font-size: .58rem; color: rgba(190, 205, 235, .55); pointer-events: none; }
+.mklines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; overflow: visible; }
+.mklines line { stroke: rgba(255, 255, 255, .55); stroke-width: 1; }
+
+.msun, .mmoon { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 2; pointer-events: none; }
+.msun i { position: absolute; width: 1.3rem; height: 1.3rem; margin: -.65rem 0 0 -.65rem; border-radius: 50%;
+  background: radial-gradient(circle, #fffef0 0%, #ffe68a 45%, #ffb43a 70%, rgba(255, 170, 60, 0) 72%);
+  box-shadow: 0 0 1.2rem .5rem rgba(255, 210, 120, .55), 0 0 3.5rem 1.5rem rgba(255, 190, 90, .25); }
+.msun::after { content: ""; position: absolute; width: 3.6rem; height: 3.6rem; margin: -1.8rem 0 0 -1.8rem; border-radius: 50%;
+  border: 1px solid rgba(255, 220, 150, .45);
+  -webkit-animation: ping 3.2s ease-out infinite; animation: ping 3.2s ease-out infinite; }
+.mmoon svg { position: absolute; width: 1.4rem; height: 1.4rem; margin: -.7rem 0 0 -.7rem; }
+.mmoon::before { content: ""; position: absolute; width: 2.6rem; height: 2.6rem; margin: -1.3rem 0 0 -1.3rem; border-radius: 50%;
+  background: radial-gradient(circle, rgba(210, 225, 255, .35) 0%, rgba(210, 225, 255, 0) 70%); }
+@-webkit-keyframes ping { from { -webkit-transform: scale(.4); opacity: .9; } to { -webkit-transform: scale(1.6); opacity: 0; } }
+@keyframes ping { from { transform: scale(.4); opacity: .9; } to { transform: scale(1.6); opacity: 0; } }
+
+.mks { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 3; }
+.mk { position: absolute; width: 0; height: 0; cursor: pointer; }
+.mk.night::before { content: ""; position: absolute; width: 2.6rem; height: 2.6rem; margin: -1.3rem 0 0 -1.3rem; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 200, 110, .55) 0%, rgba(255, 170, 70, .18) 40%, rgba(255, 160, 60, 0) 70%); }
+.mkd { position: absolute; width: .8rem; height: .8rem; margin: -.4rem 0 0 -.4rem; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 .5rem rgba(0, 0, 0, .5); }
+.mkp { position: absolute; width: 1.8rem; height: 1.8rem; margin: -.9rem 0 0 -.9rem; border-radius: 50%; border: 2px solid #fff; opacity: 0;
+  -webkit-animation: ping 2.6s ease-out infinite; animation: ping 2.6s ease-out infinite; }
+.mkl { position: absolute; left: .75rem; top: -1.3rem; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
+  padding: .25rem .6rem .25rem .3rem; border-radius: .8rem; white-space: nowrap;
+  background: rgba(8, 14, 30, .78); border: 1px solid rgba(255, 255, 255, .2); box-shadow: 0 .4rem 1.2rem rgba(0, 0, 0, .4); }
+.mkl .wx.mki { width: 2rem; height: 2rem; margin-right: .3rem; }
+.mkt { line-height: 1.15; }
+.mkt b { font-size: 1.05rem; font-weight: 600; margin-right: .35rem; }
+.mkt span { font-size: .85rem; font-weight: 600; }
+.mkt small { display: block; font-size: .72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Sélecteur et cartes de villes */
+.mbottom { width: 100%; -webkit-flex: none; flex: none; padding: .55rem 0 .8rem; }
+.mswitch { -webkit-justify-content: center; justify-content: center; margin-bottom: .45rem; }
+.mswitch button { margin: 0 .25rem; padding: .28rem .9rem; font-size: .8rem; }
+.mcards { display: -webkit-flex; display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: .2rem 1rem .4rem; }
+.mcards::-webkit-scrollbar { display: none; }
+.mcards::before, .mcards::after { content: ""; -webkit-flex: 1; flex: 1; }
+.mcard { -webkit-flex: none; flex: none; width: 13.4rem; margin: 0 .4rem; padding: .8rem .9rem .75rem; border-radius: 1.1rem; cursor: pointer;
+  background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .14); box-shadow: 0 .6rem 1.6rem rgba(0, 0, 0, .35); }
+.mcard.clock { width: 16.5rem; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: .7rem .8rem; }
+.mcc { -webkit-flex: 1; flex: 1; min-width: 0; margin-left: .75rem; }
+.mcard.clock .mcbig .mctime { font-size: 1.8rem; }
+.mcard.clock .mct { font-size: 1.1rem; font-weight: 400; white-space: nowrap; }
+.mcard.clock .mct .wx.mci { width: 1.5rem; height: 1.5rem; vertical-align: -.4rem; margin-right: .1rem; }
+.mcard.clock .dbar2 { margin: .45rem 0 .25rem; }
+.clk { display: block; width: 6rem; height: 6rem; -webkit-flex: none; flex: none; overflow: visible; }
+.clk .face { fill: #f4f6fa; stroke: rgba(255, 255, 255, .5); stroke-width: .8; }
+.clk .tb { stroke: #1b2233; stroke-width: 1.8; stroke-linecap: round; }
+.clk .ts { stroke: rgba(27, 34, 51, .45); stroke-width: .7; }
+.clk text { fill: #1b2233; font-size: 11px; font-weight: 600; text-anchor: middle; dominant-baseline: central; }
+.clk .hh { stroke: #1b2233; stroke-width: 4; stroke-linecap: round; }
+.clk .mh { stroke: #1b2233; stroke-width: 2.6; stroke-linecap: round; }
+.clk .sh { stroke: #ff8a3d; stroke-width: 1.2; stroke-linecap: round; }
+.clk .hub { fill: #ff8a3d; stroke: #1b2233; stroke-width: 1; }
+.clk.night .face { fill: #0e1628; stroke: rgba(150, 180, 255, .35); }
+.clk.night .tb, .clk.night .hh, .clk.night .mh { stroke: #e9eefb; }
+.clk.night .ts { stroke: rgba(233, 238, 251, .4); }
+.clk.night text { fill: #e9eefb; }
+.clk.night .hub { stroke: #e9eefb; }
+.mcn { font-size: 1.02rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mcn .mctime { font-weight: 400; color: rgba(255, 255, 255, .85); font-variant-numeric: tabular-nums; }
+.mcs { font-size: .78rem; color: rgba(255, 255, 255, .78); margin-top: .2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mcs .wx.mci { width: 1.2rem; height: 1.2rem; vertical-align: -.3rem; margin: 0 .1rem; }
+.dbar2 { position: relative; height: .32rem; border-radius: .16rem; margin: .6rem 0 .3rem; }
+.dbar2 .now { position: absolute; top: 50%; width: .55rem; height: .55rem; margin: -.275rem 0 0 -.275rem; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px rgba(10, 16, 32, .6); }
+.srow { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; font-size: .72rem; color: rgba(255, 255, 255, .8); font-variant-numeric: tabular-nums; }
+.srow span { -webkit-flex: 1; flex: 1; }
+.srow .ic { width: .85rem; height: .85rem; color: #ffd479; margin-right: .2rem; }
+.mcard.sky { text-shadow: 0 1px 6px rgba(0, 0, 0, .35); border-color: rgba(255, 255, 255, .24); }
+.mcard.sky.bright { text-shadow: 0 1px 6px rgba(0, 0, 0, .55); }
+.mch { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: flex-start; align-items: flex-start; }
+.mch b { display: block; font-size: 1.05rem; font-weight: 600; }
+.mch small { display: block; font-size: .72rem; color: rgba(255, 255, 255, .8); }
+.mch .wx.mci { width: 2.8rem; height: 2.8rem; margin: -.4rem -.3rem 0 0; -webkit-filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .25)); filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .25)); }
+.mcbig { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: baseline; align-items: baseline; margin-top: .1rem; }
+.mcbig .mctime { font-size: 2.3rem; font-weight: 200; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.mcbig .mct { font-size: 1.7rem; font-weight: 300; }
+.mcard.sky .dbar2 { box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
+
+.port .mapview { -webkit-justify-content: flex-start; justify-content: flex-start; padding-top: .4rem; }
+.port .mcards { -webkit-flex-wrap: wrap; flex-wrap: wrap; overflow: visible; -webkit-justify-content: center; justify-content: center; }
+.port .mcards::before, .port .mcards::after { display: none; }
+.port .mcard { margin: 0 .4rem .8rem; }
+
+/* Contenu centré verticalement sans rogner le haut quand il dépasse. */
+.mapwrap { margin-top: auto; }
+.mbottom { margin-bottom: auto; }

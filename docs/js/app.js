@@ -5,7 +5,7 @@
   var A = {
     places: [], idx: 0, settings: null, data: {}, inflight: {}, failures: {}, retryAt: {},
     demo: { time: null, weather: null, cycle: false, cycleStart: 0 },
-    lastTouch: Date.now(), sheet: null, hourKey: '', veilUntil: 0
+    lastTouch: Date.now(), sheet: null, hourKey: '', veilUntil: 0, mode: 'place'
   };
   var el = {};
 
@@ -62,7 +62,7 @@
   /* ---------- ciel ---------- */
   function scene(instant) {
     var p = A.places[A.idx];
-    if (!p) return;
+    if (!p || A.mode === 'map') return;
     var w = A.data[p.id], c = w ? w.current : {};
     var m0 = w && w.minutely && w.minutely.length ? w.minutely[0].p : 0;
     var sc = {
@@ -82,9 +82,29 @@
   }
 
   /* ---------- rendu ---------- */
+  function appClass() {
+    el.app.className = (innerWidth > innerHeight ? 'land' : 'port') + (A.mode === 'map' ? ' mapmode' : '');
+  }
+
+  function renderMap() {
+    var tt = I.t();
+    appClass();
+    SM.sky.pause(true);
+    SM.map.render(el.pages, A.places);
+    el.pname.textContent = tt.worldMap;
+    el.pcountry.textContent = '';
+    el.dots.innerHTML = '';
+    el.badge.textContent = tt.badge;
+    el.badge.style.display = A.demo.time || A.demo.weather || A.demo.cycle ? '' : 'none';
+    U.$('[data-act=map]').className = 'iconbtn on';
+  }
+
   function render(dir) {
     var p = A.places[A.idx];
     if (!p) return;
+    if (A.mode === 'map') { renderMap(); return; }
+    if (el.app.className.indexOf('mapmode') >= 0) { SM.map.leave(); appClass(); SM.sky.pause(false); }
+    U.$('[data-act=map]').className = 'iconbtn';
     var w = A.data[p.id];
     var now = Math.floor(nowMs() / 1000);
     var oldSide = U.$('.side', el.pages), oldView = U.$('.view', el.pages);
@@ -112,6 +132,7 @@
     U.$('[data-sheet=places]').setAttribute('aria-label', tt.places);
     U.$('[data-sheet=settings]').setAttribute('aria-label', tt.settings);
     U.$('.sheet-close').setAttribute('aria-label', tt.close);
+    U.$('[data-act=map]').setAttribute('aria-label', tt.worldMap);
     el.dots.innerHTML = A.places.length > 1 ? A.places.map(function (q, i) { return '<i' + (i === A.idx ? ' class="on"' : '') + '></i>'; }).join('') : '';
     A.hourKey = w ? hourKey(w) : '';
     clock();
@@ -123,6 +144,7 @@
   function clock() {
     var p = A.places[A.idx];
     if (!p) return;
+    if (A.mode === 'map') { SM.map.tick(false); return; }
     var w = A.data[p.id];
     var wl = I.wall(Math.floor(nowMs() / 1000), (w && w.tz) || p.tz, w ? w.offset : 0);
     var hm = U.$('.hm', el.pages), ss = U.$('.ss', el.pages), dt = U.$('.date', el.pages);
@@ -171,7 +193,8 @@
       SM.diag.warn('forecast ' + p.name + ': ' + e.message);
     }).then(function () {
       A.inflight[p.id] = false;
-      if (A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) { render(0); scene(false); }
+      if (A.mode === 'map') { if (!A.sheet) SM.map.refresh(); }
+      else if (A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) { render(0); scene(false); }
       else if (A.places[A.idx] && A.places[A.idx].id === p.id) status();
     });
   }
@@ -182,6 +205,7 @@
   };
   function show(i, dir) {
     var n = A.places.length;
+    if (A.mode === 'map') { A.mode = 'place'; SM.store.saveMode('place'); dir = 0; }
     A.idx = ((i % n) + n) % n;
     SM.store.saveCurrent(A.places[A.idx].id);
     render(dir || 0);
@@ -189,6 +213,19 @@
     load(A.places[A.idx]);
   }
   function step(d) { if (A.places.length > 1) show(A.idx + d, d); }
+
+  /* Carte du monde : ouvre ou referme, et charge les lieux qui n'ont pas de données fraîches. */
+  A.toggleMap = function () {
+    A.mode = A.mode === 'map' ? 'place' : 'map';
+    SM.store.saveMode(A.mode);
+    render(0);
+    if (A.mode === 'place') scene(true);
+    else loadAll();
+  };
+  function loadAll() {
+    A.places.reduce(function (pr, p) { return pr.then(function () { return load(p); }); }, Promise.resolve());
+  }
+  A.nowMs = function () { return nowMs(); };
 
   A.setPlaces = function (list) {
     var cur = A.places[A.idx] && A.places[A.idx].id;
@@ -271,6 +308,7 @@
     clearInterval(skyTimer);
     skyTimer = setInterval(function () {
       if (document.hidden) return;
+      if (A.mode === 'map') { if (A.demo.cycle) SM.map.tick(true); return; }
       scene(!!A.demo.cycle);
       if (A.demo.cycle) clock();
     }, A.demo.cycle ? 200 : 30000);
@@ -284,7 +322,8 @@
   function everyMinute() {
     if (document.hidden) return;
     var p = A.places[A.idx];
-    if (p) {
+    if (A.mode === 'map') loadAll();
+    else if (p) {
       load(p);
       var w = A.data[p.id];
       if (w && !A.sheet && hourKey(w) !== A.hourKey) render(0);
@@ -293,7 +332,7 @@
     veil();
     // Défilement automatique des lieux, seulement si personne n'a touché l'écran depuis une minute.
     var c = A.settings.carousel;
-    if (c && !A.sheet && Date.now() - A.lastTouch > 60000 && Date.now() - (A.lastCarousel || 0) >= c * 1000 - 500) {
+    if (c && !A.sheet && A.mode === 'place' && Date.now() - A.lastTouch > 60000 && Date.now() - (A.lastCarousel || 0) >= c * 1000 - 500) {
       A.lastCarousel = Date.now();
       step(1);
     }
@@ -310,8 +349,9 @@
     var w = innerWidth, h = innerHeight;
     var base = U.clamp(Math.min(w, h) / 768 * 16, 11, 19);
     document.documentElement.style.fontSize = base.toFixed(2) + 'px';
-    el.app.className = w > h ? 'land' : 'port';
+    appClass();
     SM.sky.resize();
+    if (A.mode === 'map') SM.map.resize();
   }
 
   /* ---------- gestes ---------- */
@@ -328,7 +368,7 @@
     el.pages.addEventListener('touchstart', function (e) {
       A.lastTouch = Date.now();
       var tch = e.touches[0];
-      ok = e.touches.length === 1 && A.places.length > 1 && !e.target.closest('.hscroll');
+      ok = e.touches.length === 1 && A.mode === 'place' && A.places.length > 1 && !e.target.closest('.hscroll');
       sx = tch.clientX; sy = tch.clientY; st = Date.now(); mode = ''; dx = 0;
       view = U.$('.view', el.pages);
     }, { passive: true });
@@ -360,6 +400,11 @@
 
     el.app.addEventListener('click', function (e) {
       A.lastTouch = Date.now();
+      if (e.target.closest('[data-act=map]')) { A.toggleMap(); return; }
+      var mc = e.target.closest('.mswitch button');
+      if (mc) { SM.map.setCards(mc.getAttribute('data-cards')); return; }
+      var city = e.target.closest('.mk, .mcard');
+      if (city) { A.goTo(city.getAttribute('data-place')); return; }
       var b = e.target.closest('[data-sheet]');
       if (b) { A.open(b.getAttribute('data-sheet')); return; }
       if (e.target.closest('.sheet-close')) { A.close(); return; }
@@ -412,9 +457,10 @@
       '<div id="sky"></div>' +
       '<div id="ui">' +
         '<header class="top">' +
-          '<button class="iconbtn" data-sheet="places" aria-label="Places">' + IC.ui('pin') + '</button>' +
+          '<div class="hside"><button class="iconbtn" data-sheet="places" aria-label="Places">' + IC.ui('pin') + '</button></div>' +
           '<div class="ptitle"><div><span id="pname"></span><span id="pcountry"></span><span id="badge"></span></div><div id="dots"></div></div>' +
-          '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button>' +
+          '<div class="hside r"><button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button>' +
+          '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button></div>' +
         '</header>' +
         '<main id="pages"></main>' +
       '</div>' +
@@ -436,6 +482,7 @@
     var want = startId || cur;
     A.idx = 0;
     A.places.forEach(function (p, i) { if (p.id === want) A.idx = i; });
+    A.mode = SM.store.mode() === 'map' ? 'map' : 'place';
     if (A.demo.cycle) A.demo.cycleStart = demoMs(A.places[A.idx], 'nuit');
 
     render(0);
@@ -452,8 +499,8 @@
     var rT = 0;
     window.addEventListener('resize', function () { clearTimeout(rT); rT = setTimeout(function () { layout(); scene(true); }, 250); });
     document.addEventListener('visibilitychange', function () {
-      SM.sky.pause(document.hidden);
-      if (!document.hidden) { load(A.places[A.idx]); render(0); scene(true); veil(); }
+      SM.sky.pause(document.hidden || A.mode === 'map');
+      if (!document.hidden) { if (A.mode === 'map') loadAll(); else load(A.places[A.idx]); render(0); scene(true); veil(); }
     });
     window.addEventListener('pageshow', function () { load(A.places[A.idx]); });
     window.addEventListener('online', function () { var p = A.places[A.idx]; A.retryAt[p.id] = 0; load(p, true); status(); });
@@ -464,7 +511,8 @@
     restartSkyTimer();
     veil();
 
-    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    // Pas de service worker en local : il servirait d'anciens fichiers pendant les essais.
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
       navigator.serviceWorker.register('sw.js').catch(function (e) { SM.diag.warn('service worker: ' + e.message); });
     }
   };

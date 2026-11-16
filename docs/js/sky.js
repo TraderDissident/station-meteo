@@ -296,6 +296,35 @@
     return { x: S.w * (0.5 + rel / 90 * 0.4), y: horizon - U.clamp(alt / 55, -0.2, 1) * (horizon - S.h * 0.1) };
   }
 
+  /* Couleurs du ciel [haut, milieu, horizon] pour une hauteur de soleil et un temps donnés. */
+  function weatherColors(alt, rising, info, cover, daylight) {
+    var cols = interp(rising ? RISE : SET, alt);
+    // Le temps grise, assombrit ou délave le ciel.
+    var kind = info.kind, lvl = info.level;
+    var gray = mix3([H('#0a0d14'), H('#11151e'), H('#1a1f2a')], [H('#6f7b8c'), H('#8d97a5'), H('#a9b1bc')], daylight);
+    var amt = cover * 0.62 + (kind === 'rain' || kind === 'drizzle' ? 0.12 + lvl * 0.05 : 0);
+    if (kind === 'storm' || kind === 'hail') {
+      gray = mix3([H('#07080d'), H('#0e1018'), H('#171a24')], [H('#2b2e3b'), H('#3d4050'), H('#545668')], daylight); amt = 0.92;
+    } else if (kind === 'fog') {
+      gray = mix3([H('#14171e'), H('#1b1f27'), H('#262a33')], [H('#aab1ba'), H('#bfc5cc'), H('#cfd3d8')], daylight); amt = 0.85;
+    } else if (kind === 'snow') {
+      gray = mix3([H('#10141d'), H('#1a1f2b'), H('#272d3a')], [H('#aeb8c6'), H('#c6cdd8'), H('#dde2e9')], daylight); amt = 0.8;
+    }
+    amt = U.clamp(amt, 0, 0.92);
+    return { cols: mix3(cols, gray, amt), gray: gray };
+  }
+
+  /* Pour les cartes de villes : ciel d'un lieu à un instant, sans rien dessiner. */
+  S.colorsFor = function (lat, lon, ms, code, coverPct) {
+    var sun = SM.astro.sun(ms, lat, lon), later = SM.astro.sun(ms + 600000, lat, lon);
+    var info = SM.codes.scene(U.has(code) ? code : 2);
+    var cover = U.clamp((U.has(coverPct) ? coverPct : info.cover) / 100, 0, 1);
+    var daylight = U.clamp((sun.alt + 8) / 18, 0, 1);
+    var wc = weatherColors(sun.alt, later.alt > sun.alt, info, cover, daylight);
+    return { cols: wc.cols, alt: sun.alt, rising: later.alt > sun.alt, daylight: daylight,
+      brightness: U.clamp(U.luma(wc.cols[1]) * 0.6 + U.luma(wc.cols[2]) * 0.4, 0, 1) };
+  };
+
   /* ---------- scène ---------- */
   /*
    sc = { lat, lon, ms, code, cover, rate, wind, windDir, placeName, instant }
@@ -313,20 +342,8 @@
     var daylight = U.clamp((alt + 8) / 18, 0, 1);
     var night = U.clamp((-alt - 4) / 10, 0, 1);
 
-    var cols = interp(rising ? RISE : SET, alt);
-    // Le temps grise, assombrit ou délave le ciel.
-    var kind = info.kind, lvl = info.level;
-    var gray = mix3([H('#0a0d14'), H('#11151e'), H('#1a1f2a')], [H('#6f7b8c'), H('#8d97a5'), H('#a9b1bc')], daylight);
-    var amt = cover * 0.62 + (kind === 'rain' || kind === 'drizzle' ? 0.12 + lvl * 0.05 : 0);
-    if (kind === 'storm' || kind === 'hail') {
-      gray = mix3([H('#07080d'), H('#0e1018'), H('#171a24')], [H('#2b2e3b'), H('#3d4050'), H('#545668')], daylight); amt = 0.92;
-    } else if (kind === 'fog') {
-      gray = mix3([H('#14171e'), H('#1b1f27'), H('#262a33')], [H('#aab1ba'), H('#bfc5cc'), H('#cfd3d8')], daylight); amt = 0.85;
-    } else if (kind === 'snow') {
-      gray = mix3([H('#10141d'), H('#1a1f2b'), H('#272d3a')], [H('#aeb8c6'), H('#c6cdd8'), H('#dde2e9')], daylight); amt = 0.8;
-    }
-    amt = U.clamp(amt, 0, 0.92);
-    cols = mix3(cols, gray, amt);
+    var wc = weatherColors(alt, rising, info, cover, daylight);
+    var cols = wc.cols, gray = wc.gray, kind = info.kind, lvl = info.level;
     S.light = cols;
     S.brightness = U.clamp(U.luma(cols[1]) * 0.6 + U.luma(cols[2]) * 0.4, 0, 1);
 

@@ -26,6 +26,7 @@ Si Safari a disparu de l'écran d'accueil : balayer vers le bas et chercher « S
 - Bouton épingle (en haut à gauche) : lieux. Rechercher une ville, l'ajouter, changer l'ordre, choisir le lieu de démarrage (étoile).
 - Bouton roue (en haut à droite) : réglages. Défilement automatique des lieux, atténuation la nuit, animations, secondes, langue.
 - Toucher un jour de la liste des 10 jours pour voir ses heures.
+- Bouton globe (en haut à droite) : carte du monde avec le jour et la nuit, l'heure et la météo de chaque ville. Sous la carte, choisir Horloges ou Météo. Toucher une ville ouvre sa page.
 - Réglages, Diagnostic : état de l'app, journal des erreurs, démonstration du ciel. En cas de souci, une photo de cet écran suffit.
 
 ## Démonstration
