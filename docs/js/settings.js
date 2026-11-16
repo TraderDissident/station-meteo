@@ -31,7 +31,9 @@
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
       field(tt.language, seg('lang', [['en', 'English'], ['fr', 'Français'], ['auto', tt.auto]], s.lang)) +
       field(tt.about, '<p class="about">' + tt.version + ' ' + SM.VERSION + '<br>' + U.esc(tt.source) + '<br>' + U.esc(tt.mapCredit) + '</p>' +
-        '<button class="btn" data-open="diag">' + tt.diagnostic + '</button>');
+        '<p class="about" id="latestVer">' + U.esc(SM.update.latest ? tt.latest + ' ' + SM.update.latest : tt.checking) + '</p>' +
+        '<div class="btnrow"><button class="btn" data-update="1">' + tt.forceUpdate + '</button>' +
+        '<button class="btn" data-open="diag">' + tt.diagnostic + '</button></div>');
     return html;
   }
 
@@ -44,6 +46,7 @@
 
   function bindSettings(body) {
     body.innerHTML = settingsHTML();
+    showLatest();
     body.onclick = function (e) {
       var b = e.target.closest('.seg button');
       if (b) {
@@ -104,6 +107,21 @@
       if (x.getAttribute('data-x') === 'reload') location.reload();
       if (x.getAttribute('data-x') === 'clear') { SM.diag.clear(); bindDiag(body); }
     };
+  }
+
+  // Bouton « Forcer la mise à jour » et version en ligne, lue à l'ouverture des réglages.
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-update]')) SM.update.force();
+  });
+  function showLatest() {
+    var tt = t();
+    SM.update.latestVersion().then(function (v) {
+      var p = document.getElementById('latestVer');
+      if (p) p.textContent = v === SM.VERSION ? tt.upToDate : tt.latest + ' ' + v;
+    }).catch(function () {
+      var p = document.getElementById('latestVer');
+      if (p) p.textContent = tt.onlineUnknown;
+    });
   }
 
   SM.settings = { open: bindSettings, openDiag: bindDiag };

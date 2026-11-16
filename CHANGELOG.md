@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.5.0 · 16/11/2026
+
+- Mises à jour : la page se charge d'abord depuis le réseau, le cache ne sert plus qu'hors connexion. Avant, le service worker servait l'ancienne page, qui pointait vers les anciens fichiers.
+- À l'ouverture et au retour sur l'app (au plus toutes les 30 min), l'app compare sa version à celle en ligne et se met à jour seule si elle est en retard.
+- Réglages, À propos : version en ligne affichée, et bouton « Forcer la mise à jour », qui efface le service worker et les caches puis recharge.
+
 ## 1.4.2 · 16/11/2026
 
 - iPad tenu en portrait : l'app se croyait parfois en paysage (iOS 12 garde les dimensions d'avant la rotation). L'orientation vient maintenant de l'appareil. C'était la cause du cadran qui débordait derrière les cartes et hors de l'écran.

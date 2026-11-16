@@ -527,7 +527,7 @@
     window.addEventListener('resize', function () { clearTimeout(rT); rT = setTimeout(function () { layout(); scene(true); }, 250); });
     document.addEventListener('visibilitychange', function () {
       SM.sky.pause(document.hidden || A.mode === 'map');
-      if (!document.hidden) { if (A.mode === 'map') loadAll(); else load(A.places[A.idx]); render(0); scene(true); veil(); }
+      if (!document.hidden) { SM.update.check(); if (A.mode === 'map') loadAll(); else load(A.places[A.idx]); render(0); scene(true); veil(); }
     });
     window.addEventListener('pageshow', function () { load(A.places[A.idx]); });
     window.addEventListener('online', function () { var p = A.places[A.idx]; A.retryAt[p.id] = 0; load(p, true); status(); });
@@ -540,8 +540,9 @@
 
     // Pas de service worker en local : il servirait d'anciens fichiers pendant les essais.
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
-      navigator.serviceWorker.register('sw.js').catch(function (e) { SM.diag.warn('service worker: ' + e.message); });
+      navigator.serviceWorker.register('sw.js').then(function (r) { if (r.update) r.update(); }).catch(function (e) { SM.diag.warn('service worker: ' + e.message); });
     }
+    setTimeout(SM.update.check, 5000);
   };
 
   SM.app = A;

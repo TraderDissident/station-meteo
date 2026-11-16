@@ -1,10 +1,10 @@
 /* Garde la coquille de l'app pour démarrer sans réseau. Les données météo ne passent jamais par ici. */
-var VERSION = 'sm-1.4.2';
+var VERSION = 'sm-1.5.0';
 var SHELL = [
-  './', 'index.html', 'css/app.css?v=1.4.2',
-  'js/config.js?v=1.4.2', 'js/diag.js?v=1.4.2', 'js/compat.js?v=1.4.2', 'js/store.js?v=1.4.2', 'js/i18n.js?v=1.4.2',
-  'js/api.js?v=1.4.2', 'js/astro.js?v=1.4.2', 'js/codes.js?v=1.4.2', 'js/icons.js?v=1.4.2', 'js/sky.js?v=1.4.2',
-  'js/ui.js?v=1.4.2', 'js/places.js?v=1.4.2', 'js/settings.js?v=1.4.2', 'js/world.js?v=1.4.2', 'js/borders.js?v=1.4.2', 'js/globe.js?v=1.4.2', 'js/map.js?v=1.4.2', 'js/app.js?v=1.4.2',
+  './', 'index.html', 'css/app.css?v=1.5.0',
+  'js/config.js?v=1.5.0', 'js/diag.js?v=1.5.0', 'js/compat.js?v=1.5.0', 'js/store.js?v=1.5.0', 'js/i18n.js?v=1.5.0',
+  'js/api.js?v=1.5.0', 'js/astro.js?v=1.5.0', 'js/codes.js?v=1.5.0', 'js/icons.js?v=1.5.0', 'js/sky.js?v=1.5.0',
+  'js/ui.js?v=1.5.0', 'js/places.js?v=1.5.0', 'js/settings.js?v=1.5.0', 'js/world.js?v=1.5.0', 'js/borders.js?v=1.5.0', 'js/globe.js?v=1.5.0', 'js/map.js?v=1.5.0', 'js/update.js?v=1.5.0', 'js/app.js?v=1.5.0',
   'img/icon-180.png', 'img/earth-day.jpg', 'img/earth-night.jpg'
 ];
 
@@ -21,7 +21,15 @@ self.addEventListener('activate', function (e) {
 /* Même origine seulement : réponse du cache tout de suite, mise à jour du cache en arrière-plan. */
 self.addEventListener('fetch', function (e) {
   var url = new URL(e.request.url);
-  if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
+  if (e.request.method !== 'GET' || url.origin !== self.location.origin || url.search.indexOf('fresh=') >= 0) return;
+  // La page elle-même : réseau d'abord, pour que chaque ouverture voie la dernière version ; cache si hors ligne.
+  if (e.request.mode === 'navigate') {
+    e.respondWith(fetch(e.request).then(function (r) {
+      if (r && r.ok) { var copy = r.clone(); caches.open(VERSION).then(function (c) { c.put('index.html', copy); }); }
+      return r;
+    }).catch(function () { return caches.match('index.html'); }));
+    return;
+  }
   e.respondWith(caches.open(VERSION).then(function (c) {
     return c.match(e.request).then(function (hit) {
       var net = fetch(e.request).then(function (r) {
