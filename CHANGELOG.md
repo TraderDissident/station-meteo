@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.13.2 · 17/11/2026
+
+- Carte du monde : aucune étiquette ne bouge plus d'elle-même. Seule celle que l'on glisse change de place, même si elle en chevauche une autre ou si des traits se croisent.
+
 ## 1.13.1 · 17/11/2026
 
 - Carte du monde : déplacer une étiquette ne bouscule plus les autres. Chaque étiquette placée automatiquement garde sa place ; seule celle que l'étiquette déplacée vient gêner se replace. Un rafraîchissement des données ne déplace plus rien non plus.

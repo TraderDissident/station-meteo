@@ -464,20 +464,9 @@
       var p = { id: id, lab: lab, x: mk.offsetLeft, y: mk.offsetTop, w: lab.offsetWidth, h: lab.offsetHeight, box: null, off: null, fixed: false };
       var m = saved[id], a = autoKey && autoKey === st.autoKey && st.autoPos[id];
       if (m) { p.fixed = true; p.off = [m[0] * W, m[1] * H, 0, 0]; p.box = [p.x + p.off[0], p.y + p.off[1], p.w, p.h]; }
-      // Déjà placée automatiquement à cette taille : elle garde sa place, sauf si elle gêne désormais.
+      // Déjà placée automatiquement à cette taille : elle garde sa place, quoi qu'il arrive (choix de Matt).
       else if (a) { p.kept = true; p.off = [a[0], a[1], 0, 0]; p.box = [p.x + a[0], p.y + a[1], p.w, p.h]; }
       return p;
-    });
-    pts.forEach(function (p) {
-      if (!p.kept) return;
-      var b = p.box, bad = b[0] < 2 || b[1] < 2 || b[0] + b[2] > W - 2 || b[1] + b[3] > H - 2;
-      pts.forEach(function (q) {
-        if (q === p || !q.box || bad) return;
-        var ox = Math.min(b[0] + b[2], q.box[0] + q.box[2]) - Math.max(b[0], q.box[0]) + GAP;
-        var oy = Math.min(b[1] + b[3], q.box[1] + q.box[3]) - Math.max(b[1], q.box[1]) + GAP;
-        if (ox > 0 && oy > 0 && (q.fixed || q.kept)) bad = true;
-      });
-      if (bad) { p.kept = false; p.off = null; p.box = null; }
     });
     st.labels = pts;
     // Candidats : 24 directions à 9 distances, des plus proches aux plus lointaines.
