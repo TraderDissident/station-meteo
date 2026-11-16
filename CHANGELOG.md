@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.11.0 · 17/11/2026
+
+- Singapour et Tokyo rejoignent les lieux d'origine, à leur place d'ouest en est. Sur un appareil déjà installé, ils s'ajoutent une fois à la liste enregistrée.
+
 ## 1.10.2 · 17/11/2026
 
 - Températures centrées sur leurs chiffres, le ° en débord à droite, dans le cadran et sur la courbe heure par heure. Avant, le cadran poussait le nombre vers la droite et les étiquettes de la courbe comptaient le ° dans leur centrage.

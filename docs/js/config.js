@@ -2,7 +2,7 @@
 var SM = window.SM || {};
 window.SM = SM;
 
-SM.VERSION = '1.10.2';
+SM.VERSION = '1.11.0';
 
 // D'ouest en est, comme sur une carte classique.
 SM.DEFAULT_PLACES = [
@@ -36,10 +36,14 @@ SM.DEFAULT_PLACES = [
     names: { en: ['Dubai', 'Dubai', 'United Arab Emirates'], fr: ['Dubaï', 'Dubaï', 'Émirats arabes unis'] } },
   { id: 'pattaya', name: 'Pattaya', region: 'Chonburi', country: 'Thailand', lat: 12.93333, lon: 100.88333, tz: 'Asia/Bangkok',
     names: { en: ['Pattaya', 'Chonburi', 'Thailand'], fr: ['Pattaya', 'Chonburi', 'Thaïlande'] } },
+  { id: 'singapour', name: 'Singapore', region: 'Singapore', country: 'Singapore', lat: 1.28967, lon: 103.85007, tz: 'Asia/Singapore',
+    names: { en: ['Singapore', 'Singapore', 'Singapore'], fr: ['Singapour', 'Singapour', 'Singapour'] } },
   { id: 'tiksi', name: 'Tiksi', region: 'Sakha', country: 'Russia', lat: 71.69075, lon: 128.86523, tz: 'Asia/Yakutsk',
     names: { en: ['Tiksi', 'Sakha Republic', 'Russia'], fr: ['Tiksi', 'République de Sakha', 'Russie'] } },
   { id: 'vladivostok', name: 'Vladivostok', region: 'Primorsky Krai', country: 'Russia', lat: 43.10562, lon: 131.87354, tz: 'Asia/Vladivostok',
     names: { en: ['Vladivostok', 'Primorsky Krai', 'Russia'], fr: ['Vladivostok', 'Kraï du Primorie', 'Russie'] } },
+  { id: 'tokyo', name: 'Tokyo', region: 'Tokyo', country: 'Japan', lat: 35.6895, lon: 139.69171, tz: 'Asia/Tokyo',
+    names: { en: ['Tokyo', 'Tokyo', 'Japan'], fr: ['Tokyo', 'Tokyo', 'Japon'] } },
   { id: 'sydney', name: 'Sydney', region: 'New South Wales', country: 'Australia', lat: -33.86785, lon: 151.20732, tz: 'Australia/Sydney',
     names: { en: ['Sydney', 'New South Wales', 'Australia'], fr: ['Sydney', 'Nouvelle-Galles du Sud', 'Australie'] } }
 ];
