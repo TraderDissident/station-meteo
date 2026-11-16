@@ -5,7 +5,7 @@
   var A = {
     places: [], idx: 0, settings: null, data: {}, inflight: {}, failures: {}, retryAt: {},
     demo: { time: null, weather: null, cycle: false, cycleStart: 0 },
-    lastTouch: Date.now(), sheet: null, hourKey: '', veilUntil: 0, mode: 'place'
+    lastTouch: Date.now(), sheet: null, hourKey: '', veilUntil: Date.now() + 30000, mode: 'place'
   };
   var el = {};
 
@@ -452,6 +452,16 @@
         }
       }
     });
+    // Toute activité (souris, doigt, clavier, molette) repousse la veille de 30 s ; elle revient seule après.
+    var wake = function () {
+      var was = A.veilUntil > Date.now();
+      A.veilUntil = Date.now() + 30000;
+      if (!was || el.veil.className) veil();
+    };
+    ['mousemove', 'mousedown', 'touchstart', 'keydown', 'wheel'].forEach(function (t) {
+      document.addEventListener(t, wake, { capture: true, passive: true });
+    });
+    setInterval(veil, 2000);
     el.veil.addEventListener('click', function () {
       A.veilUntil = Date.now() + 30000;
       veil();

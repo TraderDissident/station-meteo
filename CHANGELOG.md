@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.5.2 · 16/11/2026
+
+- Voile de nuit : il ne tombe qu'après 30 s sans aucune activité (souris, doigt, clavier, molette). Bouger la souris ou toucher l'écran le lève aussitôt.
+
 ## 1.5.1 · 16/11/2026
 
 - Lune et Qualité de l'air côte à côte sur la même ligne, en paysage comme en portrait. Sans données d'air, la Lune reprend toute la largeur.
