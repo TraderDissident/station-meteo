@@ -457,12 +457,27 @@
     if (!mks.length) { U.$('.mklines', st.box).innerHTML = ''; return; }
     // Positions choisies à la main (carte à plat seulement) : fixes, les autres étiquettes s'arrangent autour.
     var saved = st.view === 'map' ? manualPos() : {};
+    var autoKey = st.view === 'map' ? W + 'x' + H + '|' + I.lang : '';
+    if (!st.autoPos) st.autoPos = {};
     var pts = mks.map(function (mk) {
       var lab = U.$('.mkl', mk), id = mk.getAttribute('data-place');
       var p = { id: id, lab: lab, x: mk.offsetLeft, y: mk.offsetTop, w: lab.offsetWidth, h: lab.offsetHeight, box: null, off: null, fixed: false };
-      var m = saved[id];
+      var m = saved[id], a = autoKey && autoKey === st.autoKey && st.autoPos[id];
       if (m) { p.fixed = true; p.off = [m[0] * W, m[1] * H, 0, 0]; p.box = [p.x + p.off[0], p.y + p.off[1], p.w, p.h]; }
+      // Déjà placée automatiquement à cette taille : elle garde sa place, sauf si elle gêne désormais.
+      else if (a) { p.kept = true; p.off = [a[0], a[1], 0, 0]; p.box = [p.x + a[0], p.y + a[1], p.w, p.h]; }
       return p;
+    });
+    pts.forEach(function (p) {
+      if (!p.kept) return;
+      var b = p.box, bad = b[0] < 2 || b[1] < 2 || b[0] + b[2] > W - 2 || b[1] + b[3] > H - 2;
+      pts.forEach(function (q) {
+        if (q === p || !q.box || bad) return;
+        var ox = Math.min(b[0] + b[2], q.box[0] + q.box[2]) - Math.max(b[0], q.box[0]) + GAP;
+        var oy = Math.min(b[1] + b[3], q.box[1] + q.box[3]) - Math.max(b[1], q.box[1]) + GAP;
+        if (ox > 0 && oy > 0 && (q.fixed || q.kept)) bad = true;
+      });
+      if (bad) { p.kept = false; p.off = null; p.box = null; }
     });
     st.labels = pts;
     // Candidats : 24 directions à 9 distances, des plus proches aux plus lointaines.
@@ -521,7 +536,7 @@
       return s;
     }
     function best(p, i) {
-      if (p.fixed) return;
+      if (p.fixed || p.kept) return;
       var bo = null, bs = 1e12;
       candidates(p).forEach(function (o) { var v = score(p, o, i); if (v < bs) { bs = v; bo = o; } });
       p.off = bo; p.box = [p.x + bo[0], p.y + bo[1], p.w, p.h];
@@ -540,7 +555,7 @@
       var changed = false;
       for (var i = 0; i < pts.length; i++) for (var j = i + 1; j < pts.length; j++) {
         var P = pts[i], Q = pts[j];
-        if (P.fixed || Q.fixed) continue;
+        if (P.fixed || Q.fixed || P.kept || Q.kept) continue;
         var pa = anchor(P, P.box), qa = anchor(Q, Q.box);
         if (!segX(P.x, P.y, pa[0], pa[1], Q.x, Q.y, qa[0], qa[1])) continue;
         var before = cost(i) + cost(j), po = P.off, qo = Q.off, pb = P.box, qb = Q.box;
@@ -561,7 +576,7 @@
     var cur = total(), bestT = cur, keep = pts.map(function (q) { return q.off; });
     for (var it = 0, N = light ? 0 : 5000; it < N; it++) {
       var k = Math.floor(rnd() * pts.length), q = pts[k], c = cands[k][Math.floor(rnd() * cands[k].length)];
-      if (q.fixed) continue;
+      if (q.fixed || q.kept) continue;
       var before = score(q, q.off, k), oldOff = q.off, oldBox = q.box;
       q.off = c; q.box = [q.x + c[0], q.y + c[1], q.w, q.h];
       var after = score(q, c, k), temp = 600 * (1 - it / N);
@@ -571,6 +586,11 @@
       } else { q.off = oldOff; q.box = oldBox; }
     }
     pts.forEach(function (q, k) { q.off = keep[k]; q.box = [q.x + q.off[0], q.y + q.off[1], q.w, q.h]; });
+    // Mémoire des places automatiques (carte à plat) : un déplacement à la main ne bouscule pas les autres.
+    if (autoKey) {
+      if (autoKey !== st.autoKey) { st.autoKey = autoKey; st.autoPos = {}; }
+      pts.forEach(function (p) { if (!p.fixed) st.autoPos[p.id] = [p.off[0], p.off[1]]; });
+    }
     pts.forEach(function (p) { p.lab.style.left = p.off[0].toFixed(0) + 'px'; p.lab.style.top = p.off[1].toFixed(0) + 'px'; p.lab.className = 'mkl' + (p.fixed ? ' fixed' : ''); });
     drawLines();
   }

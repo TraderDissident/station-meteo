@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.13.1 · 17/11/2026
+
+- Carte du monde : déplacer une étiquette ne bouscule plus les autres. Chaque étiquette placée automatiquement garde sa place ; seule celle que l'étiquette déplacée vient gêner se replace. Un rafraîchissement des données ne déplace plus rien non plus.
+
 ## 1.13.0 · 17/11/2026
 
 - Carte du monde : les étiquettes de villes se placent à la main. On glisse une étiquette (doigt ou souris) où l'on veut, le trait de rappel suit ; avec Maj enfoncée, le trait se cale à 0°, 45°, 90°… Position retenue par ville et par orientation (paysage, portrait), en proportion de la carte. Reposée sur son point, l'étiquette repasse au placement automatique, qui s'arrange autour des étiquettes placées à la main. Un glisser n'ouvre pas la ville.
