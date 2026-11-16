@@ -105,10 +105,39 @@
     return { w: w, h: h };
   }
 
+  /* La carte du monde (contours, frontières, globe : 155 Ko de code) ne se charge qu'à sa première ouverture. */
+  var mapLoading = null;
+  function loadMapCode() {
+    if (SM.map) return Promise.resolve();
+    if (mapLoading) return mapLoading;
+    mapLoading = ['world', 'borders', 'globe', 'map'].reduce(function (pr, name) {
+      return pr.then(function () {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement('script');
+          s.src = 'js/' + name + '.js?v=' + SM.VERSION;
+          s.onload = resolve;
+          s.onerror = function () { reject(new Error(name + '.js')); };
+          document.head.appendChild(s);
+        });
+      });
+    }, Promise.resolve()).catch(function (e) {
+      mapLoading = null;
+      SM.diag.warn('map code: ' + e.message);
+      throw e;
+    });
+    return mapLoading;
+  }
+
   function renderMap() {
     var tt = I.t();
     appClass();
     SM.sky.pause(true);
+    if (!SM.map) {
+      el.pages.innerHTML = '';
+      loadMapCode().then(function () { if (A.mode === 'map') { renderMap(); loadAll(); } }, function () {
+        if (A.mode === 'map') { A.mode = 'place'; SM.store.saveMode('place'); render(0); scene(true); A.toast(I.t().offline); }
+      });
+    } else
     SM.map.render(el.pages, A.places);
     el.pname.textContent = tt.worldMap;
     el.pcountry.textContent = '';
@@ -124,7 +153,7 @@
     // Pas de nouveau rendu pendant qu'un bloc est tenu au doigt.
     if (SM.edit && SM.edit.dragging) return;
     if (A.mode === 'map') { renderMap(); return; }
-    if (el.app.className.indexOf('mapmode') >= 0) { SM.map.leave(); appClass(); SM.sky.pause(false); }
+    if (el.app.className.indexOf('mapmode') >= 0) { if (SM.map) SM.map.leave(); appClass(); SM.sky.pause(false); }
     U.$('[data-act=map]').className = 'iconbtn';
     var w = A.data[p.id];
     var now = Math.floor(nowMs() / 1000);
@@ -170,13 +199,17 @@
     if (!p) return;
     // Pas de nouveau rendu pendant qu'un bloc est tenu au doigt.
     if (SM.edit && SM.edit.dragging) return;
-    if (A.mode === 'map') { SM.map.tick(false); return; }
+    if (A.mode === 'map') { if (SM.map) SM.map.tick(false); return; }
     var w = A.data[p.id];
     var wl = I.wall(Math.floor(nowMs() / 1000), (w && w.tz) || p.tz, w ? w.offset : 0);
-    var hm = U.$('.hm', el.pages), ss = U.$('.ss', el.pages), dt = U.$('.date', el.pages);
-    if (hm) hm.textContent = I.hm(wl);
-    if (ss) ss.textContent = A.settings.seconds ? ':' + U.pad(wl.s) : '';
-    if (dt) dt.textContent = I.longDate(wl);
+    // Écrire un texte identique oblige quand même l'iPad à recalculer et repeindre : on n'écrit que ce qui change.
+    setText('.hm', I.hm(wl));
+    setText('.ss', A.settings.seconds ? ':' + U.pad(wl.s) : '');
+    setText('.date', I.longDate(wl));
+  }
+  function setText(sel, txt) {
+    var n = U.$(sel, el.pages);
+    if (n && n.textContent !== txt) n.textContent = txt;
   }
 
   function status() {
@@ -207,11 +240,13 @@
       if (!A.places.some(function (q) { return q.id === p.id; })) return;
       A.data[p.id] = nw;
       A.failures[p.id] = 0; A.retryAt[p.id] = 0;
-      SM.store.saveWeather(p.id, nw);
+      // Une seule écriture dans l'iPad par rafraîchissement, une fois la qualité de l'air arrivée (ou manquée).
+      var save = function () { SM.store.saveWeather(p.id, nw); };
       if (!nw.air) {
-        return SM.api.air(p).then(function (air) { nw.air = air; nw.airAt = Date.now(); SM.store.saveWeather(p.id, nw); })
-          .catch(function (e) { SM.diag.warn('air quality ' + p.name + ': ' + e.message); });
+        return SM.api.air(p).then(function (air) { nw.air = air; nw.airAt = Date.now(); })
+          .catch(function (e) { SM.diag.warn('air quality ' + p.name + ': ' + e.message); }).then(save);
       }
+      save();
     }).catch(function (e) {
       var n = (A.failures[p.id] || 0) + 1;
       A.failures[p.id] = n;
@@ -219,7 +254,7 @@
       SM.diag.warn('forecast ' + p.name + ': ' + e.message);
     }).then(function () {
       A.inflight[p.id] = false;
-      if (A.mode === 'map') { if (!A.sheet) SM.map.refresh(); }
+      if (A.mode === 'map') { if (!A.sheet && SM.map) SM.map.refresh(); }
       else if (A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) { render(0); scene(false); }
       else if (A.places[A.idx] && A.places[A.idx].id === p.id) status();
     });
@@ -326,8 +361,20 @@
   }
   function veil() {
     var on = veilWanted() && Date.now() > A.veilUntil && !A.sheet;
-    el.veil.style.opacity = on ? String(A.settings.veilLevel) : '0';
+    var key = on ? String(A.settings.veilLevel) : '0';
+    if (key === veilKey) return;
+    veilKey = key;
+    el.veil.style.opacity = key;
     el.veil.className = on ? 'on' : '';
+  }
+  var veilKey = '', veilTimer = 0;
+  // Un seul réveil programmé pour la fin du délai d'inactivité, au lieu d'une vérification toutes les 2 s.
+  function veilLater() {
+    if (veilTimer) return;
+    veilTimer = setTimeout(function () {
+      veilTimer = 0;
+      if (Date.now() < A.veilUntil) veilLater(); else veil();
+    }, Math.max(A.veilUntil - Date.now(), 0) + 300);
   }
 
   /* ---------- minuteries ---------- */
@@ -336,7 +383,7 @@
     clearInterval(skyTimer);
     skyTimer = setInterval(function () {
       if (document.hidden) return;
-      if (A.mode === 'map') { if (A.demo.cycle) SM.map.tick(true); return; }
+      if (A.mode === 'map') { if (A.demo.cycle && SM.map) SM.map.tick(true); return; }
       scene(!!A.demo.cycle);
       if (A.demo.cycle) clock();
     }, A.demo.cycle ? 200 : 30000);
@@ -383,7 +430,7 @@
     document.documentElement.style.height = hs; document.body.style.height = hs; el.app.style.height = hs;
     appClass();
     SM.sky.resize();
-    if (A.mode === 'map') SM.map.resize();
+    if (A.mode === 'map' && SM.map) SM.map.resize();
     SM.ui.align(el.pages);
   }
 
@@ -469,11 +516,12 @@
       var was = A.veilUntil > Date.now();
       A.veilUntil = Date.now() + 30000;
       if (!was || el.veil.className) veil();
+      veilLater();
     };
     ['mousemove', 'mousedown', 'touchstart', 'keydown', 'wheel'].forEach(function (t) {
       document.addEventListener(t, wake, { capture: true, passive: true });
     });
-    setInterval(veil, 2000);
+    veilLater();
     el.veil.addEventListener('click', function () {
       A.veilUntil = Date.now() + 30000;
       veil();

@@ -4,9 +4,10 @@
   var AIR = 'https://air-quality-api.open-meteo.com/v1/air-quality';
   var GEO = 'https://geocoding-api.open-meteo.com/v1/search';
 
-  var CURRENT = 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m';
-  var HOURLY = 'temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day,dew_point_2m,pressure_msl,relative_humidity_2m,snowfall';
-  var DAILY = 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,daylight_duration,uv_index_max,precipitation_sum,precipitation_probability_max,precipitation_hours,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,snowfall_sum';
+  // Seulement les grandeurs affichées : chaque colonne horaire en moins, ce sont 240 valeurs de moins à télécharger, lire et ranger.
+  var CURRENT = 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m';
+  var HOURLY = 'temperature_2m,precipitation_probability,precipitation,weather_code,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,is_day,dew_point_2m,pressure_msl,snowfall';
+  var DAILY = 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,daylight_duration,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant';
   var AIRQ = 'european_aqi,pm10,pm2_5,nitrogen_dioxide,ozone,alder_pollen,birch_pollen,grass_pollen';
 
   function coords(p) { return 'latitude=' + p.lat.toFixed(4) + '&longitude=' + p.lon.toFixed(4); }
@@ -31,22 +32,21 @@
       elevation: j.elevation,
       current: {
         t: c.time, temp: c.temperature_2m, feels: c.apparent_temperature, hum: c.relative_humidity_2m,
-        isDay: c.is_day, precip: c.precipitation, rain: c.rain, showers: c.showers, snow: c.snowfall,
+        isDay: c.is_day, precip: c.precipitation,
         code: c.weather_code, cloud: c.cloud_cover, pres: c.pressure_msl,
         wind: c.wind_speed_10m, dir: c.wind_direction_10m, gust: c.wind_gusts_10m
       },
       minutely: columns(j.minutely_15, { p: 'precipitation', code: 'weather_code' }),
       hourly: columns(j.hourly, {
-        temp: 'temperature_2m', feels: 'apparent_temperature', pop: 'precipitation_probability', precip: 'precipitation',
-        code: 'weather_code', cloud: 'cloud_cover', vis: 'visibility', wind: 'wind_speed_10m', dir: 'wind_direction_10m',
+        temp: 'temperature_2m', pop: 'precipitation_probability', precip: 'precipitation',
+        code: 'weather_code', vis: 'visibility', wind: 'wind_speed_10m', dir: 'wind_direction_10m',
         gust: 'wind_gusts_10m', uv: 'uv_index', isDay: 'is_day', dew: 'dew_point_2m', pres: 'pressure_msl',
-        hum: 'relative_humidity_2m', snow: 'snowfall'
+        snow: 'snowfall'
       }),
       daily: columns(j.daily, {
         code: 'weather_code', max: 'temperature_2m_max', min: 'temperature_2m_min', sunrise: 'sunrise', sunset: 'sunset',
         daylight: 'daylight_duration', uvMax: 'uv_index_max', precip: 'precipitation_sum', pop: 'precipitation_probability_max',
-        precipH: 'precipitation_hours', windMax: 'wind_speed_10m_max', gustMax: 'wind_gusts_10m_max',
-        dir: 'wind_direction_10m_dominant', snow: 'snowfall_sum'
+        windMax: 'wind_speed_10m_max', dir: 'wind_direction_10m_dominant'
       }),
       air: null,
       airAt: 0

@@ -2,7 +2,7 @@
 var SM = window.SM || {};
 window.SM = SM;
 
-SM.VERSION = '1.8.1';
+SM.VERSION = '1.9.0';
 
 SM.DEFAULT_PLACES = [
   { id: 'dublin', name: 'Dublin', region: 'Leinster', country: 'Ireland', lat: 53.33306, lon: -6.24889, tz: 'Europe/Dublin',
@@ -27,7 +27,8 @@ SM.DEFAULT_SETTINGS = {
   lang: 'en'            // 'en' | 'fr' | 'auto' (langue de l'iPad)
 };
 
-SM.REFRESH_MS = 10 * 60 * 1000;
+// Open-Meteo ne renouvelle ses valeurs que tous les quarts d'heure : rafraîchir plus souvent ne ramène rien de neuf.
+SM.REFRESH_MS = 15 * 60 * 1000;
 SM.AIR_REFRESH_MS = 30 * 60 * 1000;
 SM.STALE_BADGE_MS = 60 * 60 * 1000;
 SM.STALE_DATA_MS = 3 * 60 * 60 * 1000;

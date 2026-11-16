@@ -36,7 +36,7 @@
   var G = { lon: 0, lat: 20, spin: 2, dragging: false, pausedUntil: 0 };
   var cv = null, gl = null, prog = null, loc = {}, tex = {}, size = 0, R = 0.86, raf = 0, last = 0, onFrame = null;
   var params = { soft: 1, tw: [1, 0.55, 0.3, 0.36], term: [1, 1, 1, 0], atm: [0.35, 0.6, 1] };
-  var sun = [0, 0, 1];
+  var sun = [0, 0, 1], F9 = new Float32Array(9);
 
   G.supported = function () {
     if (G._sup !== undefined) return G._sup;
@@ -149,13 +149,15 @@
   G.draw = function () {
     if (!gl) return;
     var m = rot();
-    gl.uniformMatrix3fv(loc.uRot, false, new Float32Array([m[0][0], m[1][0], m[2][0], m[0][1], m[1][1], m[2][1], m[0][2], m[1][2], m[2][2]]));
-    gl.uniform3fv(loc.uSun, new Float32Array(sun));
+    // Tableaux réutilisés d'une image à l'autre : 30 images par seconde sans rien laisser au ramasse-miettes.
+    F9[0] = m[0][0]; F9[1] = m[1][0]; F9[2] = m[2][0]; F9[3] = m[0][1]; F9[4] = m[1][1]; F9[5] = m[2][1]; F9[6] = m[0][2]; F9[7] = m[1][2]; F9[8] = m[2][2];
+    gl.uniformMatrix3fv(loc.uRot, false, F9);
+    gl.uniform3f(loc.uSun, sun[0], sun[1], sun[2]);
     gl.uniform1f(loc.uR, R);
-    gl.uniform4fv(loc.uTw, new Float32Array(params.tw));
+    gl.uniform4f(loc.uTw, params.tw[0], params.tw[1], params.tw[2], params.tw[3]);
     gl.uniform1f(loc.uSoft, params.soft);
-    gl.uniform4fv(loc.uTerm, new Float32Array(params.term));
-    gl.uniform3fv(loc.uAtm, new Float32Array(params.atm));
+    gl.uniform4f(loc.uTerm, params.term[0], params.term[1], params.term[2], params.term[3]);
+    gl.uniform3f(loc.uAtm, params.atm[0], params.atm[1], params.atm[2]);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

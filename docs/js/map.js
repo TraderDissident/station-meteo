@@ -41,6 +41,9 @@
   };
 
   function canvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+  // Safari ne rend la mémoire d'un canevas qu'au passage du ramasse-miettes ; le ramener à 0 × 0 la libère tout de suite.
+  function free(c) { if (c && c.getContext && c.width) { c.width = 0; c.height = 0; } }
+  function freeLayers() { free(st.day); free(st.night); free(st.tmp); free(st.mask); free(st.tw); st.day = st.night = st.tmp = st.mask = st.tw = null; }
 
   /* Dessine chaque tracé à chaque copie de la carte (−360°, 0, +360°) qui touche le cadre. */
   function trace(g, list, w, h, pr, closed) {
@@ -209,15 +212,21 @@
     }
     if (st.view === 'globe' && SM.globe.active()) {
       if (st.box) st.box.style.background = '#000';
-      if (!S.imagery || EARTH.ready) SM.globe.setTextures(globeTexture(S, false), globeTexture(S, true));
+      if (!S.imagery || EARTH.ready) {
+        // Deux textures de 8 Mo chacune : envoyées à la carte graphique, puis rendues aussitôt.
+        var gd = globeTexture(S, false), gn = globeTexture(S, true);
+        SM.globe.setTextures(gd, gn);
+        free(gd); free(gn);
+      }
       SM.globe.setStyle(globeParams(S));
       drawSpace();
-      st.day = st.night = st.tmp = null;
+      freeLayers();
       st.mask = true;
       st.minuteKey = '';
       return;
     }
     var cw = Math.round(st.w * st.pr), ch = Math.round(st.h * st.pr);
+    freeLayers();
     st.day = canvas(cw, ch); st.night = canvas(cw, ch); st.tmp = canvas(cw, ch);
     paintLayer(st.day.getContext('2d'), S, false, cw, ch);
     paintLayer(st.night.getContext('2d'), S, true, cw, ch);
@@ -647,7 +656,7 @@
   };
 
   M.active = function () { return !!(st.root && document.body.contains(st.root)); };
-  M.leave = function () { SM.globe.detach(); st.root = null; st.infos = null; st.day = st.night = st.tmp = st.mask = st.tw = null; st.w = st.h = 0; };
+  M.leave = function () { SM.globe.detach(); freeLayers(); free(st.cv); st.root = null; st.infos = null; st.cv = st.ctx = null; st.w = st.h = 0; };
 
   SM.map = M;
 })();

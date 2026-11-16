@@ -1,5 +1,15 @@
 # Journal des modifications
 
+## 1.9.0 · 17/11/2026
+
+Allègement pour le vieil iPad, sans toucher aux animations.
+
+- Réseau : les fichiers de l'app en cache ne sont plus redemandés au réseau à chaque ouverture (25 requêtes et 420 Ko d'images de la Terre en moins par lancement). Les images de la Terre sont reprises de l'ancien cache lors d'une mise à jour.
+- Démarrage : la carte du monde (contours, frontières, globe, 155 Ko de code) ne se charge qu'à sa première ouverture. Le code lu au démarrage passe de 300 Ko à 144 Ko.
+- Météo : on ne demande plus à Open-Meteo que les grandeurs affichées (3 colonnes horaires et 6 autres valeurs en moins) ; les données rangées par lieu passent de 47 Ko à 39 Ko, écrites une fois par rafraîchissement au lieu de deux. Rafraîchissement toutes les 15 min au lieu de 10, le rythme auquel Open-Meteo renouvelle ses valeurs.
+- Tâches répétées : l'heure et la date ne sont réécrites que lorsqu'elles changent (avant : trois réécritures par seconde, donc un recalcul de l'affichage chaque seconde) ; le voile de nuit ne vérifie plus toutes les 2 s, il programme un seul réveil.
+- Mémoire de la carte : les canevas sont rendus dès qu'on quitte la carte ou qu'on change de style ; les deux textures du globe (8 Mo chacune) sont rendues après envoi à la carte graphique ; le globe ne crée plus de tableaux à chaque image.
+
 ## 1.8.1 · 17/11/2026
 
 - Points de la courbe des températures : la courbe se recale aussi après une rotation, un changement de taille de fenêtre et le chargement des polices, au sous-pixel près. Avant, elle gardait la position du premier affichage.
