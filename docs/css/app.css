@@ -3,7 +3,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0b1226; }
 body {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  position: fixed; top: 0; left: 0; right: 0;
   color: #fff;
   font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -22,7 +22,7 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   --dial: rgba(8, 14, 30, .28);
   --line: rgba(255, 255, 255, .14);
   --muted: rgba(255, 255, 255, .72);
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden;
+  position: fixed; top: 0; left: 0; right: 0; overflow: hidden; height: 100%;
   background: #0b1226;
 }
 
@@ -346,6 +346,8 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 #toast.on { opacity: 1; -webkit-transform: translate3d(-50%, 0, 0); transform: translate3d(-50%, 0, 0); }
 
 /* Petits écrans (essais sur téléphone) */
+.narrow .drow { grid-template-columns: 4.6rem 2.2rem 4rem 2.3rem 1fr 2.3rem; }
+.narrow .dw { display: none; }
 @media (max-width: 600px) {
   .drow { grid-template-columns: 4.6rem 2.2rem 4rem 2.3rem 1fr 2.3rem; }
   .dw { display: none; }

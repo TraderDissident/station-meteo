@@ -83,7 +83,26 @@
 
   /* ---------- rendu ---------- */
   function appClass() {
-    el.app.className = (innerWidth > innerHeight ? 'land' : 'port') + (A.mode === 'map' ? ' mapmode' : '');
+    var land = isLand(), w = innerWidth, base = parseFloat(document.documentElement.style.fontSize) || 16;
+    // Colonne des prévisions trop étroite pour les 7 colonnes du tableau des jours : version resserrée.
+    var narrow = (land ? w * 0.55 : w) < 31 * base;
+    el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' : '');
+  }
+
+  /* iOS 12 en plein écran garde parfois les dimensions d'avant la rotation : window.orientation fait foi. */
+  function isLand() {
+    if (typeof window.orientation === 'number') return Math.abs(window.orientation) === 90;
+    return innerWidth > innerHeight;
+  }
+
+  /* Hauteur réelle de l'écran : en plein écran avec barre d'état translucide, iOS 12 retire 20 px en bas. */
+  function screenSize() {
+    var w = innerWidth, h = innerHeight;
+    if (navigator.standalone && screen.width && screen.height) {
+      var a = Math.min(screen.width, screen.height), b = Math.max(screen.width, screen.height);
+      w = isLand() ? b : a; h = isLand() ? a : b;
+    }
+    return { w: w, h: h };
   }
 
   function renderMap() {
@@ -346,9 +365,13 @@
 
   /* ---------- mise en page ---------- */
   function layout() {
-    var w = innerWidth, h = innerHeight;
+    var sz = screenSize(), w = sz.w, h = sz.h;
     var base = U.clamp(Math.min(w, h) / 768 * 16, 11, 19);
+    // En paysage, le cadran (23,9 rem avec son anneau) doit tenir dans sa colonne de 45 %.
+    if (isLand()) base = Math.min(base, w * 0.45 / 25.5);
     document.documentElement.style.fontSize = base.toFixed(2) + 'px';
+    var hs = h + 'px';
+    document.documentElement.style.height = hs; document.body.style.height = hs; el.app.style.height = hs;
     appClass();
     SM.sky.resize();
     if (A.mode === 'map') SM.map.resize();

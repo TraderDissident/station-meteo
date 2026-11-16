@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.4.2 · 16/11/2026
+
+- iPad tenu en portrait : l'app se croyait parfois en paysage (iOS 12 garde les dimensions d'avant la rotation). L'orientation vient maintenant de l'appareil. C'était la cause du cadran qui débordait derrière les cartes et hors de l'écran.
+- La page descend jusqu'en bas de l'écran : iOS 12 retirait 20 points sous la barre d'état translucide.
+- Tableau des 10 jours : quand sa colonne est étroite, il passe en version resserrée (sans la colonne du vent) au lieu de déborder à droite.
+- En paysage, le cadran se réduit si sa colonne est trop étroite pour lui.
+
 ## 1.4.1 · 16/11/2026
 
 - Carte et globe : le soleil clignotant et la lune ne sont plus affichés, le contraste jour/nuit suffit.
