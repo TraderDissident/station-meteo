@@ -443,40 +443,130 @@
     var ps = G.project(sun.lat, sun.lon), pm = G.project(moon.lat, moon.lon);
     st.sunEl.style.display = ps.front ? '' : 'none'; place(st.sunEl, cx + ps.x, cy + ps.y);
     st.moonEl.style.display = pm.front ? '' : 'none'; place(st.moonEl, cx + pm.x, cy + pm.y);
-    if (final || Date.now() - lastLayout > 700) { lastLayout = Date.now(); layoutLabels(); }
+    if (final || Date.now() - lastLayout > 700) { lastLayout = Date.now(); layoutLabels(!final); }
   }
 
-  /* Étiquettes : à droite, sinon à gauche, au-dessus ou au-dessous, sans chevauchement ni débordement. */
-  function layoutLabels() {
-    var W = st.w, H = st.h, lines = '';
+  /* Étiquettes : placées autour de leur point (à droite, à gauche, au-dessus, au-dessous, puis de plus en plus loin
+     avec un trait de rappel), jamais l'une sur l'autre et toujours séparées d'un écart minimal. Les villes les plus
+     entourées passent d'abord, puis trois passes reprennent chaque étiquette en tenant compte de toutes les autres. */
+  var GAP = 10;
+  // light : globe en rotation, placement rapide (une passe, sans recuit) ; la version complète à l'arrêt.
+  function layoutLabels(light) {
+    var W = st.w, H = st.h;
     var mks = U.$$('.mk', st.box).filter(function (mk) { return mk.style.display !== 'none'; });
-    // Les points des villes sont des obstacles pour toutes les étiquettes.
-    var placed = mks.map(function (mk) { return [mk.offsetLeft - 9, mk.offsetTop - 9, 18, 18]; });
-    mks.forEach(function (mk) {
-      var lab = U.$('.mkl', mk), lw = lab.offsetWidth, lh = lab.offsetHeight;
-      var x = mk.offsetLeft, y = mk.offsetTop;
-      var opts = [];
-      [12, 34, 60].forEach(function (d) {
-        opts.push([d, -lh / 2], [-lw - d, -lh / 2], [-lw / 2, -lh - d], [-lw / 2, d],
-          [d * 0.7, -lh - d * 0.7], [d * 0.7, d * 0.7], [-lw - d * 0.7, -lh - d * 0.7], [-lw - d * 0.7, d * 0.7]);
+    if (!mks.length) { U.$('.mklines', st.box).innerHTML = ''; return; }
+    var pts = mks.map(function (mk) {
+      var lab = U.$('.mkl', mk);
+      return { lab: lab, x: mk.offsetLeft, y: mk.offsetTop, w: lab.offsetWidth, h: lab.offsetHeight, box: null, off: null };
+    });
+    // Candidats : 24 directions à 9 distances, des plus proches aux plus lointaines.
+    function candidates(p) {
+      var out = [], k = 0;
+      [12, 35, 60, 90, 125, 165, 210, 260, 320].forEach(function (d) {
+        for (var a = 0; a < 24; a++) {
+          var ang = a / 24 * Math.PI * 2, cx = Math.cos(ang), cy = Math.sin(ang);
+          // Le bord de l'étiquette le plus proche du point se tient à la distance d.
+          var ox = cx > 0.3 ? cx * d : (cx < -0.3 ? cx * d - p.w : -p.w / 2 + cx * d);
+          var oy = cy > 0.3 ? cy * d : (cy < -0.3 ? cy * d - p.h : -p.h / 2 + cy * d);
+          out.push([ox, oy, k++, d]);
+        }
       });
-      var best = opts[0], bestScore = 1e9;
-      opts.forEach(function (o, k) {
-        var bx = x + o[0], by = y + o[1], score = k * 0.4;
-        if (bx < 2) score += 100 + (2 - bx); if (bx + lw > W - 2) score += 100 + (bx + lw - W);
-        if (by < 2) score += 100 + (2 - by); if (by + lh > H - 2) score += 100 + (by + lh - H);
-        placed.forEach(function (r) {
-          var ox = Math.min(bx + lw, r[0] + r[2]) - Math.max(bx, r[0]), oy = Math.min(by + lh, r[1] + r[3]) - Math.max(by, r[1]);
-          if (ox > 0 && oy > 0) score += 10 + ox * oy / 100;
-        });
-        if (score < bestScore) { bestScore = score; best = o; }
+      return out;
+    }
+    function overlap(a, b, gap) {
+      var ox = Math.min(a[0] + a[2], b[0] + b[2]) - Math.max(a[0], b[0]) + gap;
+      var oy = Math.min(a[1] + a[3], b[1] + b[3]) - Math.max(a[1], b[1]) + gap;
+      return ox > 0 && oy > 0 ? ox * oy : 0;
+    }
+    // Un segment (point → étiquette) traverse-t-il un rectangle ?
+    function crosses(x1, y1, x2, y2, r) {
+      for (var t = 0.15; t < 0.9; t += 0.15) {
+        var x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;
+        if (x > r[0] && x < r[0] + r[2] && y > r[1] && y < r[1] + r[3]) return true;
+      }
+      return false;
+    }
+    function segX(a, b, c, d, e, f, g, h) {
+      var d1 = (g - e) * (b - f) - (h - f) * (a - e), d2 = (g - e) * (d - f) - (h - f) * (c - e);
+      var d3 = (c - a) * (f - b) - (d - b) * (e - a), d4 = (c - a) * (h - b) - (d - b) * (g - a);
+      return d1 * d2 < 0 && d3 * d4 < 0;
+    }
+    function anchor(p, b) { return [U.clamp(p.x, b[0], b[0] + b[2]), U.clamp(p.y, b[1], b[1] + b[3])]; }
+    function score(p, o, self) {
+      var b = [p.x + o[0], p.y + o[1], p.w, p.h], s = o[3] * 9 + (o[2] % 24) * 0.3;
+      if (b[0] < 2) s += 20000 + (2 - b[0]) * 50;
+      if (b[0] + b[2] > W - 2) s += 20000 + (b[0] + b[2] - W) * 50;
+      if (b[1] < 2) s += 20000 + (2 - b[1]) * 50;
+      if (b[1] + b[3] > H - 2) s += 20000 + (b[1] + b[3] - H) * 50;
+      var an = anchor(p, b);
+      pts.forEach(function (q, j) {
+        // Les points des villes : jamais sous une étiquette.
+        if (overlap(b, [q.x - 9, q.y - 9, 18, 18], 4)) s += 8000;
+        if (j === self || !q.box) return;
+        var ov = overlap(b, q.box, GAP);
+        if (ov) s += 10000 + ov;
+        // Un trait de rappel ne doit pas traverser une autre étiquette.
+        if (crosses(p.x, p.y, an[0], an[1], q.box)) s += 3000;
+        var qa = anchor(q, q.box);
+        if (crosses(q.x, q.y, qa[0], qa[1], b)) s += 3000;
+        // Deux traits de rappel ne se croisent que s'il n'y a pas d'autre place (moins grave qu'un chevauchement).
+        if (segX(p.x, p.y, an[0], an[1], q.x, q.y, qa[0], qa[1])) s += 2500;
       });
-      lab.style.left = best[0].toFixed(0) + 'px'; lab.style.top = best[1].toFixed(0) + 'px';
-      placed.push([x + best[0], y + best[1], lw, lh]);
-      // Trait de rappel quand l'étiquette s'éloigne de son point.
-      var cx = U.clamp(x, x + best[0], x + best[0] + lw), cy = U.clamp(y, y + best[1], y + best[1] + lh);
-      if (Math.abs(cx - x) + Math.abs(cy - y) > 20) {
-        lines += '<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + cx.toFixed(1) + '" y2="' + cy.toFixed(1) + '"/>';
+      return s;
+    }
+    function best(p, i) {
+      var bo = null, bs = 1e12;
+      candidates(p).forEach(function (o) { var v = score(p, o, i); if (v < bs) { bs = v; bo = o; } });
+      p.off = bo; p.box = [p.x + bo[0], p.y + bo[1], p.w, p.h];
+    }
+    // Les plus entourées d'abord.
+    var order = pts.map(function (p, i) {
+      var c = 0;
+      pts.forEach(function (q) { if (Math.abs(q.x - p.x) < 220 && Math.abs(q.y - p.y) < 140) c++; });
+      return [c, i];
+    }).sort(function (a, b) { return b[0] - a[0]; }).map(function (a) { return a[1]; });
+    for (var pass = 0; pass < (light ? 1 : 6); pass++) order.forEach(function (i) { best(pts[i], i); });
+    // Démêlage : deux traits qui se croisent, on échange la place des deux étiquettes (chacune reste reliée à son
+    // point) quand l'échange ne crée ni chevauchement ni débordement. Répété tant qu'il améliore.
+    function cost(i) { return score(pts[i], pts[i].off, i); }
+    for (var round = 0; round < (light ? 0 : 4); round++) {
+      var changed = false;
+      for (var i = 0; i < pts.length; i++) for (var j = i + 1; j < pts.length; j++) {
+        var P = pts[i], Q = pts[j], pa = anchor(P, P.box), qa = anchor(Q, Q.box);
+        if (!segX(P.x, P.y, pa[0], pa[1], Q.x, Q.y, qa[0], qa[1])) continue;
+        var before = cost(i) + cost(j), po = P.off, qo = Q.off, pb = P.box, qb = Q.box;
+        // Chaque étiquette prend l'emplacement de l'autre, centrée sur le même centre.
+        var pc = [pb[0] + pb[2] / 2, pb[1] + pb[3] / 2], qc = [qb[0] + qb[2] / 2, qb[1] + qb[3] / 2];
+        P.off = [qc[0] - P.w / 2 - P.x, qc[1] - P.h / 2 - P.y, po[2], po[3]]; P.box = [P.x + P.off[0], P.y + P.off[1], P.w, P.h];
+        Q.off = [pc[0] - Q.w / 2 - Q.x, pc[1] - Q.h / 2 - Q.y, qo[2], qo[3]]; Q.box = [Q.x + Q.off[0], Q.y + Q.off[1], Q.w, Q.h];
+        if (cost(i) + cost(j) < before) changed = true;
+        else { P.off = po; P.box = pb; Q.off = qo; Q.box = qb; }
+      }
+      if (!changed) break;
+      order.forEach(function (k) { best(pts[k], k); });
+    }
+    // Recuit : on essaie des emplacements au hasard (tirage fixe, donc le même résultat d'une minute à l'autre),
+    // en acceptant parfois un léger recul au début pour sortir des impasses ; on garde la meilleure disposition vue.
+    var rnd = U.seeded('etiquettes' + pts.length), cands = pts.map(candidates);
+    var total = function () { var t = 0; pts.forEach(function (q, k) { t += score(q, q.off, k); }); return t; };
+    var cur = total(), bestT = cur, keep = pts.map(function (q) { return q.off; });
+    for (var it = 0, N = light ? 0 : 5000; it < N; it++) {
+      var k = Math.floor(rnd() * pts.length), q = pts[k], c = cands[k][Math.floor(rnd() * cands[k].length)];
+      var before = score(q, q.off, k), oldOff = q.off, oldBox = q.box;
+      q.off = c; q.box = [q.x + c[0], q.y + c[1], q.w, q.h];
+      var after = score(q, c, k), temp = 600 * (1 - it / N);
+      if (after <= before || rnd() < Math.exp((before - after) / Math.max(temp, 1))) {
+        cur += after - before;
+        if (cur < bestT) { bestT = cur; keep = pts.map(function (r) { return r.off; }); }
+      } else { q.off = oldOff; q.box = oldBox; }
+    }
+    pts.forEach(function (q, k) { q.off = keep[k]; q.box = [q.x + q.off[0], q.y + q.off[1], q.w, q.h]; });
+    var lines = '';
+    pts.forEach(function (p) {
+      p.lab.style.left = p.off[0].toFixed(0) + 'px'; p.lab.style.top = p.off[1].toFixed(0) + 'px';
+      var an = anchor(p, p.box);
+      if (Math.abs(an[0] - p.x) + Math.abs(an[1] - p.y) > 20) {
+        lines += '<line x1="' + p.x.toFixed(1) + '" y1="' + p.y.toFixed(1) + '" x2="' + an[0].toFixed(1) + '" y2="' + an[1].toFixed(1) + '"/>';
       }
     });
     U.$('.mklines', st.box).innerHTML = lines;

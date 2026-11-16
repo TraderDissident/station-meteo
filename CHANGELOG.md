@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.12.0 · 17/11/2026
+
+- Carte du monde : nouveau placement des étiquettes de villes. Elles se posent tout autour de leur point, à droite comme à gauche, au-dessus ou au-dessous, plus loin avec un trait de rappel quand la place manque. Jamais l'une sur l'autre, au moins 10 px entre deux étiquettes, jamais sur un point de ville ; les traits évitent de se croiser et de traverser une étiquette, sauf s'il n'y a pas d'autre place.
+- Étiquettes de la carte 10 % plus petites (textes, icônes, marges), et encore un peu plus en portrait où la carte est moitié moins haute.
+- Globe en rotation : placement rapide des étiquettes pendant le mouvement, placement complet à l'arrêt, pour ne pas ralentir le vieil iPad.
+
 ## 1.11.1 · 17/11/2026
 
 - Températures négatives : le signe moins déborde à gauche comme le ° à droite. Le nombre reste centré et le ° ne frôle plus le cercle du cadran.
