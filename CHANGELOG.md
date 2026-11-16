@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.10.0 · 17/11/2026
+
+- 15 lieux d'origine en plus, rangés d'ouest en est : Tahiti, Bogota, New York, Lisbonne, Marrakech, Dublin, Bordeaux, Aigre, Barcelone, Paris, Istanbul, Moscou, Ahvaz, Dubaï, Pattaya, Tiksi, Vladivostok, Sydney. Sur un appareil déjà installé, ils s'ajoutent une fois aux lieux enregistrés et toute la liste est rangée d'ouest en est.
+
 ## 1.9.0 · 17/11/2026
 
 Allègement pour le vieil iPad, sans toucher aux animations.

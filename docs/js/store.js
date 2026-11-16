@@ -22,6 +22,13 @@
     p.forEach(function (q) {
       SM.DEFAULT_PLACES.forEach(function (d) { if (d.id === q.id && !q.names) q.names = d.names; });
     });
+    // 1.10.0 : les nouveaux lieux d'origine rejoignent la liste déjà enregistrée, le tout rangé d'ouest en est.
+    if (read('sm.defaults', 1) < 2) {
+      SM.DEFAULT_PLACES.forEach(function (d) { if (!p.some(function (q) { return q.id === d.id; })) p.push(d); });
+      p.sort(function (a, b) { return a.lon - b.lon; });
+      write('sm.places', p);
+      write('sm.defaults', 2);
+    }
     return p;
   };
   S.savePlaces = function (list) { write('sm.places', list); };
