@@ -1,0 +1,441 @@
+/* Chef d'orchestre : lieux, rafraîchissement, horloge, ciel, gestes, veille, démonstration. */
+(function () {
+  var U = SM.U, I = SM.i18n, IC = SM.icons;
+
+  var A = {
+    places: [], idx: 0, settings: null, data: {}, inflight: {}, failures: {}, retryAt: {},
+    demo: { time: null, weather: null, cycle: false, cycleStart: 0 },
+    lastTouch: Date.now(), sheet: null, hourKey: '', veilUntil: 0
+  };
+  var el = {};
+
+  /* ---------- démonstration ---------- */
+  var DEMO_WX = {
+    clair: { code: 0, cover: 0 }, voile: { code: 1, cover: 25 }, nuageux: { code: 2, cover: 55 }, couvert: { code: 3, cover: 100 },
+    brouillard: { code: 45, cover: 100 }, bruine: { code: 53, cover: 95 }, pluie: { code: 63, cover: 100, rate: 3 },
+    averse: { code: 81, cover: 80, rate: 5 }, orage: { code: 95, cover: 100, rate: 6 }, neige: { code: 73, cover: 100, rate: 1 },
+    grele: { code: 96, cover: 100, rate: 5 }
+  };
+
+  /* Instant du jour où le soleil atteint la hauteur voulue, au lieu affiché. */
+  function demoMs(place, key) {
+    var now = Date.now(), lat = place.lat, lon = place.lon, best = null, maxAlt = -90, minAlt = 90, tMax = now, tMin = now;
+    var step = 5 * 60000, from = now - 12 * 3600000, to = now + 12 * 3600000, t;
+    for (t = from; t <= to; t += step) {
+      var a = SM.astro.sun(t, lat, lon).alt;
+      if (a > maxAlt) { maxAlt = a; tMax = t; }
+      if (a < minAlt) { minAlt = a; tMin = t; }
+    }
+    if (key === 'midi') return tMax;
+    if (key === 'nuit') return tMin;
+    var target = { aube: -4, lever: 1, matin: Math.min(15, maxAlt * 0.6), soir: Math.min(15, maxAlt * 0.6), coucher: 1, crepuscule: -4 }[key];
+    var rising = key === 'aube' || key === 'lever' || key === 'matin';
+    var prev = SM.astro.sun(from, lat, lon).alt;
+    for (t = from + step; t <= to; t += step) {
+      var cur = SM.astro.sun(t, lat, lon).alt;
+      if (rising ? (prev < target && cur >= target) : (prev > target && cur <= target)) {
+        if (!best || Math.abs(t - now) < Math.abs(best - now)) best = t;
+      }
+      prev = cur;
+    }
+    return best || (rising ? tMin + (tMax - tMin) * 0.3 : tMax + 3 * 3600000);
+  }
+
+  function nowMs() {
+    var p = A.places[A.idx];
+    if (A.demo.cycle) return A.demo.cycleStart + (Date.now() - A.demo.cycleRealStart) * 1440;
+    if (A.demo.time && p) {
+      var key = p.id + A.demo.time + Math.floor(Date.now() / 600000);
+      if (A.demoKey !== key) { A.demoKey = key; A.demoBase = demoMs(p, A.demo.time) - Date.now(); }
+      return Date.now() + A.demoBase;
+    }
+    return Date.now();
+  }
+
+  /* ---------- ciel ---------- */
+  function scene(instant) {
+    var p = A.places[A.idx];
+    if (!p) return;
+    var w = A.data[p.id], c = w ? w.current : {};
+    var m0 = w && w.minutely && w.minutely.length ? w.minutely[0].p : 0;
+    var sc = {
+      lat: p.lat, lon: p.lon, ms: nowMs(), placeName: p.name,
+      code: U.has(c.code) ? c.code : 2, cover: U.has(c.cloud) ? c.cloud : 40,
+      rate: Math.max((m0 || 0) * 4, c.precip || 0), wind: c.wind || 8, windDir: U.has(c.dir) ? c.dir : 250,
+      cold: U.has(c.temp) ? c.temp <= 1 : false
+    };
+    var dw = A.demo.weather && DEMO_WX[A.demo.weather];
+    if (dw) { sc.code = dw.code; sc.cover = dw.cover; sc.rate = dw.rate || 0; sc.cold = dw.code >= 71 && dw.code <= 86; }
+    var r = SM.sky.apply(sc, instant);
+    // Panneaux plus opaques quand le ciel est clair, pour garder le texte lisible.
+    var b = r.brightness;
+    el.app.style.setProperty('--panel', 'rgba(8,14,30,' + (0.22 + b * 0.45).toFixed(3) + ')');
+    el.app.style.setProperty('--dial', 'rgba(8,14,30,' + (0.18 + b * 0.42).toFixed(3) + ')');
+    A.sunAlt = r.sunAlt;
+  }
+
+  /* ---------- rendu ---------- */
+  function render(dir) {
+    var p = A.places[A.idx];
+    if (!p) return;
+    var w = A.data[p.id];
+    var now = Math.floor(nowMs() / 1000);
+    var oldSide = U.$('.side', el.pages), oldView = U.$('.view', el.pages);
+    var keepScroll = !dir && oldSide ? oldSide.scrollTop : 0;
+    var keepView = !dir && oldView ? oldView.scrollTop : 0;
+    var html;
+    try {
+      html = w ? SM.ui.view(p, w, now) : SM.ui.empty(p, A.failures[p.id] ? I.t().offline : I.t().loading, !!A.failures[p.id]);
+    } catch (e) {
+      SM.diag.error('rendu : ' + e.message);
+      html = SM.ui.empty(p, I.t().noData, true);
+    }
+    el.pages.innerHTML = html;
+    var v = U.$('.view', el.pages);
+    if (dir) v.className += dir > 0 ? ' enter-r' : ' enter-l';
+    else {
+      var s = U.$('.side', el.pages);
+      if (s) s.scrollTop = keepScroll;
+      v.scrollTop = keepView;
+    }
+    el.pname.textContent = p.name;
+    el.pcountry.textContent = p.country || '';
+    el.dots.innerHTML = A.places.length > 1 ? A.places.map(function (q, i) { return '<i' + (i === A.idx ? ' class="on"' : '') + '></i>'; }).join('') : '';
+    A.hourKey = w ? hourKey(w) : '';
+    clock();
+    status();
+  }
+
+  function hourKey(w) { return SM.ui.hourIndex(w, Math.floor(nowMs() / 1000)) + '|' + w.fetchedAt; }
+
+  function clock() {
+    var p = A.places[A.idx];
+    if (!p) return;
+    var w = A.data[p.id];
+    var wl = I.wall(Math.floor(nowMs() / 1000), (w && w.tz) || p.tz, w ? w.offset : 0);
+    var hm = U.$('.hm', el.pages), ss = U.$('.ss', el.pages), dt = U.$('.date', el.pages);
+    if (hm) hm.textContent = I.hm(wl);
+    if (ss) ss.textContent = A.settings.seconds ? ':' + U.pad(wl.s) : '';
+    if (dt) dt.textContent = I.longDate(wl);
+  }
+
+  function status() {
+    var p = A.places[A.idx], st = U.$('.status', el.pages);
+    if (!p || !st) return;
+    var w = A.data[p.id], tt = I.t();
+    if (!w) { st.textContent = ''; return; }
+    var age = Date.now() - w.fetchedAt, d = new Date(w.fetchedAt);
+    var txt = tt.updated + ' ' + U.pad(d.getHours()) + ':' + U.pad(d.getMinutes());
+    var off = !navigator.onLine || A.failures[p.id];
+    st.className = 'status' + (age > SM.STALE_BADGE_MS || off ? ' stale' : '');
+    st.innerHTML = (off ? IC.ui('offline') + tt.offline + ' · ' : '') + U.esc(txt) + (age > SM.STALE_DATA_MS ? ' · ' + tt.stale : '');
+    var demo = A.demo.time || A.demo.weather || A.demo.cycle;
+    el.badge.style.display = demo ? '' : 'none';
+  }
+
+  /* ---------- données ---------- */
+  function load(p, force) {
+    var w = A.data[p.id];
+    var fresh = w && Date.now() - w.fetchedAt < SM.REFRESH_MS;
+    if ((fresh && !force) || A.inflight[p.id]) return Promise.resolve();
+    if (!force && A.retryAt[p.id] && Date.now() < A.retryAt[p.id]) return Promise.resolve();
+    A.inflight[p.id] = true;
+    return SM.api.forecast(p).then(function (nw) {
+      var old = A.data[p.id];
+      if (old && old.air && Date.now() - old.airAt < SM.AIR_REFRESH_MS) { nw.air = old.air; nw.airAt = old.airAt; }
+      // Lieu supprimé pendant le chargement : on n'enregistre rien.
+      if (!A.places.some(function (q) { return q.id === p.id; })) return;
+      A.data[p.id] = nw;
+      A.failures[p.id] = 0; A.retryAt[p.id] = 0;
+      SM.store.saveWeather(p.id, nw);
+      if (!nw.air) {
+        return SM.api.air(p).then(function (air) { nw.air = air; nw.airAt = Date.now(); SM.store.saveWeather(p.id, nw); })
+          .catch(function (e) { SM.diag.warn('qualité de l’air ' + p.name + ' : ' + e.message); });
+      }
+    }).catch(function (e) {
+      var n = (A.failures[p.id] || 0) + 1;
+      A.failures[p.id] = n;
+      A.retryAt[p.id] = Date.now() + [30, 60, 120, 300][Math.min(n - 1, 3)] * 1000;
+      SM.diag.warn('prévisions ' + p.name + ' : ' + e.message);
+    }).then(function () {
+      A.inflight[p.id] = false;
+      if (A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) { render(0); scene(false); }
+      else if (A.places[A.idx] && A.places[A.idx].id === p.id) status();
+    });
+  }
+
+  /* ---------- navigation ---------- */
+  A.goTo = function (id) {
+    for (var i = 0; i < A.places.length; i++) if (A.places[i].id === id) { show(i, i > A.idx ? 1 : -1); return; }
+  };
+  function show(i, dir) {
+    var n = A.places.length;
+    A.idx = ((i % n) + n) % n;
+    SM.store.saveCurrent(A.places[A.idx].id);
+    render(dir || 0);
+    scene(false);
+    load(A.places[A.idx]);
+  }
+  function step(d) { if (A.places.length > 1) show(A.idx + d, d); }
+
+  A.setPlaces = function (list) {
+    var cur = A.places[A.idx] && A.places[A.idx].id;
+    A.places = list;
+    SM.store.savePlaces(list);
+    var i = 0;
+    list.forEach(function (p, k) { if (p.id === cur) i = k; });
+    A.idx = i;
+    list.forEach(function (p) { if (!A.data[p.id]) { A.data[p.id] = SM.store.weather(p.id); if (!A.data[p.id]) delete A.data[p.id]; } });
+    render(0);
+    scene(true);
+    load(A.places[A.idx]);
+  };
+
+  /* ---------- feuilles ---------- */
+  A.open = function (which) {
+    A.close(true);
+    A.sheet = which;
+    var sh = el.sheet, tt = I.t();
+    U.$('h2', sh).textContent = which === 'places' ? tt.places : (which === 'settings' ? tt.settings : tt.diagnostic);
+    var body = U.$('.sheet-body', sh);
+    if (which === 'places') SM.places.open(body);
+    else if (which === 'settings') SM.settings.open(body);
+    else SM.settings.openDiag(body);
+    sh.className = 'sheet open';
+  };
+  A.close = function (silent) {
+    if (!A.sheet) return;
+    A.sheet = null;
+    el.sheet.className = 'sheet';
+    U.$('.sheet-body', el.sheet).innerHTML = '';
+    if (!silent) { render(0); scene(true); }
+  };
+
+  A.setSetting = function (key, v) {
+    A.settings[key] = v;
+    SM.store.saveSettings(A.settings);
+    if (key === 'lang') { I.setLang(v); if (A.sheet) A.open(A.sheet); }
+    if (key === 'motion') SM.sky.setMotion(v);
+    if (key === 'veil' || key === 'veilLevel' || key === 'veilFrom' || key === 'veilTo') veil();
+  };
+
+  A.setDemo = function (d) {
+    Object.keys(d).forEach(function (k) { A.demo[k] = d[k]; });
+    if (d.cycle) { A.demo.cycleStart = demoMs(A.places[A.idx], 'nuit'); A.demo.cycleRealStart = Date.now(); }
+    restartSkyTimer();
+    scene(true);
+    status();
+  };
+
+  A.toast = function (msg) {
+    el.toast.textContent = msg;
+    el.toast.className = 'on';
+    clearTimeout(A.toastT);
+    A.toastT = setTimeout(function () { el.toast.className = ''; }, 2500);
+  };
+
+  /* ---------- veille nocturne ---------- */
+  function veilWanted() {
+    var s = A.settings;
+    if (s.veil === 'off') return false;
+    if (s.veil === 'hours') {
+      var h = new Date().getHours();
+      return s.veilFrom > s.veilTo ? (h >= s.veilFrom || h < s.veilTo) : (h >= s.veilFrom && h < s.veilTo);
+    }
+    // Automatique : la nuit au lieu de démarrage, supposé être celui de l'iPad.
+    var start = SM.store.startPlace(), home = A.places[0];
+    A.places.forEach(function (p) { if (p.id === start) home = p; });
+    return home ? SM.astro.sun(Date.now(), home.lat, home.lon).alt < -6 : false;
+  }
+  function veil() {
+    var on = veilWanted() && Date.now() > A.veilUntil && !A.sheet;
+    el.veil.style.opacity = on ? String(A.settings.veilLevel) : '0';
+    el.veil.className = on ? 'on' : '';
+  }
+
+  /* ---------- minuteries ---------- */
+  var skyTimer = 0;
+  function restartSkyTimer() {
+    clearInterval(skyTimer);
+    skyTimer = setInterval(function () {
+      if (document.hidden) return;
+      scene(!!A.demo.cycle);
+      if (A.demo.cycle) clock();
+    }, A.demo.cycle ? 200 : 30000);
+  }
+
+  function everySecond() {
+    if (document.hidden) return;
+    clock();
+  }
+
+  function everyMinute() {
+    if (document.hidden) return;
+    var p = A.places[A.idx];
+    if (p) {
+      load(p);
+      var w = A.data[p.id];
+      if (w && !A.sheet && hourKey(w) !== A.hourKey) render(0);
+    }
+    status();
+    veil();
+    // Défilement automatique des lieux, seulement si personne n'a touché l'écran depuis une minute.
+    var c = A.settings.carousel;
+    if (c && !A.sheet && Date.now() - A.lastTouch > 60000 && Date.now() - (A.lastCarousel || 0) >= c * 1000 - 500) {
+      A.lastCarousel = Date.now();
+      step(1);
+    }
+    // Rechargement quotidien vers 4 h pour repartir d'une mémoire propre.
+    var d = new Date();
+    if (d.getHours() === 4 && Date.now() - SM.diag.started > 3 * 3600000 && navigator.onLine && !A.sheet) {
+      SM.diag.info('rechargement quotidien');
+      location.reload();
+    }
+  }
+
+  /* ---------- mise en page ---------- */
+  function layout() {
+    var w = innerWidth, h = innerHeight;
+    var base = U.clamp(Math.min(w, h) / 768 * 16, 11, 19);
+    document.documentElement.style.fontSize = base.toFixed(2) + 'px';
+    el.app.className = w > h ? 'land' : 'port';
+    SM.sky.resize();
+  }
+
+  /* ---------- gestes ---------- */
+  function bindGestures() {
+    var sx = 0, sy = 0, st = 0, ok = false;
+    el.pages.addEventListener('touchstart', function (e) {
+      A.lastTouch = Date.now();
+      var tch = e.touches[0];
+      ok = e.touches.length === 1 && !e.target.closest('.hscroll');
+      sx = tch.clientX; sy = tch.clientY; st = Date.now();
+    }, { passive: true });
+    el.pages.addEventListener('touchend', function (e) {
+      if (!ok) return;
+      var tch = e.changedTouches[0], dx = tch.clientX - sx, dy = tch.clientY - sy;
+      if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - st < 700) step(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+    document.addEventListener('keydown', function (e) {
+      if (A.sheet) { if (e.keyCode === 27) A.close(); return; }
+      if (e.keyCode === 39) step(1);
+      if (e.keyCode === 37) step(-1);
+    });
+    document.addEventListener('mousedown', function () { A.lastTouch = Date.now(); });
+
+    el.app.addEventListener('click', function (e) {
+      A.lastTouch = Date.now();
+      var b = e.target.closest('[data-sheet]');
+      if (b) { A.open(b.getAttribute('data-sheet')); return; }
+      if (e.target.closest('.sheet-close')) { A.close(); return; }
+      if (e.target === el.sheet) { A.close(); return; }
+      if (e.target.closest('.retry')) { var p = A.places[A.idx]; A.retryAt[p.id] = 0; load(p, true); return; }
+      if (e.target.closest('#dots i')) { var dots = U.$$('#dots i'); show(dots.indexOf(e.target.closest('#dots i')), 1); return; }
+      var row = e.target.closest('.drow');
+      if (row) {
+        var di = +row.getAttribute('data-day'), box = U.$('.dexp[data-for="' + di + '"]', el.pages);
+        var openNow = box.className.indexOf('open') >= 0;
+        U.$$('.dexp.open', el.pages).forEach(function (x) { x.className = 'dexp'; x.innerHTML = ''; });
+        U.$$('.drow.open', el.pages).forEach(function (x) { x.className = 'drow'; });
+        if (!openNow) {
+          var p2 = A.places[A.idx];
+          box.innerHTML = SM.ui.dayHours(A.data[p2.id], di, Math.floor(nowMs() / 1000));
+          box.className = 'dexp open';
+          row.className = 'drow open';
+        }
+      }
+    });
+    el.veil.addEventListener('click', function () {
+      A.veilUntil = Date.now() + 30000;
+      veil();
+      setTimeout(veil, 30500);
+    });
+  }
+
+  /* ---------- démarrage ---------- */
+  function parseDemo() {
+    var m = /[?&]demo=([^&]+)/.exec(location.search);
+    if (!m) return;
+    decodeURIComponent(m[1]).split(',').forEach(function (k) {
+      k = k.trim().toLowerCase().replace('é', 'e').replace('ê', 'e');
+      if (k === 'cycle') { A.demo.cycle = true; }
+      else if (I.t().demoTimes[k]) A.demo.time = k;
+      else if (DEMO_WX[k]) A.demo.weather = k;
+    });
+  }
+
+  A.init = function () {
+    A.settings = SM.store.settings();
+    I.setLang(A.settings.lang);
+    A.places = SM.store.places();
+    A.places.forEach(function (p) { var w = SM.store.weather(p.id); if (w) A.data[p.id] = w; });
+
+    document.body.insertAdjacentHTML('afterbegin', IC.defs);
+    el.app = U.$('#app');
+    el.app.innerHTML =
+      '<div id="sky"></div>' +
+      '<div id="ui">' +
+        '<header class="top">' +
+          '<button class="iconbtn" data-sheet="places" aria-label="Lieux">' + IC.ui('pin') + '</button>' +
+          '<div class="ptitle"><div><span id="pname"></span><span id="pcountry"></span><span id="badge">DÉMO</span></div><div id="dots"></div></div>' +
+          '<button class="iconbtn" data-sheet="settings" aria-label="Réglages">' + IC.ui('gear') + '</button>' +
+        '</header>' +
+        '<main id="pages"></main>' +
+      '</div>' +
+      '<div id="veil"></div>' +
+      '<div class="sheet" id="sheet"><div class="sheet-in"><header><h2></h2><button class="iconbtn sheet-close" aria-label="Fermer">' + IC.ui('close') + '</button></header><div class="sheet-body"></div></div></div>' +
+      '<div id="toast"></div>';
+    el.pages = U.$('#pages'); el.pname = U.$('#pname'); el.pcountry = U.$('#pcountry'); el.dots = U.$('#dots');
+    el.badge = U.$('#badge'); el.veil = U.$('#veil'); el.sheet = U.$('#sheet'); el.toast = U.$('#toast');
+
+    SM.sky.init(U.$('#sky'));
+    SM.sky.motion = A.settings.motion;
+    layout();
+    parseDemo();
+    if (A.demo.cycle) { A.demo.cycleRealStart = Date.now(); }
+
+    var cur = SM.store.current() || SM.store.startPlace();
+    var startId = SM.store.startPlace();
+    // Au démarrage, on revient au lieu de démarrage s'il est défini.
+    var want = startId || cur;
+    A.idx = 0;
+    A.places.forEach(function (p, i) { if (p.id === want) A.idx = i; });
+    if (A.demo.cycle) A.demo.cycleStart = demoMs(A.places[A.idx], 'nuit');
+
+    render(0);
+    scene(true);
+    load(A.places[A.idx]);
+    // Les autres lieux se chargent en arrière-plan, l'un après l'autre.
+    setTimeout(function () {
+      A.places.reduce(function (pr, p, i) { return i === A.idx ? pr : pr.then(function () { return load(p); }); }, Promise.resolve());
+    }, 4000);
+
+    bindGestures();
+    var relayout = function () { setTimeout(function () { layout(); render(0); scene(true); }, 300); };
+    window.addEventListener('orientationchange', relayout);
+    var rT = 0;
+    window.addEventListener('resize', function () { clearTimeout(rT); rT = setTimeout(function () { layout(); scene(true); }, 250); });
+    document.addEventListener('visibilitychange', function () {
+      SM.sky.pause(document.hidden);
+      if (!document.hidden) { load(A.places[A.idx]); render(0); scene(true); veil(); }
+    });
+    window.addEventListener('pageshow', function () { load(A.places[A.idx]); });
+    window.addEventListener('online', function () { var p = A.places[A.idx]; A.retryAt[p.id] = 0; load(p, true); status(); });
+    window.addEventListener('offline', status);
+
+    setInterval(everySecond, 1000);
+    setInterval(everyMinute, 60000);
+    restartSkyTimer();
+    veil();
+
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      navigator.serviceWorker.register('sw.js').catch(function (e) { SM.diag.warn('service worker : ' + e.message); });
+    }
+  };
+
+  SM.app = A;
+  document.addEventListener('DOMContentLoaded', function () {
+    try { A.init(); } catch (e) { SM.diag.error('démarrage : ' + e.message); throw e; }
+  });
+})();

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c3a7a"/>
+      <stop offset=".55" stop-color="#4f7fd0"/>
+      <stop offset="1" stop-color="#ffb37a"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="40%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#fff6b0"/><stop offset=".55" stop-color="#ffd23f"/><stop offset="1" stop-color="#ff9f1c"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#fff2c0" stop-opacity=".55"/><stop offset="1" stop-color="#fff2c0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d3dcea"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <path d="M0 860 C 180 790 330 820 470 800 S 780 740 1024 790 L1024 1024 L0 1024 Z" fill="#2b3f66" opacity=".65"/>
+  <path d="M0 930 C 220 880 420 910 600 880 S 880 850 1024 880 L1024 1024 L0 1024 Z" fill="#1a2747"/>
+  <circle cx="400" cy="400" r="330" fill="url(#halo)"/>
+  <circle cx="400" cy="400" r="170" fill="url(#sun)"/>
+  <path transform="translate(150 230) scale(13)" d="M17 46a9 9 0 0 1-.5-18a13 13 0 0 1 25-4a10 10 0 0 1 9 22z" fill="url(#cloud)"/>
+</svg>
