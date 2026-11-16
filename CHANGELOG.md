@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.5.1 · 16/11/2026
+
+- Lune et Qualité de l'air côte à côte sur la même ligne, en paysage comme en portrait. Sans données d'air, la Lune reprend toute la largeur.
+
 ## 1.5.0 · 16/11/2026
 
 - Mises à jour : la page se charge d'abord depuis le réseau, le cache ne sert plus qu'hors connexion. Avant, le service worker servait l'ancienne page, qui pointait vers les anciens fichiers.

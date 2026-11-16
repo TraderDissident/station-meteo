@@ -287,13 +287,13 @@
     }
     // Lune.
     var ph = SM.astro.moonPhase(now * 1000);
-    out.push(tile('moon', tt.moon, '<div class="moonrow">' + IC.moonPhase(ph, place.lat < 0, 56) + '<div><b>' + tt.moonPhases[SM.astro.phaseIndex(ph.phase)] + '</b><p class="sub">' + Math.round(ph.fraction * 100) + ' % ' + tt.illuminated + '</p></div></div>', 'wide'));
+    out.push(tile('moon', tt.moon, '<div class="moonrow">' + IC.moonPhase(ph, place.lat < 0, 56) + '<div><b>' + tt.moonPhases[SM.astro.phaseIndex(ph.phase)] + '</b><p class="sub">' + Math.round(ph.fraction * 100) + ' % ' + tt.illuminated + '</p></div></div>', w.air && U.has(w.air.aqi) ? '' : 'wide'));
     // Air.
     if (w.air && U.has(w.air.aqi)) {
       var al = airLevel(w.air.aqi), a = w.air;
       out.push(tile('leaf', tt.air, '<div class="big">' + Math.round(a.aqi) + '<small> ' + al.label + '</small></div>' +
         '<div class="scale aqs"><i style="left:' + U.clamp(a.aqi, 0, 100).toFixed(1) + '%"></i></div>' +
-        '<p class="sub">' + (I.lang === 'fr' ? 'PM2,5 ' : 'PM2.5 ') + I.num(a.pm25) + ' · PM10 ' + I.num(a.pm10) + ' · NO₂ ' + I.num(a.no2) + ' · O₃ ' + I.num(a.o3) + ' µg/m³</p>', 'wide'));
+        '<p class="sub">' + (I.lang === 'fr' ? 'PM2,5 ' : 'PM2.5 ') + I.num(a.pm25) + ' · PM10 ' + I.num(a.pm10) + ' · NO₂ ' + I.num(a.no2) + ' · O₃ ' + I.num(a.o3) + ' µg/m³</p>'));
       var pol = [['alder', a.alder, false], ['birch', a.birch, false], ['grass', a.grass, true]].filter(function (p) { return U.has(p[1]) && p[1] >= 1; });
       if (pol.length) {
         out.push(tile('flower', tt.pollen, pol.map(function (p) {
