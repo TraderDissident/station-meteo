@@ -575,8 +575,12 @@
 
     var cur = SM.store.current() || SM.store.startPlace();
     var startId = SM.store.startPlace();
-    // Au démarrage, on revient au lieu de démarrage s'il est défini.
-    var want = startId || cur;
+    // Un rechargement (geste, mise à jour, rechargement de 4 h) garde le lieu affiché ; seule une vraie
+    // ouverture de l'app revient au lieu de démarrage. sessionStorage survit au rechargement, pas à la fermeture.
+    var reload = false;
+    try { reload = sessionStorage.getItem('sm.alive') === '1'; sessionStorage.setItem('sm.alive', '1'); } catch (e) { /* rien */ }
+    var saved = SM.store.current();
+    var want = reload && saved ? saved : (startId || cur);
     A.idx = 0;
     A.places.forEach(function (p, i) { if (p.id === want) A.idx = i; });
     A.mode = SM.store.mode() === 'map' ? 'map' : 'place';

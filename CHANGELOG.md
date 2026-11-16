@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.10.1 · 17/11/2026
+
+- Un rechargement de l'app (mise à jour, rechargement de 4 h, rechargement manuel) garde le lieu affiché. Seule une vraie ouverture revient au lieu de démarrage, s'il est défini.
+
 ## 1.10.0 · 17/11/2026
 
 - 15 lieux d'origine en plus, rangés d'ouest en est : Tahiti, Bogota, New York, Lisbonne, Marrakech, Dublin, Bordeaux, Aigre, Barcelone, Paris, Istanbul, Moscou, Ahvaz, Dubaï, Pattaya, Tiksi, Vladivostok, Sydney. Sur un appareil déjà installé, ils s'ajoutent une fois aux lieux enregistrés et toute la liste est rangée d'ouest en est.
