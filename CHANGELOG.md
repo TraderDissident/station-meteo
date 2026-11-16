@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.10.2 · 17/11/2026
+
+- Températures centrées sur leurs chiffres, le ° en débord à droite, dans le cadran et sur la courbe heure par heure. Avant, le cadran poussait le nombre vers la droite et les étiquettes de la courbe comptaient le ° dans leur centrage.
+
 ## 1.10.1 · 17/11/2026
 
 - Un rechargement de l'app (mise à jour, rechargement de 4 h, rechargement manuel) garde le lieu affiché. Seule une vraie ouverture revient au lieu de démarrage, s'il est défini.

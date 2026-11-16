@@ -128,7 +128,7 @@
       '</div>' +
       '<div class="dial">' +
         '<div class="dial-in">' +
-          '<div class="temp">' + I.temp(c.temp) + '</div>' +
+          '<div class="temp">' + hang(c.temp) + '</div>' +
           '<div class="feels">' + tt.feels + ' ' + I.temp(c.feels) + '</div>' +
           '<div class="dial-mid">' +
             '<div class="dcol"><div><small>' + tt.max + '</small><b>' + I.temp(d.max) + '</b></div><div><small>' + tt.precip + '</small><b>' + I.mm(d.precip) + '</b></div></div>' +
@@ -215,7 +215,7 @@
     var grad = 'tg' + Math.round(Math.random() * 1e6);
     var stops = temps.map(function (v, i) { return '<stop offset="' + (i / Math.max(1, temps.length - 1)).toFixed(3) + '" stop-color="' + colorOf(v) + '"/>'; }).join('');
     var labels = pts.map(function (p, i) {
-      return '<div class="tl" style="top:' + (p[1] / H * 100).toFixed(1) + '%">' + I.temp(temps[i]) + '</div><i class="tdot" style="top:' + (p[1] / H * 100).toFixed(1) + '%"></i>';
+      return '<div class="tl" style="top:' + (p[1] / H * 100).toFixed(1) + '%">' + hang(temps[i]) + '</div><i class="tdot" style="top:' + (p[1] / H * 100).toFixed(1) + '%"></i>';
     });
     // Placer chaque étiquette dans sa colonne.
     items = items.map(function (html, i) { return html.replace('<div class="hv"></div>', '<div class="hv">' + labels[i] + '</div>'); });
@@ -310,6 +310,9 @@
   }
 
   var R = { editing: false };
+
+  // Température centrée sur ses chiffres, le ° en débord à droite (comme Météo d'Apple).
+  function hang(v) { return '<span class="tn">' + I.num(v) + '<i class="tdeg">°</i></span>'; }
 
   function tile(id, icon, title, body, cls) {
     return { id: id, icon: icon, title: title,
