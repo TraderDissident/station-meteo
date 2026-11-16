@@ -139,6 +139,7 @@
       html = SM.ui.empty(p, I.t().noData, true);
     }
     el.pages.innerHTML = html;
+    SM.ui.align(el.pages);
     var v = U.$('.view', el.pages);
     if (dir) v.className += dir > 0 ? ' enter-r' : ' enter-l';
     else {
@@ -454,7 +455,7 @@
         U.$$('.drow.open', el.pages).forEach(function (x) { x.className = 'drow'; });
         if (!openNow) {
           var p2 = A.places[A.idx];
-          box.innerHTML = SM.ui.dayHours(A.data[p2.id], di, Math.floor(nowMs() / 1000));
+          box.innerHTML = SM.ui.dayHours(A.data[p2.id], di, Math.floor(nowMs() / 1000)); SM.ui.align(box);
           box.className = 'dexp open';
           row.className = 'drow open';
         }

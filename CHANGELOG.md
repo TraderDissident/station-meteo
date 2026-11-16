@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.8.0 · 17/11/2026
+
+- Conditions, Précipitations, Vent refait d'après Météo d'Apple sur iOS 27 : sélecteur à trois icônes (nuage, goutte, vent), titre et sous-titre selon le mode. Le cadran ne change pas, comme chez Apple.
+- Précipitations : une colonne par heure remplie selon l'intensité (pointillés aux seuils modéré et fort), risque de pluie sous la ligne. Vent : vitesse en chiffres, courbe commune dessous avec les rafales en aplat.
+- 10 jours selon le mode : pluie heure par heure de chaque jour avec millimètres et risque ; vent en petite courbe avec la plage de vitesse.
+- Les points de la courbe des températures sont exactement sur la courbe (ils étaient décalés de quelques pixels).
+
 ## 1.7.0 · 17/11/2026
 
 - Heure par heure : choix d'affichage Conditions, Précipitations ou Vent, comme l'app Météo d'Apple. Conditions : la courbe des températures (comme avant). Précipitations : barres de pluie par heure, probabilité et millimètres. Vent : courbe de la vitesse colorée selon la force, direction et rafales. Le choix est gardé et vaut aussi pour les heures d'un jour ouvert dans les 10 jours.

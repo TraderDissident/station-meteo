@@ -158,65 +158,64 @@
   /* Choix d'affichage des heures, comme l'app Météo d'Apple : conditions, précipitations ou vent. */
   function hourView() { var v = SM.app.settings.hourView; return v === 'precip' || v === 'wind' ? v : 'cond'; }
 
-  // Couleur du vent, du calme au coup de vent (km/h).
-  var WSTOPS = [[0, '#8fe3c0'], [20, '#9fd4ff'], [40, '#ffd479'], [60, '#ff9b3d'], [80, '#ff4d4d'], [110, '#b25bd6']];
-  function windColor(v) {
-    if (v <= WSTOPS[0][0]) return WSTOPS[0][1];
-    for (var i = 1; i < WSTOPS.length; i++) {
-      if (v <= WSTOPS[i][0]) {
-        var a = WSTOPS[i - 1], b = WSTOPS[i], k = (v - a[0]) / (b[0] - a[0]);
-        return U.rgb(U.mix(U.hex(a[1]), U.hex(b[1]), k));
-      }
-    }
-    return WSTOPS[WSTOPS.length - 1][1];
-  }
-
   /* Bande des heures avec courbe de température. compact = vue d'un jour. */
   function hourStrip(w, from, count, now, opts) {
     opts = opts || {};
     var tt = t(), items = [], temps = [], view = hourView();
     var hs = w.hourly.slice(from, from + count);
     if (!hs.length) return '';
-    // Précipitations : barres à l'échelle de l'heure la plus arrosée (2 mm au moins, pour qu'une bruine reste petite).
-    var pmax = Math.max.apply(null, hs.map(function (h) { return h.precip || 0; }).concat([2]));
     var sunEvents = [];
     w.daily.forEach(function (d) { if (d.sunrise) sunEvents.push({ t: d.sunrise, rise: true }); if (d.sunset) sunEvents.push({ t: d.sunset, rise: false }); });
     hs.forEach(function (h, i) {
       var wl = wall(w, h.t);
       var isNow = !opts.day && i === 0;
       var ev = sunEvents.filter(function (e) { return e.t >= h.t && e.t < h.t + 3600; })[0];
-      temps.push(view === 'wind' ? h.wind : h.temp);
-      items.push('<div class="hi' + (isNow ? ' now' : '') + (wl.h === 0 && !isNow ? ' midnight' : '') + '">' +
+      temps.push(h.temp);
+      items.push('<div class="hi v' + view + (isNow ? ' now' : '') + (wl.h === 0 && !isNow ? ' midnight' : '') + '">' +
         '<div class="ht"><span>' + (isNow ? tt.now : (wl.h === 0 && !opts.day ? tt.daysShort[wl.wd] : I.hOnly(wl))) + '</span></div>' +
-        IC.weather(CO.icon(h.code, h.isDay), 'sm') +
-        '<div class="hv"></div>' +
+        (view === 'cond' ? IC.weather(CO.icon(h.code, h.isDay), 'sm') + '<div class="hv"></div>' : (view === 'precip' ? '<div class="hv"></div>' : '')) +
         (view === 'precip'
-          ? '<div class="hp"><span class="pop">' + Math.round(h.pop || 0) + '%</span></div><div class="hw">' + I.num(h.precip || 0, 1) + ' mm</div>'
+          ? '<div class="hp hpop' + ((h.pop || 0) > 0 ? '' : ' zero') + '">' + ((h.pop || 0) > 0 ? IC.ui('drop') : '') + Math.round(h.pop || 0) + ' %</div>'
           : view === 'wind'
-            ? '<div class="hp">' + arrow(h.dir, 'sm') + I.dir(h.dir) + '</div><div class="hw">' + tt.gustShort + ' ' + Math.round(h.gust || 0) + '</div>'
+            ? '<div class="hwv"><b>' + Math.round(h.wind || 0) + '</b><small>km/h</small></div>'
             : '<div class="hp">' + ((h.pop || 0) >= 10 ? '<span class="pop">' + Math.round(h.pop) + '%</span>' : '') + (h.precip >= 0.1 ? '<span class="mm">' + I.num(h.precip, 1) + '</span>' : '') + '</div>' +
               '<div class="hw">' + arrow(h.dir, 'sm') + Math.round(h.wind) + '</div>') +
-        (ev ? '<div class="hs">' + IC.ui(ev.rise ? 'sunrise' : 'sunset') + I.hm(wall(w, ev.t)) + '</div>' : '<div class="hs"></div>') +
+        (view !== 'cond' ? '' : ev ? '<div class="hs">' + IC.ui(ev.rise ? 'sunrise' : 'sunset') + I.hm(wall(w, ev.t)) + '</div>' : '<div class="hs"></div>') +
       '</div>');
     });
     if (view === 'precip') {
       items = items.map(function (html, i) {
-        var p = hs[i].precip || 0, k = U.clamp(p / pmax, 0, 1);
-        var bar = '<div class="pbar"><i style="height:' + (p > 0 ? Math.max(k * 100, 6) : 2).toFixed(0) + '%"></i></div>';
+        var k = rainLevel(hs[i].precip);
+        var bar = '<div class="pslot"><i style="height:' + (k * 100).toFixed(0) + '%"></i></div>';
         return html.replace('<div class="hv"></div>', '<div class="hv">' + bar + '</div>');
       });
-      return '<div class="hscroll' + (opts.day ? ' dayx' : '') + '"><div class="hstrip" style="width:' + (hs.length * 4.4) + 'rem">' + items.join('') + '</div></div>';
+      return '<div class="hscroll' + (opts.day ? ' dayx' : '') + '"><div class="hstrip vprecip" style="width:' + (hs.length * 4.4) + 'rem">' + items.join('') + '</div></div>';
     }
-    var colorOf = view === 'wind' ? windColor : tempColor;
+    if (view === 'wind') {
+      // Une seule courbe sous les chiffres : rafales en aplat, vitesse en trait, comme Météo d'Apple.
+      var top = Math.max.apply(null, hs.map(function (h) { return Math.max(h.gust || 0, h.wind || 0); }).concat([30]));
+      var n = hs.length, CW = 100, WH = 40, px = function (i) { return i * CW + CW / 2; }, py = function (v) { return (WH - 3 - Math.min(v, top) / top * (WH - 8)).toFixed(1); };
+      var gl = hs.map(function (h, i) { return px(i) + ' ' + py(h.gust || h.wind || 0); }).join('L');
+      var sl = hs.map(function (h, i) { return px(i) + ' ' + py(h.wind || 0); }).join('L');
+      var first = py(hs[0].gust || hs[0].wind || 0), firstS = py(hs[0].wind || 0), last = py(hs[n - 1].gust || hs[n - 1].wind || 0), lastS = py(hs[n - 1].wind || 0);
+      var area = '<svg class="wcurve" viewBox="0 0 ' + (n * CW) + ' ' + WH + '" preserveAspectRatio="none" aria-hidden="true">' +
+        '<defs><linearGradient id="wg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="rgba(150,140,50,.75)"/><stop offset="1" stop-color="rgba(40,110,80,.5)"/></linearGradient>' +
+        '<linearGradient id="ws" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="rgba(20,170,150,.55)"/><stop offset="1" stop-color="rgba(20,90,110,.4)"/></linearGradient></defs>' +
+        '<path d="M0 ' + WH + 'L0 ' + first + 'L' + gl + 'L' + (n * CW) + ' ' + last + 'L' + (n * CW) + ' ' + WH + 'z" fill="url(#wg)"/>' +
+        '<path d="M0 ' + WH + 'L0 ' + firstS + 'L' + sl + 'L' + (n * CW) + ' ' + lastS + 'L' + (n * CW) + ' ' + WH + 'z" fill="url(#ws)"/>' +
+        '<path d="M0 ' + firstS + 'L' + sl + 'L' + (n * CW) + ' ' + lastS + '" fill="none" stroke="#22d3c5" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
+      return '<div class="hscroll' + (opts.day ? ' dayx' : '') + '"><div class="hstrip vwind" style="width:' + (hs.length * 4.4) + 'rem">' + area + items.join('') + '</div></div>';
+    }
+    var colorOf = tempColor;
     // Courbe : un point par heure, au centre de chaque colonne.
     var lo = Math.min.apply(null, temps), hi = Math.max.apply(null, temps);
-    var span = Math.max(hi - lo, view === 'wind' ? 15 : 4);
+    var span = Math.max(hi - lo, 4);
     var colW = 100, H = 60, pts = temps.map(function (v, i) { return [i * colW + colW / 2, 12 + (1 - (v - lo) / span) * (H - 24)]; });
     var d = 'M' + pts.map(function (p) { return p[0] + ' ' + p[1].toFixed(1); }).join('L');
     var grad = 'tg' + Math.round(Math.random() * 1e6);
     var stops = temps.map(function (v, i) { return '<stop offset="' + (i / Math.max(1, temps.length - 1)).toFixed(3) + '" stop-color="' + colorOf(v) + '"/>'; }).join('');
     var labels = pts.map(function (p, i) {
-      return '<div class="tl" style="top:' + (p[1] / H * 100).toFixed(1) + '%">' + (view === 'wind' ? Math.round(temps[i]) : I.temp(temps[i])) + '</div>';
+      return '<div class="tl" style="top:' + (p[1] / H * 100).toFixed(1) + '%">' + I.temp(temps[i]) + '</div><i class="tdot" style="top:' + (p[1] / H * 100).toFixed(1) + '%"></i>';
     });
     // Placer chaque étiquette dans sa colonne.
     items = items.map(function (html, i) { return html.replace('<div class="hv"></div>', '<div class="hv">' + labels[i] + '</div>'); });
@@ -228,10 +227,42 @@
 
   function hoursCard(w, now) {
     var tt = t(), v = hourView();
-    var seg = [['cond', tt.hvCond], ['precip', tt.hvPrecip], ['wind', tt.hvWind]].map(function (o) {
-      return '<button data-hview="' + o[0] + '"' + (o[0] === v ? ' class="on"' : '') + '>' + o[1] + '</button>';
-    }).join('');
-    return '<div class="card hours"><h2>' + IC.ui(v === 'wind' ? 'wind' : (v === 'precip' ? 'drop' : 'cloud')) + tt.hourly + '<span class="hview">' + seg + '</span></h2>' + hourStrip(w, hourIndex(w, now), 48, now) + '</div>';
+    return '<div class="card hours"><div class="hhead"><div><h2>' + (v === 'wind' ? tt.hvWind : (v === 'precip' ? tt.hvPrecip : tt.hvCond)) + '</h2>' +
+      '<p class="hsub">' + (v === 'wind' ? tt.hvWindSub : (v === 'precip' ? tt.hvPrecipSub : tt.hvCondSub)) + '</p></div>' + viewSwitch(v) + '</div>' +
+      hourStrip(w, hourIndex(w, now), 48, now) + '</div>';
+  }
+
+  // Le sélecteur à trois icônes de Météo d'Apple (iOS 27) : nuage, goutte, vent.
+  function viewSwitch(v) {
+    var tt = t();
+    return '<span class="hview">' + [['cond', 'cloud', tt.hvCond], ['precip', 'drop', tt.hvPrecip], ['wind', 'wind', tt.hvWind]].map(function (o) {
+      return '<button data-hview="' + o[0] + '" aria-label="' + o[2] + '"' + (o[0] === v ? ' class="on"' : '') + '>' + IC.ui(o[1]) + '</button>';
+    }).join('') + '</span>';
+  }
+
+  // Hauteur d'une barre de pluie (0 à 1) : faible jusqu'à 2,5 mm/h, modérée jusqu'à 7,6, forte au-delà (seuils des lignes pointillées).
+  function rainLevel(p) {
+    if (!p || p < 0.05) return 0;
+    var k = p <= 2.5 ? p / 2.5 / 3 : (p <= 7.6 ? 1 / 3 + (p - 2.5) / 5.1 / 3 : 2 / 3 + Math.min(p - 7.6, 12.4) / 12.4 / 3);
+    return Math.max(k, 0.12);
+  }
+
+  // Les heures d'un jour (de minuit à minuit, heure du lieu).
+  function hoursOfDay(w, d) {
+    return w.hourly.filter(function (h) { return h.t >= d.t && h.t < d.t + 86400; });
+  }
+
+  // Petite courbe du vent d'une journée : rafales en aplat, vitesse en trait.
+  function windSpark(hs, top) {
+    var n = hs.length;
+    if (n < 2) return '';
+    var W = 100, H = 30, x = function (i) { return (i / (n - 1) * W).toFixed(1); }, y = function (v) { return (H - 2 - Math.min(v, top) / top * (H - 4)).toFixed(1); };
+    var gust = hs.map(function (h, i) { return x(i) + ' ' + y(h.gust || h.wind || 0); }).join('L');
+    var spd = hs.map(function (h, i) { return x(i) + ' ' + y(h.wind || 0); }).join('L');
+    return '<svg class="wspark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path d="M0 ' + H + 'L' + gust + 'L' + W + ' ' + H + 'z" fill="rgba(120,150,70,.45)"/>' +
+      '<path d="M0 ' + H + 'L' + spd + 'L' + W + ' ' + H + 'z" fill="rgba(30,150,140,.35)"/>' +
+      '<path d="M' + spd + '" fill="none" stroke="#2ee0d0" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
   }
 
   function daysCard(w, now) {
@@ -241,9 +272,28 @@
     var hi = Math.max.apply(null, days.map(function (d) { return d.max; }));
     var span = Math.max(hi - lo, 1);
     var cur = w.current.temp;
+    var v = hourView(), wtop = 30;
+    if (v === 'wind') days.forEach(function (d) { hoursOfDay(w, d).forEach(function (h) { wtop = Math.max(wtop, h.gust || 0, h.wind || 0); }); });
     var rows = days.map(function (d, i) {
       var wl = wall(w, d.t + 43200);
       var name = i === 0 ? tt.todayShort : (i === 1 ? tt.tomorrow : tt.daysShort[wl.wd] + ' ' + wl.d);
+      // Précipitations et vent : la journée heure par heure, comme Météo d'Apple.
+      if (v === 'precip') {
+        var bars = hoursOfDay(w, d).map(function (h) {
+          var k = rainLevel(h.precip);
+          return '<i' + (h.t + 3600 <= now ? ' class="past"' : '') + '><b style="height:' + (k ? (k * 100).toFixed(0) : 0) + '%"></b></i>';
+        }).join('');
+        return '<div class="drow vprecip" data-day="' + (di + i) + '"><div class="dn">' + name + '</div><div class="dbars">' + bars + '</div>' +
+          '<div class="dmm">' + Math.round(d.precip || 0) + ' mm</div><div class="dpop">' + ((d.pop || 0) > 0 ? IC.ui('drop') : '') + Math.round(d.pop || 0) + ' %</div></div>' +
+          '<div class="dexp" data-for="' + (di + i) + '"></div>';
+      }
+      if (v === 'wind') {
+        var hd = hoursOfDay(w, d), sp = hd.map(function (h) { return h.wind || 0; });
+        var lo2 = sp.length ? Math.round(Math.min.apply(null, sp)) : 0, hi2 = sp.length ? Math.round(Math.max.apply(null, sp)) : Math.round(d.windMax || 0);
+        return '<div class="drow vwind" data-day="' + (di + i) + '"><div class="dn">' + name + '</div><div class="dspark">' + windSpark(hd, wtop) + '</div>' +
+          '<div class="drange">' + lo2 + ' - ' + hi2 + ' <small>km/h</small></div></div>' +
+          '<div class="dexp" data-for="' + (di + i) + '"></div>';
+      }
       var l = (d.min - lo) / span * 100, r = (d.max - lo) / span * 100;
       var dot = i === 0 && U.has(cur) ? '<i class="dot" style="left:' + U.clamp((cur - lo) / span * 100, 0, 100).toFixed(1) + '%"></i>' : '';
       return '<div class="drow" data-day="' + (di + i) + '">' +
@@ -256,7 +306,7 @@
         '<div class="dw">' + arrow(d.dir, 'sm') + Math.round(d.windMax) + '</div>' +
       '</div><div class="dexp" data-for="' + (di + i) + '"></div>';
     }).join('');
-    return '<div class="card days"><h2>' + IC.ui('sunny') + tt.daily + '</h2>' + rows + '</div>';
+    return '<div class="card days"><h2>' + IC.ui(v === 'wind' ? 'wind' : (v === 'precip' ? 'drop' : 'sunny')) + tt.daily + '</h2>' + rows + '</div>';
   }
 
   var R = { editing: false };
@@ -393,6 +443,16 @@
     var start = 0;
     for (var i = 0; i < w.hourly.length; i++) { if (w.hourly[i].t >= d.t) { start = i; break; } }
     return hourStrip(w, start, 24, now, { day: true });
+  };
+
+  // La courbe et les points doivent partager la même bande : la courbe se cale sur la zone des valeurs de la première heure.
+  R.align = function (root) {
+    [].forEach.call((root || document).querySelectorAll('.hstrip'), function (st) {
+      var svg = st.querySelector('.tcurve'), hv = st.querySelector('.hv');
+      if (!svg || !hv) return;
+      svg.style.top = hv.offsetTop + 'px';
+      svg.style.height = hv.offsetHeight + 'px';
+    });
   };
 
   R.hourIndex = hourIndex;

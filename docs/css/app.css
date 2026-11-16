@@ -204,7 +204,7 @@ header.top {
 .hi .wx.sm { width: 2.5rem; height: 2.5rem; margin: .1rem 0 .2rem; }
 .hv { position: relative; width: 100%; height: 4.2rem; }
 .tl { position: absolute; left: 0; right: 0; text-align: center; font-size: 1rem; font-weight: 500; -webkit-transform: translateY(-118%); transform: translateY(-118%); }
-.tl::after { content: ""; position: absolute; left: 50%; bottom: -.62rem; width: .42rem; height: .42rem; margin-left: -.21rem; border-radius: 50%; background: #fff; }
+.tdot { position: absolute; left: 50%; width: .5rem; height: .5rem; margin: -.25rem 0 0 -.25rem; border-radius: 50%; background: #fff; }
 .hp { height: 1.2rem; font-size: .75rem; white-space: nowrap; }
 .pop { color: #8fd3ff; font-weight: 600; }
 .mm { color: var(--muted); margin-left: .25rem; }
@@ -496,9 +496,47 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 .tadd { display: inline-block; margin: 0 .45rem .45rem 0; padding: .35rem .8rem; border-radius: 1rem; border: 1px dashed rgba(255, 255, 255, .35); background: rgba(255, 255, 255, .05); font-size: .85rem; }
 .tadd .ic { width: .95rem; height: .95rem; margin-right: .3rem; vertical-align: -.15rem; }
 
-/* Heure par heure : choix Conditions / Précipitations / Vent */
-.hview { margin-left: auto; display: -webkit-flex; display: flex; padding: .12rem; border-radius: 1rem; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); }
-.hview button { padding: .22rem .7rem; border: 0; border-radius: .85rem; background: none; font-size: .74rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted); }
-.hview button.on { background: #fff; color: #0b1226; }
-.pbar { position: absolute; left: 30%; right: 30%; top: .3rem; bottom: .3rem; display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; border-bottom: 1px solid var(--line); }
-.pbar i { display: block; width: 100%; border-radius: 3px 3px 0 0; background: -webkit-linear-gradient(top, #8fd3ff, #3d86ff); background: linear-gradient(to bottom, #8fd3ff, #3d86ff); }
+/* Heure par heure et 10 jours : choix Conditions / Précipitations / Vent, comme Météo d'Apple (iOS 27) */
+.hhead { display: -webkit-flex; display: flex; -webkit-align-items: flex-start; align-items: flex-start; margin-bottom: .55rem; }
+.hhead > div { -webkit-flex: 1; flex: 1; min-width: 0; }
+.card .hhead h2 { margin: 0; font-size: 1.05rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: #fff; }
+.hsub { margin: .1rem 0 0; font-size: .82rem; color: var(--muted); }
+.hview { -webkit-flex: none; flex: none; display: -webkit-flex; display: flex; padding: .15rem; border-radius: 1.2rem; background: rgba(255, 255, 255, .07); }
+.hview button { width: 2.6rem; height: 1.9rem; padding: 0; border: 0; border-radius: 1rem; background: none; color: #fff; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
+.hview button .ic { width: 1.1rem; height: 1.1rem; }
+.hview button.on { background: rgba(255, 255, 255, .16); }
+/* Précipitations : une colonne par heure, pointillés aux seuils modéré et fort, risque sous la ligne. */
+.hi.vprecip .hv { height: 4.6rem; }
+.pslot { position: absolute; left: 22%; right: 22%; top: .2rem; bottom: .5rem; border-radius: .45rem; background: rgba(0, 0, 0, .22); overflow: hidden;
+  display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; }
+.pslot::before, .pslot::after { content: ""; position: absolute; left: 12%; right: 12%; border-top: 1px dotted rgba(255, 255, 255, .25); }
+.pslot::before { top: 33.3%; }
+.pslot::after { top: 66.6%; }
+.pslot i { display: block; width: 100%; border-radius: .35rem; background: #3fb8ff; }
+.hstrip.vprecip { border-bottom: 0; }
+.hstrip.vprecip::after { content: ""; position: absolute; left: 0; right: 0; top: 6.75rem; border-top: 1px dashed rgba(255, 255, 255, .3); }
+.hpop { margin-top: .45rem; font-size: .85rem; font-weight: 600; color: #fff; }
+.hpop .ic { width: .8rem; height: .8rem; color: #3fb8ff; fill: #3fb8ff; vertical-align: -.08rem; margin-right: .1rem; }
+.hpop.zero { color: var(--muted); font-weight: 400; }
+/* Vent : la vitesse en chiffres, une courbe commune dessous (rafales en aplat, vitesse en trait). */
+.hstrip.vwind { min-height: 7.6rem; }
+.hi.vwind { border-left: 1px dashed rgba(255, 255, 255, .22); padding-bottom: 3.2rem; }
+.hi.vwind:first-child { border-left: 0; }
+.hwv { text-align: center; line-height: 1.05; margin-top: .25rem; }
+.hwv b { display: block; font-size: 1.25rem; font-weight: 600; }
+.hwv small { font-size: .72rem; color: var(--muted); }
+.wcurve { position: absolute; left: 0; bottom: 0; width: 100%; height: 3rem; pointer-events: none; }
+/* 10 jours */
+.drow.vprecip { grid-template-columns: 4.6rem 1fr 3.8rem 4.4rem; }
+.drow.vwind { grid-template-columns: 4.6rem 1fr 7.6rem; }
+.dbars { display: -webkit-flex; display: flex; height: 2rem; -webkit-align-items: stretch; align-items: stretch; }
+.dbars i { -webkit-flex: 1; flex: 1; margin: 0 1px; border-radius: 2px; background: rgba(0, 0, 0, .25); display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; overflow: hidden; }
+.dbars i b { display: block; width: 100%; background: #3fb8ff; border-radius: 2px; }
+.dbars i.past b { background: rgba(63, 184, 255, .45); }
+.dmm { text-align: right; color: var(--muted); font-size: .95rem; white-space: nowrap; }
+.dpop { text-align: right; font-weight: 600; font-size: 1rem; white-space: nowrap; }
+.dpop .ic { width: .85rem; height: .85rem; color: #3fb8ff; fill: #3fb8ff; vertical-align: -.1rem; margin-right: .15rem; }
+.dspark { height: 2rem; padding: 0 .4rem; }
+.wspark { display: block; width: 100%; height: 100%; }
+.drange { text-align: right; font-size: 1rem; font-weight: 600; white-space: nowrap; }
+.drange small { font-size: .85rem; font-weight: 400; color: var(--muted); }
