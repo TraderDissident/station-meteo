@@ -467,3 +467,6 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 /* Contenu centré verticalement sans rogner le haut quand il dépasse. */
 .mapwrap { margin-top: auto; }
 .mbottom { margin-bottom: auto; }
+
+/* Soleil et lune retirés de la carte et du globe (1.4.1) : le jour et la nuit suffisent. */
+.mapbox .msun, .mapbox .mmoon { display: none !important; }

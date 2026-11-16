@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.4.1 · 16/11/2026
+
+- Carte et globe : le soleil clignotant et la lune ne sont plus affichés, le contraste jour/nuit suffit.
+
 ## 1.4.0 · 16/11/2026
 
 - Le style Satellite montre maintenant de vraies images, les mêmes que la carte des trajets de Travel Hub : NASA Blue Marble avec relief et fonds marins le jour, lumières des villes vues par le satellite VIIRS la nuit. Les images sont rangées dans l'app (420 Ko) : elles marchent hors connexion. Plus de relief inventé ni de faux nuages.
