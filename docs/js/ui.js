@@ -224,8 +224,11 @@
     return '<div class="card days"><h2>' + IC.ui('sunny') + tt.daily + '</h2>' + rows + '</div>';
   }
 
-  function tile(icon, title, body, cls) {
-    return '<div class="tile ' + (cls || '') + '"><h3>' + IC.ui(icon) + title + '</h3>' + body + '</div>';
+  var R = { editing: false };
+
+  function tile(id, icon, title, body, cls) {
+    return { id: id, icon: icon, title: title,
+      html: '<div class="tile ' + (cls || '') + '" data-tile="' + id + '"><h3>' + IC.ui(icon) + title + '</h3>' + body + '</div>' };
   }
 
   function compass(dir, speed) {
@@ -255,58 +258,82 @@
       '</svg>';
   }
 
+  // Décalage du tremblement d'un bloc à l'autre, celui du Socle (pastille-retirer).
+  var DELAYS = [0, -0.1, -0.2, -0.05, -0.15];
+
   function details(place, w, now) {
     var tt = t(), c = w.current, hi = hourIndex(w, now), h = w.hourly[hi] || {}, di = dayIndex(w, now), d = w.daily[di] || {}, dn = w.daily[di + 1];
     var out = [];
-    out.push(tile('wind', tt.wind, compass(c.dir, c.wind) + '<p class="sub">' + I.dir(c.dir) + ' · ' + tt.gusts + ' ' + Math.round(c.gust) + ' km/h</p>', 'wide-sm'));
+    out.push(tile('wind', 'wind', tt.wind, compass(c.dir, c.wind) + '<p class="sub">' + I.dir(c.dir) + ' · ' + tt.gusts + ' ' + Math.round(c.gust) + ' km/h</p>', 'wide-sm'));
     // Pression et tendance sur 3 h.
     var p3 = w.hourly[Math.max(0, hi - 3)], trend = U.has(p3 && p3.pres) && U.has(c.pres) ? c.pres - p3.pres : 0;
     var tr = trend > 1 ? tt.rising : (trend < -1 ? tt.falling : tt.steady);
     var gaugeK = U.clamp((c.pres - 970) / 70, 0, 1), ga = Math.PI * (1.25 - gaugeK * 1.5);
-    out.push(tile('gauge', tt.pressure,
+    out.push(tile('pressure', 'gauge', tt.pressure,
       '<svg class="gauge" viewBox="0 0 100 70" aria-hidden="true"><path d="M18 62A38 38 0 1 1 82 62" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="6" stroke-linecap="round"/>' +
       '<line x1="50" y1="40" x2="' + (50 + Math.cos(ga) * 30).toFixed(1) + '" y2="' + (40 - Math.sin(ga) * 30).toFixed(1) + '" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="40" r="4" fill="#fff"/></svg>' +
       '<div class="big">' + Math.round(c.pres) + '<small> hPa</small></div><p class="sub">' + tr + ' (' + (trend >= 0 ? '+' : '') + I.num(trend, 1) + (I.lang === 'fr' ? ' en 3 h)' : ' in 3 h)') + '</p>'));
-    out.push(tile('drop', tt.humidity, '<div class="big">' + Math.round(c.hum) + '<small> %</small></div><p class="sub">' + tt.dew + ' ' + I.temp(h.dew) + '</p>'));
+    out.push(tile('humidity', 'drop', tt.humidity, '<div class="big">' + Math.round(c.hum) + '<small> %</small></div><p class="sub">' + tt.dew + ' ' + I.temp(h.dew) + '</p>'));
     var uvv = U.has(h.uv) ? h.uv : 0, ul = uvLevel(uvv);
-    out.push(tile('sunny', tt.uv, '<div class="big">' + Math.round(uvv) + '<small> ' + ul.label + '</small></div>' +
+    out.push(tile('uv', 'sunny', tt.uv, '<div class="big">' + Math.round(uvv) + '<small> ' + ul.label + '</small></div>' +
       '<div class="scale uvs"><i style="left:' + U.clamp(uvv / 11 * 100, 0, 100).toFixed(1) + '%"></i></div><p class="sub">' + tt.max + ' ' + Math.round(d.uvMax || 0) + '</p>'));
     var vis = h.vis;
-    out.push(tile('eye', tt.visibility, '<div class="big">' + (U.has(vis) ? (vis >= 10000 ? Math.round(vis / 1000) : I.num(vis / 1000, 1)) : '–') + '<small> km</small></div>'));
-    out.push(tile('cloud', tt.clouds, '<div class="big">' + Math.round(c.cloud) + '<small> %</small></div>'));
+    out.push(tile('visibility', 'eye', tt.visibility, '<div class="big">' + (U.has(vis) ? (vis >= 10000 ? Math.round(vis / 1000) : I.num(vis / 1000, 1)) : '–') + '<small> km</small></div>'));
+    out.push(tile('clouds', 'cloud', tt.clouds, '<div class="big">' + Math.round(c.cloud) + '<small> %</small></div>'));
     // Précipitations du jour et sur 24 h.
     var sum24 = 0;
     for (var i = hi; i < Math.min(w.hourly.length, hi + 24); i++) sum24 += w.hourly[i].precip || 0;
-    out.push(tile('drop', tt.rainTotal, '<div class="big">' + I.mm(d.precip).replace(' mm', '<small> mm</small>') + '</div><p class="sub">' + tt.today24 + ' · ' + I.mm(sum24) + ' ' + tt.next24 + '</p>'));
+    out.push(tile('rain', 'drop', tt.rainTotal, '<div class="big">' + I.mm(d.precip).replace(' mm', '<small> mm</small>') + '</div><p class="sub">' + tt.today24 + ' · ' + I.mm(sum24) + ' ' + tt.next24 + '</p>'));
     // Soleil.
     if (d.sunrise && d.sunset) {
       var diff = dn && dn.daylight && d.daylight ? Math.round((dn.daylight - d.daylight) / 60) : null;
-      out.push(tile('sunrise', tt.sun, sunArc(w, now, d) +
+      out.push(tile('sun', 'sunrise', tt.sun, sunArc(w, now, d) +
         '<div class="sunrow"><span>' + IC.ui('sunrise') + I.hm(wall(w, d.sunrise)) + '</span><span>' + IC.ui('sunset') + I.hm(wall(w, d.sunset)) + '</span></div>' +
         '<p class="sub">' + tt.daylight + ' ' + I.duration(d.daylight) + (diff !== null ? ' · ' + tt.tomorrowShort + ' ' + (diff >= 0 ? '+' : '−') + Math.abs(diff) + ' min' : '') + '</p>', 'wide'));
     }
     // Lune.
     var ph = SM.astro.moonPhase(now * 1000);
-    out.push(tile('moon', tt.moon, '<div class="moonrow">' + IC.moonPhase(ph, place.lat < 0, 56) + '<div><b>' + tt.moonPhases[SM.astro.phaseIndex(ph.phase)] + '</b><p class="sub">' + Math.round(ph.fraction * 100) + ' % ' + tt.illuminated + '</p></div></div>', w.air && U.has(w.air.aqi) ? '' : 'wide'));
+    out.push(tile('moon', 'moon', tt.moon, '<div class="moonrow">' + IC.moonPhase(ph, place.lat < 0, 56) + '<div><b>' + tt.moonPhases[SM.astro.phaseIndex(ph.phase)] + '</b><p class="sub">' + Math.round(ph.fraction * 100) + ' % ' + tt.illuminated + '</p></div></div>', w.air && U.has(w.air.aqi) ? '' : 'wide'));
     // Air.
     if (w.air && U.has(w.air.aqi)) {
       var al = airLevel(w.air.aqi), a = w.air;
-      out.push(tile('leaf', tt.air, '<div class="big">' + Math.round(a.aqi) + '<small> ' + al.label + '</small></div>' +
+      out.push(tile('air', 'leaf', tt.air, '<div class="big">' + Math.round(a.aqi) + '<small> ' + al.label + '</small></div>' +
         '<div class="scale aqs"><i style="left:' + U.clamp(a.aqi, 0, 100).toFixed(1) + '%"></i></div>' +
         '<p class="sub">' + (I.lang === 'fr' ? 'PM2,5 ' : 'PM2.5 ') + I.num(a.pm25) + ' · PM10 ' + I.num(a.pm10) + ' · NO₂ ' + I.num(a.no2) + ' · O₃ ' + I.num(a.o3) + ' µg/m³</p>'));
       var pol = [['alder', a.alder, false], ['birch', a.birch, false], ['grass', a.grass, true]].filter(function (p) { return U.has(p[1]) && p[1] >= 1; });
       if (pol.length) {
-        out.push(tile('flower', tt.pollen, pol.map(function (p) {
+        out.push(tile('pollen', 'flower', tt.pollen, pol.map(function (p) {
           var lv = pollenLevel(p[1], p[2]);
           return '<div class="polrow"><span>' + tt[p[0]] + '</span><span class="pl l' + lv + '">' + tt.pollenLevels[lv] + '</span></div>';
         }).join('')));
       }
     }
-    return '<div class="card details"><h2>' + IC.ui('gauge') + tt.details + '</h2><div class="tiles">' + out.join('') + '</div></div>';
+    // Ordre et blocs retirés choisis en mode édition (réglages tiles et hiddenTiles).
+    var st = SM.app.settings, order = (st.tiles || []).slice(), hidden = st.hiddenTiles || [], editing = !!R.editing;
+    out.forEach(function (x) { if (order.indexOf(x.id) < 0) order.push(x.id); });
+    var byId = {};
+    out.forEach(function (x) { byId[x.id] = x; });
+    var shown = order.filter(function (id) { return byId[id] && hidden.indexOf(id) < 0; });
+    var off = order.filter(function (id) { return byId[id] && hidden.indexOf(id) >= 0; });
+    var k = 0;
+    var tiles = shown.map(function (id) {
+      var h = byId[id].html;
+      if (!editing) return h;
+      // Comme le Socle (carte tremblante) : deux éléments, le cadre porte le glisser, l'intérieur tremble.
+      return '<div class="tslot' + (h.indexOf('class="tile wide"') >= 0 ? ' wide' : '') + '" data-tile="' + id + '"><div class="twig" style="-webkit-animation-delay:' + DELAYS[k % 5] + 's;animation-delay:' + DELAYS[k++ % 5] + 's">' +
+        '<button class="tminus" data-remove="' + id + '" aria-label="' + tt.removeTile + '"><svg viewBox="0 0 24 24"><path d="M6 12h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>' +
+        h.replace(' data-tile="' + id + '"', '') + '</div></div>';
+    }).join('');
+    return '<div class="card details' + (editing ? ' editing' : '') + '"><h2>' + IC.ui('gauge') + tt.details +
+      '<button class="tedit' + (editing ? ' on' : '') + '" data-edit="1">' + (editing ? tt.done : tt.edit) + '</button></h2>' +
+      (editing ? '<p class="editband"><b>' + tt.editMode + '</b> · ' + tt.editHint + '</p>' : '') +
+      '<div class="tiles">' + tiles + '</div>' +
+      (editing && off.length ? '<div class="tadds"><span>' + tt.addTiles + '</span>' + off.map(function (id) {
+        return '<button class="tadd" data-add="' + id + '">+ ' + IC.ui(byId[id].icon) + byId[id].title + '</button>';
+      }).join('') + '</div>' : '') + '</div>';
   }
 
   /* ---------- assemblage ---------- */
-  var R = {};
 
   R.view = function (place, w, now) {
     var sm = summary(w, now), al = alerts(w, now);

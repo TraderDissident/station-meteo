@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.6.0 · 16/11/2026
+
+- Détails modifiables, comme les tableaux de bord du Socle : bouton Modifier (ou appui long sur un bloc), les blocs tremblent, « − » pour en retirer, « + » sous la grille pour les remettre, glisser au doigt ou à la souris pour les réordonner. Terminé pour sortir. L'ordre et les blocs retirés sont gardés, pour tous les lieux.
+- Voile de nuit : il ne tombe qu'après 30 s sans aucune activité (souris, doigt, clavier, molette) ; bouger la souris le lève aussitôt.
+
 ## 1.5.2 · 16/11/2026
 
 - Voile de nuit : il ne tombe qu'après 30 s sans aucune activité (souris, doigt, clavier, molette). Bouger la souris ou toucher l'écran le lève aussitôt.

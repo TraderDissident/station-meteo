@@ -121,6 +121,8 @@
   function render(dir) {
     var p = A.places[A.idx];
     if (!p) return;
+    // Pas de nouveau rendu pendant qu'un bloc est tenu au doigt.
+    if (SM.edit && SM.edit.dragging) return;
     if (A.mode === 'map') { renderMap(); return; }
     if (el.app.className.indexOf('mapmode') >= 0) { SM.map.leave(); appClass(); SM.sky.pause(false); }
     U.$('[data-act=map]').className = 'iconbtn';
@@ -163,6 +165,8 @@
   function clock() {
     var p = A.places[A.idx];
     if (!p) return;
+    // Pas de nouveau rendu pendant qu'un bloc est tenu au doigt.
+    if (SM.edit && SM.edit.dragging) return;
     if (A.mode === 'map') { SM.map.tick(false); return; }
     var w = A.data[p.id];
     var wl = I.wall(Math.floor(nowMs() / 1000), (w && w.tz) || p.tz, w ? w.offset : 0);
@@ -279,6 +283,8 @@
     if (!silent) { render(0); scene(true); }
   };
 
+  A.render = function () { render(0); };
+
   A.setSetting = function (key, v) {
     A.settings[key] = v;
     SM.store.saveSettings(A.settings);
@@ -391,7 +397,7 @@
     el.pages.addEventListener('touchstart', function (e) {
       A.lastTouch = Date.now();
       var tch = e.touches[0];
-      ok = e.touches.length === 1 && A.mode === 'place' && A.places.length > 1 && !e.target.closest('.hscroll');
+      ok = e.touches.length === 1 && A.mode === 'place' && A.places.length > 1 && !e.target.closest('.hscroll') && !SM.ui.editing;
       sx = tch.clientX; sy = tch.clientY; st = Date.now(); mode = ''; dx = 0;
       view = U.$('.view', el.pages);
     }, { passive: true });

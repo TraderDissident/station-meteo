@@ -2,7 +2,7 @@
 var SM = window.SM || {};
 window.SM = SM;
 
-SM.VERSION = '1.5.2';
+SM.VERSION = '1.6.0';
 
 SM.DEFAULT_PLACES = [
   { id: 'dublin', name: 'Dublin', region: 'Leinster', country: 'Ireland', lat: 53.33306, lon: -6.24889, tz: 'Europe/Dublin',
@@ -14,6 +14,8 @@ SM.DEFAULT_PLACES = [
 ];
 
 SM.DEFAULT_SETTINGS = {
+  tiles: [],           // ordre des blocs des détails (vide = ordre d'origine)
+  hiddenTiles: [],     // blocs retirés en mode édition
   carousel: 0,          // secondes entre deux lieux, 0 = arrêté
   veil: 'hours',        // 'off' | 'auto' (nuit au lieu de démarrage) | 'hours'
   veilFrom: 23,
