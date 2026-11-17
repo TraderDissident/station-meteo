@@ -66,12 +66,22 @@
     S.resize();
   };
 
+  /* Canevas de la pluie : un pixel de canevas par point d'écran (fxScale = 1). S.setFxScale(0.5) le dessine deux fois
+     moins fin (quatre fois moins de pixels à remplir et à garder), pour mesurer sur l'iPad ce que la finesse coûte
+     et juger à l'œil ce qu'elle apporte. Le dessin garde les mêmes coordonnées dans les deux cas. */
+  var fxScale = 1;
+  function sizeFx() {
+    fxCv.width = Math.round(S.w * fxScale); fxCv.height = Math.round(S.h * fxScale);
+    fit(fxCv, S.w, S.h);
+    fxCtx.setTransform(fxScale, 0, 0, fxScale, 0, 0);
+  }
+  S.setFxScale = function (k) { fxScale = U.clamp(k || 1, 0.25, 1); if (S.w) sizeFx(); return fxCv.width + 'x' + fxCv.height; };
+
   S.resize = function () {
     var w = root.clientWidth || innerWidth, h = root.clientHeight || innerHeight;
     if (w === S.w && h === S.h) return;
     S.w = w; S.h = h;
-    fxCv.width = w; fxCv.height = h;
-    fit(fxCv, w, h);
+    sizeFx();
     drawStars();
     if (S.scene) { S.hillsKey = ''; buildClouds(true); S.apply(S.scene, true); }
   };

@@ -1,5 +1,13 @@
 # Journal des modifications
 
+## 1.21.4 · 17/11/2026
+
+D'après les mesures en paysage de la 1.21.2 (sous la pluie : 264 Mo ramenés à 163 Mo, 99,5 Mo de couches ramenés à 45,5 Mo).
+
+- Écran d'un lieu en paysage : la couche permanente est celle de la colonne de gauche seule ; l'écran entier n'a plus de couche à lui (10 Mo à moitié vides). Le déplacer pendant un changement de lieu ne demande toujours aucune repeinte.
+- Halos du soleil et de la lune : couches au quart de la taille, agrandies par la carte graphique (le soleil coûtait 2,6 Mo même presque invisible sous la pluie).
+- Réglage d'essai, sans effet par défaut : SM.sky.setFxScale(0.5) dessine la pluie deux fois moins fin, pour mesurer sur l'iPad ce que sa finesse coûte en mémoire avant de décider.
+
 ## 1.21.3 · 17/11/2026
 
 D'après la mesure sur l'iPad de 20 rafraîchissements d'une même ville : la mémoire montait de 2,3 Mo à chaque rafraîchissement, jusqu'à 46 Mo d'avance.
