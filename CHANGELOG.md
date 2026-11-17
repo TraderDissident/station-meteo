@@ -1,5 +1,13 @@
 # Journal des modifications
 
+## 1.21.2 · 17/11/2026
+
+D'après les mesures en paysage sur l'iPad : 264 Mo et 48 couches sous la pluie, contre 118 Mo par ciel clair.
+
+- Mémoire des couches du ciel : la mémoire d'une couche suit sa taille affichée, pas celle de son canevas (mesuré : un nuage de 320 × 160 px affiché en 580 × 290 coûtait 2,7 Mo au lieu de 0,2 ; les deux canevas d'étoiles 8,7 Mo chacun ; la pluie 11 Mo). Chaque canevas a maintenant une couche à sa taille exacte en pixels d'écran, agrandie par la carte graphique : nuages (dans leur animation), étoiles, pluie. Même image à l'écran, puisqu'elle était déjà agrandie.
+- Brouillard (aussi affiché par temps de bruine) : ses deux couches animées sont au quart de la taille et agrandies quatre fois dans leur animation (environ 24 Mo de moins).
+- Changement de lieu : la pluie garde son image pendant que le nouvel écran se construit, et reprend quand il entre ; les deux lieux voisins se préchargent 3,5 s après l'arrivée au lieu de 2,5 s.
+
 ## 1.21.1 · 17/11/2026
 
 D'après la deuxième série de mesures sur l'iPad (40 changements de ville enchaînés).

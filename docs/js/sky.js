@@ -71,9 +71,23 @@
     if (w === S.w && h === S.h) return;
     S.w = w; S.h = h;
     fxCv.width = w; fxCv.height = h;
+    fit(fxCv, w, h);
     drawStars();
     if (S.scene) { S.hillsKey = ''; buildClouds(true); S.apply(S.scene, true); }
   };
+
+  /* Mesuré sur l'iPad : la mémoire d'une couche suit sa taille AFFICHÉE, pas celle de son canevas. Un nuage de
+     320 × 160 px affiché en 580 × 290 coûtait 2,7 Mo au lieu de 0,2 ; les étoiles, 8,7 Mo chacune ; la pluie, 11 Mo.
+     Chaque canevas reçoit donc une couche à sa taille exacte en pixels d'écran, et c'est la carte graphique qui
+     l'agrandit jusqu'à la taille voulue. Même image à l'écran (elle était déjà agrandie), mémoire divisée. */
+  function ratio() { return Math.min(window.devicePixelRatio || 1, 2); }
+  function fit(cv, showW, showH) {
+    var r = ratio(), w = cv.width / r, h = cv.height / r;
+    cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    var t = 'scale3d(' + (showW / w).toFixed(5) + ',' + (showH / h).toFixed(5) + ',1)';
+    cv.style.webkitTransformOrigin = cv.style.transformOrigin = '0 0';
+    cv.style.webkitTransform = cv.style.transform = t;
+  }
 
   /* ---------- étoiles ---------- */
   function drawStars() {
@@ -81,6 +95,7 @@
     [[starsCv, 170, 0.9], [twinkleCv, 28, 1.6]].forEach(function (spec) {
       var cv = spec[0];
       cv.width = Math.round(S.w / 2); cv.height = Math.round(S.h * 0.8 / 2);
+      fit(cv, S.w, S.h * 0.8);
       var g = cv.getContext('2d');
       g.clearRect(0, 0, cv.width, cv.height);
       for (var i = 0; i < spec[1]; i++) {
@@ -145,11 +160,12 @@
       c.cw = Math.round(S.w * (0.32 + rnd() * 0.3)); c.ch = Math.round(c.cw / 2);
       c.dist = S.w + c.cw;
       c.durK = 0.8 + rnd() * 0.5;
-      c.wrap.style.width = c.cw + 'px'; c.wrap.style.height = c.ch + 'px'; c.wrap.style.left = (-c.cw) + 'px';
+      var bw = 320 / ratio(), bh = 160 / ratio(), k = (c.cw / bw).toFixed(4);
+      c.wrap.style.width = bw + 'px'; c.wrap.style.height = bh + 'px'; c.wrap.style.left = (-c.cw) + 'px';
       c.wrap.style.opacity = (0.75 + rnd() * 0.25).toFixed(2);
       c.wrap.style.display = 'none';
-      css += '@-webkit-keyframes cd' + i + '{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(' + c.dist + 'px,0,0)}}' +
-        '@keyframes cd' + i + '{from{transform:translate3d(0,0,0)}to{transform:translate3d(' + c.dist + 'px,0,0)}}';
+      css += '@-webkit-keyframes cd' + i + '{from{-webkit-transform:translate3d(0,0,0) scale(' + k + ')}to{-webkit-transform:translate3d(' + c.dist + 'px,0,0) scale(' + k + ')}}' +
+        '@keyframes cd' + i + '{from{transform:translate3d(0,0,0) scale(' + k + ')}to{transform:translate3d(' + c.dist + 'px,0,0) scale(' + k + ')}}';
       cloudBox.appendChild(c.wrap);
       clouds.push(c);
     }
@@ -253,9 +269,15 @@
     if (!n && !S.storm) fxCtx.clearRect(0, 0, S.w, S.h);
   }
 
+  /* Pendant qu'un nouvel écran se construit, la pluie garde son image : la page est de toute façon occupée, et
+     chaque image de pluie retarderait d'autant l'arrivée de l'écran. Elle reprend dès que l'écran entre. */
+  var holdUntil = 0;
+  S.hold = function (ms) { holdUntil = ms ? Date.now() + ms : 0; };
+
   function frame(ts) {
     if (S.paused || (S.kind === 'none' && !S.storm && !bolt)) { loopOn = false; fxCtx.clearRect(0, 0, S.w, S.h); return; }
     U.raf(frame);
+    if (holdUntil && Date.now() < holdUntil) { lastFrame = 0; fpsStart = 0; return; }
     if (lastFrame && ts - lastFrame < 31) return;
     var gap = lastFrame ? ts - lastFrame : 0;
     var dt = lastFrame ? Math.min(gap, 80) / 33.3 : 1;

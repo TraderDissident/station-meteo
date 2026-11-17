@@ -206,6 +206,7 @@
           if (!nv.parentNode) return;
           nv.className = nv.className.replace(' pre-' + side, ' enter-' + side);
           A.transitionUntil = Date.now() + 450;
+          SM.sky.hold(0);
           fillLater(560);
         }, Math.max(0, 230 - (Date.now() - (t0 || 0))));
       });
@@ -398,6 +399,7 @@
     old.style.webkitTransform = old.style.transform = 'translate3d(' + (dir > 0 ? -40 : 40) + '%,0,0)';
     old.style.opacity = '0';
     A.transitionUntil = t0 + 4000;
+    SM.sky.hold(2500);
     // Deux images d'attente : la sortie est partie à l'écran avant que la construction n'occupe la page.
     afterFrames(build);
   }
@@ -575,7 +577,7 @@
       if (n < 2 || A.mode !== 'place' || document.hidden) return;
       var a = A.places[(A.idx + 1) % n], b = A.places[(A.idx - 1 + n) % n];
       load(a).then(function () { if (b !== a) return load(b); });
-    }, 2500);
+    }, 3500);
   }
 
   function everyMinute() {

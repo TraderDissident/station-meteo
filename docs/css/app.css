@@ -42,7 +42,7 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .sky-l { top: 0; left: 0; width: 25.2%; height: 25.2%; opacity: 0; -webkit-transition: opacity 3s linear; transition: opacity 3s linear;
   -webkit-transform: scale3d(4, 4, 1); transform: scale3d(4, 4, 1); -webkit-transform-origin: 0 0; transform-origin: 0 0; }
 #starsBox { top: 0; left: 0; width: 100%; height: 80%; }
-#starsBox canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+#starsBox canvas { position: absolute; top: 0; left: 0; }
 #twinkle { -webkit-animation: twinkle 3.2s ease-in-out infinite alternate; animation: twinkle 3.2s ease-in-out infinite alternate; }
 @-webkit-keyframes twinkle { from { opacity: .15; } to { opacity: 1; } }
 @keyframes twinkle { from { opacity: .15; } to { opacity: 1; } }
@@ -62,24 +62,25 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 #deck { top: 0; left: 0; width: 25.2%; height: 16.25%; -webkit-transition: opacity 3s; transition: opacity 3s;
   -webkit-transform: scale3d(4, 4, 1); transform: scale3d(4, 4, 1); -webkit-transform-origin: 0 0; transform-origin: 0 0; }
 #cloudBox { top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
-.cloud { position: absolute; will-change: transform; }
+.cloud { position: absolute; will-change: transform; -webkit-transform-origin: 0 0; transform-origin: 0 0; }
 .cloud canvas { display: block; width: 100%; height: 100%; }
 #sky.still .cloud { -webkit-animation-play-state: paused !important; animation-play-state: paused !important; }
 
 #fog { top: 0; left: 0; right: 0; bottom: 0; opacity: 0; -webkit-transition: opacity 3s; transition: opacity 3s; }
-#fog div { position: absolute; left: -30%; width: 160%; height: 60%; }
-.fog1 { bottom: 5%; -webkit-animation: fogA 60s ease-in-out infinite alternate; animation: fogA 60s ease-in-out infinite alternate; }
-.fog2 { bottom: 25%; -webkit-animation: fogB 80s ease-in-out infinite alternate; animation: fogB 80s ease-in-out infinite alternate; }
-@-webkit-keyframes fogA { from { -webkit-transform: translate3d(-8%, 0, 0); } to { -webkit-transform: translate3d(8%, 0, 0); } }
-@keyframes fogA { from { transform: translate3d(-8%, 0, 0); } to { transform: translate3d(8%, 0, 0); } }
-@-webkit-keyframes fogB { from { -webkit-transform: translate3d(10%, 0, 0); } to { -webkit-transform: translate3d(-10%, 0, 0); } }
-@keyframes fogB { from { transform: translate3d(10%, 0, 0); } to { transform: translate3d(-10%, 0, 0); } }
-#sky.still .fog1, #sky.still .fog2, #sky.still #twinkle { -webkit-animation: none; animation: none; }
+#fog div { position: absolute; left: -30%; width: 40%; height: 15%; -webkit-transform-origin: 0 0; transform-origin: 0 0; }
+.fog1 { top: 35%; -webkit-animation: fogA 60s ease-in-out infinite alternate; animation: fogA 60s ease-in-out infinite alternate; }
+.fog2 { top: 15%; -webkit-animation: fogB 80s ease-in-out infinite alternate; animation: fogB 80s ease-in-out infinite alternate; }
+@-webkit-keyframes fogA { from { -webkit-transform: translate3d(-32%, 0, 0) scale(4); } to { -webkit-transform: translate3d(32%, 0, 0) scale(4); } }
+@keyframes fogA { from { transform: translate3d(-32%, 0, 0) scale(4); } to { transform: translate3d(32%, 0, 0) scale(4); } }
+@-webkit-keyframes fogB { from { -webkit-transform: translate3d(40%, 0, 0) scale(4); } to { -webkit-transform: translate3d(-40%, 0, 0) scale(4); } }
+@keyframes fogB { from { transform: translate3d(40%, 0, 0) scale(4); } to { transform: translate3d(-40%, 0, 0) scale(4); } }
+#sky.still .fog1, #sky.still .fog2 { -webkit-animation: none; animation: none; -webkit-transform: scale(4); transform: scale(4); }
+#sky.still #twinkle { -webkit-animation: none; animation: none; }
 
 #hills { left: 0; right: 0; bottom: 0; height: 24%; }
 .port #hills { height: 17%; }
 #hills svg { display: block; width: 100%; height: 100%; }
-#fx { top: 0; left: 0; width: 100%; height: 100%; }
+#fx { top: 0; left: 0; }
 #flash { top: 0; left: 0; right: 0; bottom: 0; background: #dfe6ff; opacity: 0; }
 #flash.on { -webkit-animation: flash .8s ease-out; animation: flash .8s ease-out; }
 @-webkit-keyframes flash { 0% { opacity: 0; } 8% { opacity: .55; } 16% { opacity: .08; } 26% { opacity: .38; } 100% { opacity: 0; } }
