@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.18.0 · 17/11/2026
+
+- Globe : lecture / pause de la rotation, comme sur la carte de Travel Hub. Pastille en bas à gauche du globe, avec les boutons lecture et pause (celui actif en blanc) ; à la souris, la vitesse 0,5×, 1×, 1,5× ou 2× se déplie au survol. Choix retenus d'une ouverture à l'autre.
+- Globe : la rotation ne s'arrête que pendant qu'on le tient, et reprend dès qu'on le lâche (avant : 20 s plus tard).
+
 ## 1.17.0 · 17/11/2026
 
 - Lieux : ordre réglé par glisser-déposer. Chaque lieu a une poignée ≡ à droite ; on l'attrape au doigt ou à la souris, la ligne suit, les autres s'écartent, et la liste défile quand on approche du haut ou du bas. Les boutons monter et descendre sont retirés.

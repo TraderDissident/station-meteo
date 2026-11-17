@@ -611,3 +611,17 @@ header.top { position: relative; }
 .prow .grip .ic { width: 1.25rem; height: 1.25rem; }
 .prow.dragging { position: relative; z-index: 5; background: #1c2846; border-radius: .7rem; box-shadow: 0 .8rem 2rem rgba(0, 0, 0, .5); cursor: grabbing; }
 .prow.dragging .grip { cursor: grabbing; color: #fff; }
+
+/* Globe : lecture / pause (et vitesse au survol), pastille en bas à gauche comme dans Travel Hub */
+.gctl { display: none; }
+.mapbox.globe .gctl { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; position: absolute; z-index: 5; left: 1rem; bottom: 1rem;
+  padding: .25rem; border-radius: 2rem; background: rgba(14, 22, 42, .9); border: 1px solid rgba(255, 255, 255, .18); box-shadow: 0 .6rem 1.6rem rgba(0, 0, 0, .45); }
+.gctl > button { width: 2.6rem; height: 2.6rem; padding: 0; margin: 0 .1rem; border: 0; border-radius: 50%; background: none; color: #fff;
+  display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
+.gctl > button .ic { width: 1.05rem; height: 1.05rem; }
+.gctl button.on { background: #fff; color: #0b1226; }
+.gspeed { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; overflow: hidden; max-width: 0; opacity: 0;
+  -webkit-transition: max-width .25s ease-out, opacity .25s; transition: max-width .25s ease-out, opacity .25s; }
+.gspeed i { width: 1px; height: 1.3rem; margin: 0 .3rem; background: rgba(255, 255, 255, .2); }
+.gspeed button { height: 2.1rem; min-width: 2.4rem; margin: 0 .1rem; padding: 0 .4rem; border: 0; border-radius: 1.1rem; background: none; color: var(--muted); font-size: .75rem; font-weight: 600; }
+@media (hover: hover) { .gctl:hover .gspeed { max-width: 12rem; opacity: 1; } }

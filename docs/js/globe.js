@@ -204,7 +204,7 @@
       G.lat = Math.max(-70, Math.min(70, lat0 + (y - sy) * k));
       G.draw();
     }
-    function end() { if (G.dragging) { G.dragging = false; G.pausedUntil = Date.now() + 20000; if (onFrame) onFrame(true); } }
+    function end() { if (G.dragging) { G.dragging = false; G.pausedUntil = 0; if (onFrame) onFrame(true); } }
     cv.addEventListener('touchstart', function (e) { if (e.touches.length === 1) start(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
     cv.addEventListener('touchmove', function (e) { if (G.dragging && e.touches.length === 1) { e.preventDefault(); move(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: false });
     cv.addEventListener('touchend', end, { passive: true });

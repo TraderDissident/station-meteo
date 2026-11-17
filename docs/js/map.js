@@ -742,7 +742,7 @@
       '<div class="mapview"><div class="mapwrap">' +
         '<div class="zones">' + rulerHTML() + '</div>' +
         '<div class="mapbox"><canvas></canvas><div class="msun"><i></i></div><div class="mmoon"></div>' +
-        '<svg class="mklines" aria-hidden="true"></svg><div class="mks"></div><p class="mapcredit">' + U.esc(tt.mapCredit) + '</p></div>' +
+        '<svg class="mklines" aria-hidden="true"></svg><div class="mks"></div><p class="mapcredit">' + U.esc(tt.mapCredit) + '</p>' + spinHTML() + '</div>' +
       '</div>' +
       '<div class="mbottom"><div class="mbar"><div class="seg mstyle">' + STYLE_ORDER.map(function (k) {
         return '<button data-style="' + k + '"' + (k === st.style ? ' class="on"' : '') + '>' + tt.mapStyles[k] + '</button>';
@@ -841,7 +841,7 @@
         } else { st.view = 'map'; }
       }
       var motion = SM.app.settings.motion;
-      SM.globe.spin = motion === 'off' ? 0 : (motion === 'reduced' ? 0.6 : 2);
+      applySpin();
       SM.globe.resize(Math.min(W, H) * 1.0);
       SM.globe.run();
     }
@@ -888,6 +888,37 @@
 
   M.active = function () { return !!(st.root && document.body.contains(st.root)); };
   M.leave = function () { SM.globe.detach(); freeLayers(); free(st.cv); st.root = null; st.infos = null; st.cv = st.ctx = null; st.w = st.h = 0; };
+
+  /* Lecture / pause de la rotation du globe, comme sur la carte de Travel Hub : deux boutons en pastille en bas à
+     gauche du globe, et la vitesse (0,5× à 2×) qui se déplie au survol de la souris. Choix retenus d'une fois à l'autre. */
+  function spinPref(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+  function spinOn() { return spinPref('sm.globeSpin', '1') === '1'; }
+  function spinSpeed() { return parseFloat(spinPref('sm.globeSpeed', '1')) || 1; }
+  function applySpin() {
+    var motion = SM.app.settings.motion, base = motion === 'off' ? 0 : (motion === 'reduced' ? 0.6 : 2);
+    SM.globe.spin = spinOn() ? base * spinSpeed() : 0;
+  }
+  function spinHTML() {
+    var on = spinOn(), sp = spinSpeed(), tt = I.t();
+    return '<div class="gctl"><button data-gspin="1"' + (on ? ' class="on"' : '') + ' aria-label="' + U.esc(tt.rotPlay) + '">' + IC.ui('play') + '</button>' +
+      '<button data-gspin="0"' + (!on ? ' class="on"' : '') + ' aria-label="' + U.esc(tt.rotPause) + '">' + IC.ui('pause') + '</button>' +
+      '<span class="gspeed"><i></i>' + [0.5, 1, 1.5, 2].map(function (v) {
+        return '<button data-gspeed="' + v + '"' + (v === sp ? ' class="on"' : '') + '>' + String(v).replace('.', I.lang === 'fr' ? ',' : '.') + '×</button>';
+      }).join('') + '</span></div>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-gspin], [data-gspeed]');
+    if (!b || !st.root) return;
+    try {
+      if (b.hasAttribute('data-gspin')) localStorage.setItem('sm.globeSpin', b.getAttribute('data-gspin'));
+      else localStorage.setItem('sm.globeSpeed', b.getAttribute('data-gspeed'));
+    } catch (err) { /* rien */ }
+    applySpin();
+    var on = spinOn(), sp = String(spinSpeed());
+    U.$$('[data-gspin]').forEach(function (x) { x.className = (x.getAttribute('data-gspin') === '1') === on ? 'on' : ''; });
+    U.$$('[data-gspeed]').forEach(function (x) { x.className = x.getAttribute('data-gspeed') === sp ? 'on' : ''; });
+    e.stopPropagation();
+  }, true);
 
   M.labelDragging = function () { return !!(drag && drag.moved) || Date.now() - draggedAt < 400; };
   SM.map = M;
