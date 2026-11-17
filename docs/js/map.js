@@ -849,6 +849,18 @@
     M.tick(true);
   };
 
+  /* Les points sont placés en pourcentage de la hauteur selon la projection : quand le plein écran change le nord
+     affiché, leur hauteur doit être recalculée, sinon ils restent à leur place d'avant (décalés de leur ville). */
+  function placeMarkers() {
+    if (!st.box) return;
+    var byId = {};
+    (st.places || []).forEach(function (p) { byId[p.id] = p; });
+    U.$$('.mk', st.box).forEach(function (mk) {
+      var p = byId[mk.getAttribute('data-place')];
+      if (p) mk.style.top = (fy(p.lat) * 100).toFixed(3) + '%';
+    });
+  }
+
   M.resize = function (force) {
     if (!st.root) return;
     var wrap = U.$('.mapwrap', st.root), bottom = U.$('.mbottom', st.root);
@@ -864,7 +876,7 @@
     var full = document.getElementById('app').className.indexOf('mapfull') >= 0;
     var fullH = full ? st.root.clientHeight - U.$('.zones', st.root).offsetHeight - 2 : 0;
     var north = full && st.view === 'map' ? northFor(fullH / Math.max(availW, 1)) : 75;
-    if (north !== LAT_N) { setNorth(north); force = true; }
+    if (north !== LAT_N) { setNorth(north); force = true; placeMarkers(); }
     if (land && !full) W = Math.min(availW, (st.root.clientHeight - bottom.offsetHeight - U.$('.zones', st.root).offsetHeight - 8) / ASPECT);
     if (full) W = st.view === 'globe' ? availW : Math.min(availW, fullH / ASPECT);
     W = Math.floor(Math.max(W, 280));
