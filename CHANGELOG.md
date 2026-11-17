@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.23.0 · 17/11/2026
+
+- Carte et globe, points des lieux : deux nouveaux réglages dans le panneau d'options de la carte. Le clignotement (l'onde autour du point) peut être coupé ; la couleur se choisit parmi la couleur de la température (comme avant) et sept couleurs fixes. Le contour blanc des points est supprimé ; l'onde prend la couleur du point.
+- Carte en plein écran : elle montre davantage le nord (jusqu'à 84° N au lieu de 75° N) en prenant la hauteur libre ; le sud et la largeur ne changent pas, les étiquettes placées à la main restent à la même distance de leur point. Hors plein écran, rien ne change.
+- Cartes sous la carte du monde : le bas des lettres à jambage (g, p, y, comme dans « Bogota » ou « Aigre ») n'est plus coupé.
+
 ## 1.22.7 · 17/11/2026
 
 D'après l'essai « ?passive=1 » de la 1.22.6, validé par Matt sur l'iPad (« le scroll est beaucoup plus responsif, il lag beaucoup moins »).

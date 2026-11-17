@@ -8,7 +8,21 @@
   var LON0 = -172.5, LAT_N = 75, LAT_S = -58;
   function miller(lat) { return 1.25 * Math.log(Math.tan(PI / 4 + 0.4 * lat * RAD)); }
   var MT = miller(LAT_N), MB = miller(LAT_S);
-  var ASPECT = (MT - MB) / (2 * PI);
+  var ASPECT = (MT - MB) / (2 * PI), ASPECT0 = ASPECT;
+  /* Plein écran : la carte garde sa largeur et montre plus de nord avec la hauteur libre (jusqu'à 84° N, au-delà
+     il n'y a plus de terres). Le sud ne bouge pas. Hors plein écran : 75° N comme avant. */
+  var NORTH_MAX = 84;
+  function setNorth(lat) {
+    LAT_N = lat; MT = miller(LAT_N); ASPECT = (MT - MB) / (2 * PI);
+  }
+  function northFor(ratio) {
+    var mt = Math.min(MB + ratio * 2 * PI, miller(NORTH_MAX));
+    if (mt <= miller(75)) return 75;
+    return (2.5 * Math.atan(Math.exp(0.8 * mt)) - 0.625 * PI) / RAD;
+  }
+  // Hauteur de référence des étiquettes placées à la main : celle de la carte à 75° N, pour qu'elles restent à la
+  // même distance de leur point quand le plein écran agrandit la carte vers le nord.
+  function labH() { return st.w * ASPECT0; }
   function fx(lon) { return (((lon - LON0) % 360) + 360) % 360 / 360; }
   var EQ = false; // vrai pendant le dessin des textures du globe (projection équirectangulaire, Terre entière)
   function fy(lat) { return EQ ? (90 - lat) / 180 : (MT - miller(U.clamp(lat, -85, 85))) / (MT - MB); }
@@ -378,7 +392,7 @@
 
   function markerHTML(ci, i) {
     var icon = ci.c ? IC.weather(CO.icon(ci.c.code, ci.sky.alt > -1), 'mki') : '';
-    var col = U.has(ci.temp) ? SM.ui.tempColor(ci.temp) : '#ffffff';
+    var col = dotColor() === 'temp' ? (U.has(ci.temp) ? SM.ui.tempColor(ci.temp) : '#ffffff') : dotColor();
     return '<div class="mk' + (ci.night ? ' night' : '') + '" data-place="' + U.esc(ci.p.id) + '" style="left:' + (fx(ci.p.lon) * 100).toFixed(3) + '%;top:' + (fy(ci.p.lat) * 100).toFixed(3) + '%">' +
       '<i class="mkd" style="background:' + col + '"></i><i class="mkp" style="border-color:' + col + '"></i>' +
       '<div class="mkl">' + icon + '<div class="mkt"><b>' + (U.has(ci.temp) ? I.temp(ci.temp) : '') + '</b><span>' + U.esc(ci.pl.name) + '</span><small class="mktime"></small></div></div></div>';
@@ -498,7 +512,7 @@
       lab.style.display = ''; lab._pos = '';
       var p = { id: id, lab: lab, x: mk.offsetLeft, y: mk.offsetTop, w: lab.offsetWidth, h: lab.offsetHeight, box: null, off: null, fixed: false };
       var m = saved[id], a = autoKey && autoKey === st.autoKey && st.autoPos[id];
-      if (m) { p.fixed = true; p.off = [m[0] * W, m[1] * H, 0, 0]; p.box = [p.x + p.off[0], p.y + p.off[1], p.w, p.h]; }
+      if (m) { p.fixed = true; p.off = [m[0] * W, m[1] * labH(), 0, 0]; p.box = [p.x + p.off[0], p.y + p.off[1], p.w, p.h]; }
       // Déjà placée automatiquement à cette taille : elle garde sa place, quoi qu'il arrive (choix de Matt).
       else if (a) { p.kept = true; p.off = [a[0], a[1], 0, 0]; p.box = [p.x + a[0], p.y + a[1], p.w, p.h]; }
       return p;
@@ -713,7 +727,7 @@
       saveGlobe(d.p.id, near ? null : [d.p.off[0] / R, d.p.off[1] / R]);
       globeLabels();
     } else {
-      saveManual(d.p.id, near ? null : [d.p.off[0] / st.w, d.p.off[1] / st.h]);
+      saveManual(d.p.id, near ? null : [d.p.off[0] / st.w, d.p.off[1] / labH()]);
       layoutLabels();
     }
     // Données arrivées pendant le glisser : la carte se met à jour maintenant.
@@ -771,9 +785,10 @@
         return '<button data-style="' + k + '"' + (k === st.style ? ' class="on"' : '') + '>' + tt.mapStyles[k] + '</button>';
       }).join('') + '</div>' + (SM.globe.supported() ? '<div class="seg mview"><button data-view="map"' + (st.view === 'map' ? ' class="on"' : '') + '>' + tt.viewMap + '</button>' +
         '<button data-view="globe"' + (st.view === 'globe' ? ' class="on"' : '') + '>' + tt.viewGlobe + '</button></div>' : '') + '<div class="seg mswitch"><button data-cards="clocks"' + (st.cards === 'clocks' ? ' class="on"' : '') + '>' + tt.clocks + '</button>' +
-        '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div></div>' +
+        '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div>' + dotsHTML() + '</div>' +
         '<div class="mcards"></div></div></div>';
     st.root = U.$('.mapview', container);
+    if (!dotBlink()) st.root.className += ' noblink';
     // Glisser d'étiquette : seul écouteur non passif de la carte, posé sur elle (voir config.js).
     st.root.addEventListener('touchmove', dragMove, { passive: false });
     st.box = U.$('.mapbox', st.root);
@@ -847,6 +862,9 @@
     // Plein écran : la carte entière, aussi grande que l'écran le permet, sans débord ; le reste reste vide.
     var full = document.getElementById('app').className.indexOf('mapfull') >= 0;
     var fullH = full ? st.root.clientHeight - U.$('.zones', st.root).offsetHeight - 2 : 0;
+    var north = full && st.view === 'map' ? northFor(fullH / Math.max(availW, 1)) : 75;
+    if (north !== LAT_N) { setNorth(north); force = true; }
+    if (land && !full) W = Math.min(availW, (st.root.clientHeight - bottom.offsetHeight - U.$('.zones', st.root).offsetHeight - 8) / ASPECT);
     if (full) W = st.view === 'globe' ? availW : Math.min(availW, fullH / ASPECT);
     W = Math.floor(Math.max(W, 280));
     var H = full && st.view === 'globe' ? fullH : Math.round(W * ASPECT);
@@ -949,6 +967,34 @@
     var on = spinOn(), sp = String(spinSpeed());
     U.$$('[data-gspin]').forEach(function (x) { x.className = (x.getAttribute('data-gspin') === '1') === on ? 'on' : ''; });
     U.$$('[data-gspeed]').forEach(function (x) { x.className = x.getAttribute('data-gspeed') === sp ? 'on' : ''; });
+    e.stopPropagation();
+  }, true);
+
+  /* ---------- points des lieux : couleur et clignotement (réglages de la carte et du globe) ---------- */
+  var DOT_COLORS = ['temp', '#ffffff', '#ffd23f', '#ff8a3d', '#ff4d6d', '#c77dff', '#4dd2ff', '#5cf28c'];
+  function dotColor() { var v = spinPref('sm.dotColor', 'temp'); return DOT_COLORS.indexOf(v) >= 0 ? v : 'temp'; }
+  function dotBlink() { return spinPref('sm.dotBlink', '1') === '1'; }
+  function dotsHTML() {
+    var tt = I.t(), cur = dotColor(), on = dotBlink();
+    return '<div class="seg mdots"><button data-dblink="' + (on ? '0' : '1') + '"' + (on ? ' class="on"' : '') + '>' + tt.dotBlink + '</button>' +
+      '<span class="dsw">' + DOT_COLORS.map(function (c) {
+        var bg = c === 'temp' ? 'linear-gradient(135deg,#4dd2ff,#5cf28c 35%,#ffd23f 65%,#ff4d6d)' : c;
+        return '<button data-dcolor="' + c + '"' + (c === cur ? ' class="on"' : '') + ' aria-label="' + U.esc(c === 'temp' ? tt.dotTemp : c) + '" style="background:' + bg + '"></button>';
+      }).join('') + '</span></div>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-dcolor], [data-dblink]');
+    if (!b || !st.root) return;
+    try {
+      if (b.hasAttribute('data-dcolor')) localStorage.setItem('sm.dotColor', b.getAttribute('data-dcolor'));
+      else localStorage.setItem('sm.dotBlink', b.getAttribute('data-dblink'));
+    } catch (err) { /* rien */ }
+    var on = dotBlink(), cur = dotColor();
+    st.root.className = st.root.className.replace(' noblink', '') + (on ? '' : ' noblink');
+    U.$$('[data-dblink]').forEach(function (x) { x.setAttribute('data-dblink', on ? '0' : '1'); x.className = on ? 'on' : ''; });
+    U.$$('[data-dcolor]').forEach(function (x) { x.className = x.getAttribute('data-dcolor') === cur ? 'on' : ''; });
+    // Couleur des points : les marqueurs sont redessinés avec la nouvelle couleur.
+    if (b.hasAttribute('data-dcolor')) M.refresh();
     e.stopPropagation();
   }, true);
 

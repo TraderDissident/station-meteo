@@ -419,7 +419,8 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .mk { position: absolute; width: 0; height: 0; cursor: pointer; }
 .mk.night::before { content: ""; position: absolute; width: 2.6rem; height: 2.6rem; margin: -1.3rem 0 0 -1.3rem; border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 200, 110, .55) 0%, rgba(255, 170, 70, .18) 40%, rgba(255, 160, 60, 0) 70%); }
-.mkd { position: absolute; width: .8rem; height: .8rem; margin: -.4rem 0 0 -.4rem; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 .5rem rgba(0, 0, 0, .5); }
+.mkd { position: absolute; width: .8rem; height: .8rem; margin: -.4rem 0 0 -.4rem; border-radius: 50%; box-shadow: 0 0 .5rem rgba(0, 0, 0, .5); }
+.noblink .mkp { display: none; }
 .mkp { position: absolute; width: 1.8rem; height: 1.8rem; margin: -.9rem 0 0 -.9rem; border-radius: 50%; border: 2px solid #fff; opacity: 0;
   -webkit-animation: ping 2.6s ease-out infinite; animation: ping 2.6s ease-out infinite; }
 .mkl { position: absolute; left: .75rem; top: -1.3rem; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
@@ -464,9 +465,10 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .clk.night .ts { stroke: rgba(233, 238, 251, .4); }
 .clk.night text { fill: #e9eefb; }
 .clk.night .hub { stroke: #e9eefb; }
-.mcn { font-size: 1.02rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* overflow: hidden coupait le bas des g, p, y (« Bogota », « Aigre ») : ligne assez haute pour les jambages. */
+.mcn { font-size: 1.02rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; padding-bottom: .08em; }
 .mcn .mctime { font-weight: 400; color: rgba(255, 255, 255, .85); font-variant-numeric: tabular-nums; }
-.mcs { font-size: .78rem; color: rgba(255, 255, 255, .78); margin-top: .2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mcs { font-size: .78rem; color: rgba(255, 255, 255, .78); margin-top: .2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.35; padding-bottom: .06em; }
 .mcs .wx.mci { width: 1.2rem; height: 1.2rem; vertical-align: -.3rem; margin: 0 .1rem; }
 .dbar2 { position: relative; height: .32rem; border-radius: .16rem; margin: .6rem 0 .3rem; }
 .dbar2 .now { position: absolute; top: 50%; width: .55rem; height: .55rem; margin: -.275rem 0 0 -.275rem; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px rgba(10, 16, 32, .6); }
@@ -476,7 +478,11 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .mcard.sky { text-shadow: 0 1px 6px rgba(0, 0, 0, .35); border-color: rgba(255, 255, 255, .24); }
 .mcard.sky.bright { text-shadow: 0 1px 6px rgba(0, 0, 0, .55); }
 .mch { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: flex-start; align-items: flex-start; }
-.mch b { display: block; font-size: 1.05rem; font-weight: 600; }
+.mch b { display: block; font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
+.mdots { -webkit-align-items: center; align-items: center; }
+.dsw { display: -webkit-inline-flex; display: inline-flex; -webkit-align-items: center; align-items: center; }
+.seg .dsw button { width: 1.55rem; height: 1.55rem; padding: 0; margin: 0 .3rem 0 0; border-radius: 50%; border: 2px solid transparent; }
+.seg .dsw button.on { border-color: #fff; box-shadow: 0 0 0 2px rgba(8, 14, 30, .9) inset; }
 .mch small { display: block; font-size: .72rem; color: rgba(255, 255, 255, .8); }
 .mch .wx.mci { width: 2.8rem; height: 2.8rem; margin: -.4rem -.3rem 0 0; -webkit-filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .25)); filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .25)); }
 .mcbig { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: baseline; align-items: baseline; margin-top: .1rem; }
