@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.24.2 · 17/11/2026
+
+- Carte et globe : les étiquettes des villes sont opaques (même teinte bleu nuit, sans transparence) ; la carte ne se voit plus au travers.
+
 ## 1.24.1 · 17/11/2026
 
 - Carte du monde : la première carte sous la carte est alignée au bord gauche de la carte (elle était décalée de quelques points vers la droite), la dernière au bord droit.

@@ -434,7 +434,8 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
   -webkit-animation: ping 2.6s ease-out infinite; animation: ping 2.6s ease-out infinite; }
 .mkl { position: absolute; left: .75rem; top: -1.3rem; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
   padding: .22rem .54rem .22rem .27rem; border-radius: .72rem; white-space: nowrap;
-  background: rgba(8, 14, 30, .78); border: 1px solid rgba(255, 255, 255, .2); box-shadow: 0 .4rem 1.2rem rgba(0, 0, 0, .4); }
+  /* Étiquettes opaques (demande de Matt) : même teinte qu'avant, sans transparence. */
+  background: #121a2c; border: 1px solid #3a4152; box-shadow: 0 .4rem 1.2rem rgba(0, 0, 0, .4); }
 .mkl .wx.mki { width: 1.8rem; height: 1.8rem; margin-right: .27rem; }
 .mkt { line-height: 1.15; }
 .mkt b { font-size: .95rem; font-weight: 600; margin-right: .32rem; }
