@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.22.5 · 17/11/2026
+
+Suite de la 1.22.4, accord de Matt sur le correctif du ciel.
+
+- Après un changement de lieu, le ciel change par morceaux, une petite tâche chacun : fond, puis soleil, lune et étoiles, puis nuages, puis brouillard, relief et pluie. D'un bloc, il occupait la page une demi-seconde. Le ciel final est le même.
+- Nuages en trop : cachés et arrêtés au lieu d'être retirés de l'affichage, ce qui détruisait puis recréait leur couche à chaque passage d'un ciel nuageux à un ciel clair. Leur teinte n'est toujours repeinte que si elle change.
+
 ## 1.22.4 · 17/11/2026
 
 Trouvé par mesure sur l'iPad : les changements de lieu lents l'étaient quand le ciel change beaucoup (Lisbonne la nuit vers New York le jour : 0,8 à 1,8 s à chaque fois, le retour restant rapide).

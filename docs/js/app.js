@@ -73,10 +73,10 @@
     if (dw) { sc.code = dw.code; sc.cover = dw.cover; sc.rate = dw.rate || 0; sc.cold = dw.code >= 71 && dw.code <= 86; }
     return sc;
   }
-  function scene(instant) {
+  function scene(instant, staged) {
     var p = A.places[A.idx];
     if (!p || A.mode !== 'place') return;
-    var r = SM.sky.apply(sceneOf(p), instant);
+    var r = SM.sky.apply(sceneOf(p), instant, staged);
     setPanel(r.brightness);
     A.sunAlt = r.sunAlt;
   }
@@ -228,7 +228,7 @@
       var p = A.places[A.idx];
       if (!p || p.id !== id || A.mode !== 'place') return;
       if (busy()) { skyT = setTimeout(go, 150); return; }
-      scene(false);
+      scene(false, true);
     }, 460);
   }
   SM.sky.busy = busy;

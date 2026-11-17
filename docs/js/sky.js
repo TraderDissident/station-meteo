@@ -199,7 +199,12 @@
     var rnd = U.seeded('nuages' + (sc.placeName || ''));
     for (var i = 0; i < clouds.length; i++) {
       var c = clouds[i], top = Math.round(S.h * (0.02 + rnd() * 0.42) - c.ch * 0.3), delay = rnd();
-      if (i >= want) { if (c.wrap.style.display !== 'none') c.wrap.style.display = 'none'; continue; }
+      /* Nuage en trop : caché et arrêté, mais laissé dans l'affichage. Le retirer (display) détruisait sa couche, et
+         la remettre la recréait : mesuré sur l'iPad, 250 à 400 ms de plus à chaque passage d'un ciel nuageux à un ciel clair. */
+      if (i >= want) {
+        if (c.shown !== false) { c.shown = false; c.wrap.style.visibility = 'hidden'; c.wrap.style.webkitAnimationPlayState = c.wrap.style.animationPlayState = 'paused'; c.play = 'paused'; }
+        continue;
+      }
       var dur = Math.round(c.dist / speed * c.durK);
       var anim = 'cd' + i + ' ' + dur + 's linear ' + (-delay * dur).toFixed(1) + 's infinite' + (dirSign < 0 ? ' reverse' : '');
       c.wrap.style.top = top + 'px';
@@ -207,6 +212,7 @@
       var play = S.motion === 'off' ? 'paused' : 'running';
       if (c.play !== play) { c.play = play; c.wrap.style.webkitAnimationPlayState = play; c.wrap.style.animationPlayState = play; }
       if (c.wrap.style.display) c.wrap.style.display = '';
+      if (c.shown !== true) { c.shown = true; c.wrap.style.visibility = ''; }
     }
     S.cloudCount = want;
   }
@@ -403,7 +409,19 @@
   /*
    sc = { lat, lon, ms, code, cover, rate, wind, windDir, placeName, instant }
   */
-  S.apply = function (sc, instant) {
+  /* staged : le ciel change par morceaux, une tâche chacun (fond ; soleil, lune, étoiles, voile ; nuages ;
+     brouillard, relief, pluie), à 120 ms d'intervalle et jamais pendant un geste. Mesuré sur l'iPad : d'un bloc,
+     passer d'un ciel de nuit à un ciel de jour occupait la page 500 ms. Le résultat final est le même. */
+  var stageT = 0, stageSeq = 0;
+  function stages(list, seq) {
+    if (!list.length || seq !== stageSeq) return;
+    if (S.busy && S.busy()) { stageT = setTimeout(function () { stages(list, seq); }, 150); return; }
+    list.shift()();
+    if (list.length) stageT = setTimeout(function () { stages(list, seq); }, 120);
+  }
+  S.apply = function (sc, instant, staged) {
+    clearTimeout(stageT);
+    var seq = ++stageSeq;
     S.scene = sc;
     var sun = SM.astro.sun(sc.ms, sc.lat, sc.lon);
     var later = SM.astro.sun(sc.ms + 600000, sc.lat, sc.lon);
@@ -441,6 +459,7 @@
       S.layerFlip = !S.layerFlip;
     }
 
+    var partA = function () {
     // Soleil
     var sunVis = alt > -3 ? U.clamp((alt + 3) / 4, 0, 1) * (1 - cover * 0.85) * (kind === 'fog' ? 0.3 : 1) : 0;
     var warm = U.clamp(1 - alt / 12, 0, 1);
@@ -466,7 +485,9 @@
     var deckBg = 'linear-gradient(to bottom, ' + U.rgb(deckC, 0.95) + ' 0%, ' + U.rgb(deckC, 0.6) + ' 35%, ' + U.rgb(deckC, 0) + ' 75%)';
     if (deckBg !== S.deckKey) { S.deckKey = deckBg; deck.style.backgroundImage = deckBg; }
     layer(deck, U.clamp((cover - 0.55) / 0.45, 0, 1), instant);
+    };
 
+    var partB = function () {
     // Nuages : nombre, sens et teinte.
     var toward = ((sc.windDir || 270) + 180) % 360;
     var facing = sc.lat >= 0 ? 180 : 0;
@@ -506,7 +527,9 @@
       };
       S.paintT = setTimeout(paintNext, 1100);
     }
+    };
 
+    var partC = function () {
     // Brouillard
     var fogA = kind === 'fog' ? 0.55 + lvl * 0.15 : (kind === 'drizzle' ? 0.15 : 0);
     if (fogA > 0) {
@@ -531,6 +554,10 @@
     S.dropColor = U.rgb(U.mix(H('#9fb0cc'), H('#eef4fb'), daylight), (0.5 + daylight * 0.25).toFixed(2));
     S.storm = (kind === 'storm' || kind === 'hail') && S.motion !== 'off';
     setParticles(pk, pl);
+    };
+
+    if (staged && !instant) stages([partA, partB, partC], seq);
+    else { partA(); partB(); partC(); }
 
     root.className = S.motion === 'off' ? 'still' : '';
     return { sunAlt: alt, rising: rising, brightness: S.brightness, daylight: daylight, cols: cols };
