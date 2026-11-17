@@ -475,6 +475,8 @@
   var GAP = 10;
   // light : globe en rotation, placement rapide (une passe, sans recuit) ; la version complète à l'arrêt.
   function layoutLabels(light) {
+    // Jamais de nouveau placement pendant qu'une étiquette est tenue : elle se détacherait de son trait.
+    if (drag) { pendingRefresh = true; return; }
     var W = st.w, H = st.h;
     var mks = U.$$('.mk', st.box).filter(function (mk) { return mk.style.display !== 'none'; });
     if (!mks.length) { U.$('.mklines', st.box).innerHTML = ''; return; }
@@ -612,6 +614,8 @@
   function drawLines() {
     var lines = '';
     (st.labels || []).forEach(function (p) {
+      // L'étiquette tenue fait foi, même si la liste a été refaite entre-temps.
+      if (drag && drag.p.id === p.id) p = drag.p;
       if (!p.box) return;
       var ax = U.clamp(p.x, p.box[0], p.box[0] + p.box[2]), ay = U.clamp(p.y, p.box[1], p.box[1] + p.box[3]);
       if (Math.abs(ax - p.x) + Math.abs(ay - p.y) > 20) {
@@ -648,6 +652,10 @@
     var p = labelAt(e.target);
     if (!p) return;
     var pt = pointOf(e);
+    // Position et taille relues à l'instant du geste : le trait et l'étiquette partent du même état.
+    var mk = p.lab.parentNode;
+    p.x = mk.offsetLeft; p.y = mk.offsetTop; p.w = p.lab.offsetWidth; p.h = p.lab.offsetHeight;
+    p.off = [p.lab.offsetLeft, p.lab.offsetTop, 0, 0]; p.box = [p.x + p.off[0], p.y + p.off[1], p.w, p.h];
     drag = { p: p, sx: pt[0], sy: pt[1], ox: p.off[0], oy: p.off[1], moved: false };
     if (e.type === 'mousedown') e.preventDefault();
   }
@@ -668,7 +676,9 @@
     // Toujours dans la carte.
     ox = U.clamp(ox, 2 - p.x, st.w - 2 - p.w - p.x); oy = U.clamp(oy, 2 - p.y, st.h - 2 - p.h - p.y);
     p.off = [ox, oy, 0, 0]; p.box = [p.x + ox, p.y + oy, p.w, p.h];
-    p.lab.style.left = ox.toFixed(0) + 'px'; p.lab.style.top = oy.toFixed(0) + 'px';
+    ox = Math.round(ox); oy = Math.round(oy);
+    p.off = [ox, oy, 0, 0]; p.box = [p.x + ox, p.y + oy, p.w, p.h];
+    p.lab.style.left = ox + 'px'; p.lab.style.top = oy + 'px';
     p.lab.className = 'mkl fixed dragging';
     drawLines();
   }
@@ -718,6 +728,7 @@
   var M = {};
 
   M.render = function (container, places) {
+    if (drag && st.root) { pendingRefresh = true; return; }
     var tt = I.t();
     try { st.cards = localStorage.getItem('sm.mapCards') || 'clocks'; } catch (e) { st.cards = 'clocks'; }
     try { st.style = localStorage.getItem('sm.mapStyle') || 'nature'; } catch (e) { st.style = 'nature'; }

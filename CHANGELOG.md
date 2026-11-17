@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.13.5 · 17/11/2026
+
+- Carte du monde, glisser des étiquettes : plus aucun nouveau placement ni reconstruction de la carte tant qu'une étiquette est tenue (données qui arrivent, fenêtre redimensionnée, retour sur l'onglet) ; le trait suit toujours l'étiquette tenue ; position et taille relues au début de chaque geste.
+
 ## 1.13.4 · 17/11/2026
 
 - Carte du monde, glisser des étiquettes : le glisser s'arrête net au relâchement (avant, l'étiquette restait accrochée au curseur 0,4 s, et un nouveau glisser commencé dans ce délai était coupé en route) ; l'arrivée de données météo pendant un glisser ne reconstruit plus l'étiquette sous le curseur ; bouton relâché hors de la fenêtre, le glisser se termine.
