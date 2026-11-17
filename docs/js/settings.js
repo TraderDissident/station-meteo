@@ -10,10 +10,26 @@
   }
   function field(label, html) { return '<div class="field"><label>' + U.esc(label) + '</label>' + html + '</div>'; }
 
-  function hoursOptions() {
-    var o = [];
-    for (var h = 0; h < 24; h++) o.push([h, t().hourOpt(h)]);
-    return o;
+  /* Champ d'heure de Travel Hub (TimePickerField) : un bouton avec une horloge, qui ouvre deux colonnes,
+     heures puis minutes, avec « Maintenant ». Choisir l'heure garde les minutes ; choisir les minutes referme. */
+  var CLOCK = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  function timeField(key, value) {
+    return '<div class="tp"><button type="button" class="tpbtn" data-tp="' + key + '">' + CLOCK + '<span>' + U.hhmm(value) + '</span></button></div>';
+  }
+  function timePop(key) {
+    var tt = t(), v = U.hhmm(SM.app.settings[key]), h = v.slice(0, 2), m = v.slice(3);
+    function col(kind, label, items, sel) {
+      return '<div class="tpcol"><p>' + U.esc(label) + '</p><div class="tplist" data-kind="' + kind + '">' + items.map(function (x) {
+        return '<button type="button" data-' + kind + '="' + x + '"' + (x === sel ? ' class="on"' : '') + '>' + x + '</button>';
+      }).join('') + '</div></div>';
+    }
+    var hours = [], mins = [];
+    for (var i = 0; i < 24; i++) hours.push(U.pad(i));
+    for (var j = 0; j < 60; j++) mins.push(U.pad(j));
+    // 00 aux deux bouts des minutes, comme dans Travel Hub : après 59, l'heure revient.
+    mins.push('00');
+    return '<div class="tppop" data-for="' + key + '"><div class="tpcols">' + col('h', tt.tpHours, hours, h) + col('m', tt.tpMinutes, mins, m) + '</div>' +
+      '<div class="tpfoot"><button type="button" data-tpnow="1">' + U.esc(tt.tpNow) + '</button></div></div>';
   }
 
   function settingsHTML() {
@@ -22,8 +38,7 @@
       field(tt.carousel, seg('carousel', [[0, tt.off], [30, tt.every(30)], [60, tt.every(60)], [300, tt.every(300)]], s.carousel)) +
       field(tt.veil, seg('veil', [['off', tt.off], ['auto', tt.auto], ['hours', tt.hours]], s.veil));
     if (s.veil === 'hours') {
-      html += '<div class="twocol">' + field(tt.from, '<select data-key="veilFrom">' + hoursOptions().map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === s.veilFrom ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>') +
-        field(tt.to, '<select data-key="veilTo">' + hoursOptions().map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === s.veilTo ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>') + '</div>';
+      html += '<div class="twocol">' + field(tt.from, timeField('veilFrom', s.veilFrom)) + field(tt.to, timeField('veilTo', s.veilTo)) + '</div>';
     }
     if (s.veil !== 'off') html += field(tt.level, seg('veilLevel', [[0.35, '35 %'], [0.55, '55 %'], [0.7, '70 %']], s.veilLevel));
     html +=
@@ -38,7 +53,7 @@
   }
 
   function parse(key, v) {
-    if (key === 'carousel' || key === 'veilFrom' || key === 'veilTo') return parseInt(v, 10);
+    if (key === 'carousel') return parseInt(v, 10);
     if (key === 'veilLevel') return parseFloat(v);
     if (key === 'seconds') return v === 'true';
     return v;
@@ -56,6 +71,35 @@
         return;
       }
       if (e.target.closest('[data-open="diag"]')) SM.app.open('diag');
+      // Champ d'heure.
+      var pop = U.$('.tppop', body), tb = e.target.closest('.tpbtn');
+      if (tb) {
+        var k = tb.getAttribute('data-tp'), was = pop && pop.getAttribute('data-for') === k;
+        if (pop) pop.parentNode.removeChild(pop);
+        if (was) return;
+        tb.parentNode.insertAdjacentHTML('beforeend', timePop(k));
+        // Chaque colonne montre la valeur choisie en son milieu.
+        U.$$('.tplist', body).forEach(function (l) {
+          var on = U.$('.on', l);
+          if (on) l.scrollTop = on.offsetTop - l.clientHeight / 2 + on.offsetHeight / 2;
+        });
+        return;
+      }
+      if (pop && e.target.closest('.tppop')) {
+        var key2 = pop.getAttribute('data-for'), cur = U.hhmm(SM.app.settings[key2]);
+        var bh = e.target.closest('[data-h]'), bm = e.target.closest('[data-m]'), now = e.target.closest('[data-tpnow]');
+        if (bh) {
+          SM.app.setSetting(key2, bh.getAttribute('data-h') + ':' + cur.slice(3));
+          U.$$('[data-h]', pop).forEach(function (x) { x.className = x === bh ? 'on' : ''; });
+          U.$('.tpbtn[data-tp="' + key2 + '"] span', body).textContent = U.hhmm(SM.app.settings[key2]);
+        } else if (bm || now) {
+          var d = new Date();
+          SM.app.setSetting(key2, now ? U.pad(d.getHours()) + ':' + U.pad(d.getMinutes()) : cur.slice(0, 2) + ':' + bm.getAttribute('data-m'));
+          bindSettings(body);
+        }
+        return;
+      }
+      if (pop) pop.parentNode.removeChild(pop);
     };
     U.$$('select', body).forEach(function (sel) {
       sel.onchange = function () { SM.app.setSetting(sel.getAttribute('data-key'), parse(sel.getAttribute('data-key'), sel.value)); };

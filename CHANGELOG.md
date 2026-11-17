@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.14.0 · 17/11/2026
+
+- Réglages, voile de nuit : « De » et « À » prennent le champ d'heure de Travel Hub (TimePickerField). Un bouton à horloge ouvre deux colonnes, heures puis minutes, chacune centrée sur la valeur choisie, et « Maintenant ». Choisir l'heure garde les minutes ; choisir les minutes referme. Le voile se règle donc à la minute (23:45 par exemple) ; les horaires enregistrés en heures entières restent valables.
+
 ## 1.13.6 · 17/11/2026
 
 - Réglages : listes déroulantes avec un chevron dessiné par l'app, à distance du bord (celui du système collait à la bordure) ; « De » et « À » du voile de nuit côte à côte au lieu de se partager toute la largeur.

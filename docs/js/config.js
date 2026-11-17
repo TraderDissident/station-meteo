@@ -2,7 +2,7 @@
 var SM = window.SM || {};
 window.SM = SM;
 
-SM.VERSION = '1.13.6';
+SM.VERSION = '1.14.0';
 
 // D'ouest en est, comme sur une carte classique.
 SM.DEFAULT_PLACES = [
@@ -54,8 +54,8 @@ SM.DEFAULT_SETTINGS = {
   hiddenTiles: [],     // blocs retirés en mode édition
   carousel: 0,          // secondes entre deux lieux, 0 = arrêté
   veil: 'hours',        // 'off' | 'auto' (nuit au lieu de démarrage) | 'hours'
-  veilFrom: 23,
-  veilTo: 7,
+  veilFrom: '23:00',
+  veilTo: '07:00',
   veilLevel: 0.55,
   motion: 'auto',       // 'auto' | 'reduced' | 'off'
   seconds: false,

@@ -50,6 +50,14 @@
       function (e) { clearTimeout(timer); throw e; });
   };
 
+  /* Heure du jour en minutes : « 23:30 », ou un nombre d'heures (réglages d'avant la 1.14.0). */
+  U.dayMin = function (v) {
+    if (typeof v === 'number') return v * 60;
+    var m = /^(\d{1,2}):(\d{2})/.exec(v || '');
+    return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 0;
+  };
+  U.hhmm = function (v) { var n = U.dayMin(v); return U.pad(Math.floor(n / 60)) + ':' + U.pad(n % 60); };
+
   /* Couleurs */
   U.hex = function (h) {
     h = h.replace('#', '');

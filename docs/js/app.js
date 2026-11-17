@@ -354,8 +354,8 @@
     var s = A.settings;
     if (s.veil === 'off') return false;
     if (s.veil === 'hours') {
-      var h = new Date().getHours();
-      return s.veilFrom > s.veilTo ? (h >= s.veilFrom || h < s.veilTo) : (h >= s.veilFrom && h < s.veilTo);
+      var d = new Date(), h = d.getHours() * 60 + d.getMinutes(), f = U.dayMin(s.veilFrom), to = U.dayMin(s.veilTo);
+      return f > to ? (h >= f || h < to) : (h >= f && h < to);
     }
     // Automatique : la nuit au lieu de démarrage, supposé être celui de l'iPad.
     var start = SM.store.startPlace(), home = A.places[0];
