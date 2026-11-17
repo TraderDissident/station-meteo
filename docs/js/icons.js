@@ -96,7 +96,8 @@
     sunset: '<path d="M2 16.5h20M7 16.5a5 5 0 0 1 10 0M12 7.5v2M5.6 10.1l1.4 1.4M18.4 10.1L17 11.5M9.5 19.5L12 22l2.5-2.5"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     expand: '<path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/>',
-    shrink: '<path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7"/>',
+    // Même dessin que expand, pointes retournées vers le centre (mêmes traits, même taille).
+    shrink: '<path d="M13 5v6h6M11 19v-6H5M20 4l-7 7M4 20l7-7"/>',
     play: '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>',
     pause: '<path d="M8.5 5.5v13M15.5 5.5v13" stroke-width="3"/>',
     grip: '<path d="M5 8h14M5 12h14M5 16h14"/>',

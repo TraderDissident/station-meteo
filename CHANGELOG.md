@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.24.4 · 17/11/2026
+
+- Icône de sortie du plein écran : exactement le dessin de l'icône d'entrée (mêmes traits, même taille), pointes retournées vers le centre. Elle était dessinée autrement.
+
 ## 1.24.3 · 17/11/2026
 
 - Carte en plein écran : le bouton de l'en-tête montre des flèches vers l'intérieur (sortir du plein écran) ; hors plein écran, des flèches vers l'extérieur comme avant.
