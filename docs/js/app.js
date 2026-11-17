@@ -169,7 +169,7 @@
       });
     } else {
       var before = [].slice.call(el.pages.children);
-      SM.map.render(el.pages, A.places);
+      SM.map.render(el.pages, A.places, true);
       before.forEach(release);
       // Les sélecteurs (style, carte ou globe, horloges ou météo) montent dans l'en-tête, à la place du titre :
       // la carte gagne leur hauteur. La carte se recalcule ensuite avec la place libérée.
@@ -717,6 +717,20 @@
     }, 3500);
   }
 
+  /* Au repos (ville ou liste affichée, personne n'a touché l'écran depuis 8 s, aucun geste ni transition) :
+     - la carte du monde se prépare en avance (voir SM.map.prewarm), pour s'ouvrir aussitôt au clic ;
+     - un lieu dont la météo a plus d'un quart d'heure est rafraîchi, un seul toutes les 20 s, pour que la carte et
+       la liste soient à jour et qu'un glissement vers un lieu ne déclenche pas de requête. */
+  function idle() { return A.mode !== 'map' && !document.hidden && !busy() && !A.sheet && Date.now() - (A.lastTouch || 0) > 8000; }
+  function idleWork() {
+    if (!idle()) return;
+    loadMapCode().then(function () {
+      if (idle() && SM.map && SM.map.prewarm) SM.map.prewarm(idle, function (msg) { SM.diag.info(msg); });
+    }, function () { /* hors ligne : on réessaiera */ });
+    var stale = A.places.filter(function (p) { var w = A.data[p.id]; return !A.inflight[p.id] && (!w || Date.now() - w.fetchedAt >= SM.REFRESH_MS); });
+    if (stale.length) load(stale[0]);
+  }
+
   function everyMinute() {
     if (document.hidden) return;
     var p = A.places[A.idx];
@@ -968,6 +982,7 @@
 
     setInterval(everySecond, 1000);
     setInterval(everyMinute, 60000);
+    setTimeout(function () { idleWork(); setInterval(idleWork, 20000); }, 15000);
     restartSkyTimer();
     veil();
 

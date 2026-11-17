@@ -109,10 +109,10 @@
   }
 
   /* Reprojette une image équirectangulaire (Terre entière, 180° O à gauche) ligne par ligne. */
-  function drawEquirect(g, img, cw, ch) {
+  function drawEquirect(g, img, cw, ch, y0, y1) {
     var iw = img.naturalWidth, ih = img.naturalHeight;
     var x0 = (LON0 + 180) / 360 * iw, d1 = (iw - x0) / iw * cw;
-    for (var y = 0; y < ch; y++) {
+    for (var y = y0 || 0, end = y1 === undefined ? ch : Math.min(y1, ch); y < end; y++) {
       var lat = EQ ? 90 - (y + 0.5) / ch * 180 : latAt((y + 0.5) / ch);
       var sy = U.clamp((90 - lat) / 180 * ih, 0, ih - 1);
       g.drawImage(img, x0, sy, iw - x0, 1, 0, y, d1, 1);
@@ -175,36 +175,49 @@
   var STYLE_ORDER = ['nature', 'satellite', 'flat', 'atlas', 'neon'];
 
   function paintLayer(g, S, night, cw, ch, noStars) {
-    var w = st.w, h = st.h, pr = st.pr;
+    paintSteps(g, S, night, cw, ch, noStars).forEach(function (f) { f(); });
+  }
+  /* Le dessin d'un fond en étapes courtes : bandes de 48 lignes pour les images satellite ; mer, terres, côtes et
+     frontières pour les autres styles. Permet de le préparer au repos sans jamais bloquer la page d'un coup. */
+  function paintSteps(g, S, night, cw, ch, noStars) {
+    var w = st.w, h = st.h, pr = st.pr, out = [];
     if (S.imagery) {
-      if (EARTH.ready) { g.imageSmoothingEnabled = true; drawEquirect(g, night ? EARTH.night : EARTH.day, cw, ch); }
-      else { g.fillStyle = night ? '#02040c' : '#0b2a4c'; g.fillRect(0, 0, cw, ch); }
-      return;
+      if (EARTH.ready) {
+        for (var y = 0; y < ch; y += 48) (function (a) {
+          out.push(function () { g.imageSmoothingEnabled = true; drawEquirect(g, night ? EARTH.night : EARTH.day, cw, ch, a, a + 48); });
+        })(y);
+      } else out.push(function () { g.fillStyle = night ? '#02040c' : '#0b2a4c'; g.fillRect(0, 0, cw, ch); });
+      return out;
     }
-    g.fillStyle = stops(g, ch, night ? S.oceanNight : S.oceanDay);
-    g.fillRect(0, 0, cw, ch);
-    if (night && S.stars && !noStars) {
-      var rnd = U.seeded('carte-etoiles');
-      for (var i = 0; i < 420; i++) {
-        g.fillStyle = 'rgba(220,230,255,' + (0.15 + rnd() * 0.6).toFixed(2) + ')';
-        g.beginPath(); g.arc(rnd() * cw, rnd() * ch, (0.3 + rnd() * 0.8) * pr, 0, 6.283); g.fill();
+    out.push(function () {
+      g.fillStyle = stops(g, ch, night ? S.oceanNight : S.oceanDay);
+      g.fillRect(0, 0, cw, ch);
+      if (night && S.stars && !noStars) {
+        var rnd = U.seeded('carte-etoiles');
+        for (var i = 0; i < 420; i++) {
+          g.fillStyle = 'rgba(220,230,255,' + (0.15 + rnd() * 0.6).toFixed(2) + ')';
+          g.beginPath(); g.arc(rnd() * cw, rnd() * ch, (0.3 + rnd() * 0.8) * pr, 0, 6.283); g.fill();
+        }
       }
-    }
-    traceLand(g, w, h, pr);
-    g.fillStyle = stops(g, ch, night ? S.landNight : S.landDay);
-    g.fill();
+    });
+    out.push(function () {
+      traceLand(g, w, h, pr);
+      g.fillStyle = stops(g, ch, night ? S.landNight : S.landDay);
+      g.fill();
+    });
     var coast = night ? S.coastNight : S.coastDay, glow = night ? S.coastNightGlow : S.coastGlow;
-    if (coast) {
+    if (coast) out.push(function () {
       traceLand(g, w, h, pr);
       if (glow) { g.shadowColor = glow; g.shadowBlur = 7 * pr; }
       g.lineWidth = (glow ? 1.1 : 0.8) * pr; g.strokeStyle = coast; g.stroke();
       g.shadowBlur = 0;
-    }
+    });
     var bc = night ? S.bordersNight : S.bordersDay;
-    if (bc && SM.BORDERS) {
+    if (bc && SM.BORDERS) out.push(function () {
       traceBorders(g, w, h, pr);
       g.lineWidth = 0.6 * pr; g.strokeStyle = bc; g.stroke();
-    }
+    });
+    return out;
   }
 
   /* Textures du globe : la Terre entière en équirectangulaire 2048 × 1024, au style choisi. */
@@ -261,6 +274,8 @@
       while (layerCache.length > 2) { var old = layerCache.pop(); free(old.day); free(old.night); }
       M.lastBuild = (Date.now() - t0) + ' ms painted';
     } else M.lastBuild = 'reused';
+    // Taille de la carte retenue par orientation (et plein écran) : la préparation au repos la réutilise.
+    try { localStorage.setItem('sm.mapSize.' + orient() + (LAT_N !== 75 ? '.full' : ''), JSON.stringify({ w: st.w, h: st.h, pr: st.pr, lat: LAT_N })); } catch (e) { /* rien */ }
     st.day = hit.day; st.night = hit.night; st.tmp = canvas(cw, ch);
     if (st.box) st.box.style.background = S.bg;
     // Masque jour/nuit et bande de crépuscule, calculés sur une grille fine puis lissés à l'agrandissement.
@@ -786,7 +801,9 @@
   /* ---------- rendu et mise à jour ---------- */
   var M = {};
 
-  M.render = function (container, places) {
+  // later : la taille définitive viendra d'un M.resize() de l'appelant (réglages montés dans l'en-tête) ; on ne
+  // dimensionne pas ici, sinon les fonds étaient dessinés une première fois à une taille provisoire, pour rien.
+  M.render = function (container, places, later) {
     if (drag && st.root) { pendingRefresh = true; return; }
     // Carte reconstruite alors qu'elle était déjà affichée : l'ancien canevas et ses calques sont rendus tout de suite.
     if (st.cv) { freeLayers(); free(st.cv); st.cv = st.ctx = null; }
@@ -823,7 +840,52 @@
     st.moonKey = null;
     st.day = st.mask = null;
     M.refresh();
-    M.resize(true);
+    if (!later) M.resize(true);
+  };
+
+  /* ---------- carte préparée au repos ---------- */
+  /* Pendant que la ville ou la liste est affichée et que personne ne touche l'écran, les fonds de la carte (à la taille
+     où elle s'affichera) sont dessinés en avance, par petites étapes, pour qu'elle s'ouvre aussitôt au clic. Arrêté
+     dès qu'un geste commence ou que la carte s'ouvre, repris au prochain repos. cb(texte pour le journal). */
+  var warm = null;
+  M.prewarm = function (canStep, cb) {
+    if (warm || st.root) return;
+    var sz;
+    try { sz = JSON.parse(localStorage.getItem('sm.mapSize.' + (document.getElementById('app').className.indexOf('land') >= 0 ? 'land' : 'port') + (SM.app.mapFull ? '.full' : ''))); } catch (e) { sz = null; }
+    if (!sz) return;
+    var style = 'nature', view = 'map';
+    try { style = localStorage.getItem('sm.mapStyle') || 'nature'; view = localStorage.getItem('sm.mapView') || 'map'; } catch (e) { /* rien */ }
+    if (view === 'globe' || !STYLES[style]) return;
+    var S = STYLES[style];
+    if (S.imagery && !EARTH.ready) { loadEarth(function () { }); return; }
+    var cw = Math.round(sz.w * sz.pr), ch = Math.round(sz.h * sz.pr);
+    var key = [style, cw, ch, sz.lat, LON0, S.imagery ? EARTH.ready : 0].join('|');
+    if (layerCache.some(function (e) { return e.key === key; })) return;
+    var entry = { key: key, day: canvas(cw, ch), night: canvas(cw, ch) };
+    // Chaque étape dessine avec la taille et la projection de la carte à venir, puis rend celles de l'instant.
+    var withSize = function (f) {
+      var keep = [st.w, st.h, st.pr, LAT_N];
+      st.w = sz.w; st.h = sz.h; st.pr = sz.pr; setNorth(sz.lat);
+      try { f(); } finally { st.w = keep[0]; st.h = keep[1]; st.pr = keep[2]; setNorth(keep[3]); }
+    };
+    var steps = [];
+    withSize(function () {
+      steps = paintSteps(entry.day.getContext('2d'), S, false, cw, ch).concat(paintSteps(entry.night.getContext('2d'), S, true, cw, ch));
+    });
+    warm = { n: steps.length, ms: 0, t: Date.now() };
+    var next = function () {
+      if (st.root) { free(entry.day); free(entry.night); warm = null; return; }   // carte ouverte entre-temps
+      if (!canStep()) { setTimeout(next, 1000); return; }
+      var t = Date.now();
+      withSize(steps.shift());
+      warm.ms += Date.now() - t;
+      if (steps.length) { setTimeout(next, 40); return; }
+      layerCache.unshift(entry);
+      while (layerCache.length > 2) { var old = layerCache.pop(); free(old.day); free(old.night); }
+      if (cb) cb('map prewarm ' + warm.ms + ' ms in ' + warm.n + ' steps over ' + Math.round((Date.now() - warm.t) / 1000) + ' s · ' + style + ' ' + cw + 'x' + ch);
+      warm = null;
+    };
+    setTimeout(next, 0);
   };
 
   /* Nouvelles données : on refait villes et cartes, pas le fond. */

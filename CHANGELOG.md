@@ -1,5 +1,15 @@
 # Journal des modifications
 
+## 1.25.0 · 17/11/2026
+
+Demande de Matt : la carte doit s'afficher aussitôt au clic, préparée pendant que l'app est au repos en vue ville ou liste.
+
+- Carte préparée au repos : quand la ville ou la liste est affichée et que personne n'a touché l'écran depuis 8 s, les fonds de la carte sont dessinés en avance, à la taille où elle s'affichera, en petites étapes (jamais pendant un geste ou une transition). À l'ouverture, ils sont réutilisés. Refait seulement si le style, l'orientation ou le plein écran changent.
+- Une seule construction à l'ouverture : la carte n'est plus dessinée d'abord à une taille provisoire puis à la bonne.
+- Rafraîchissement de fond : au repos, un lieu dont la météo a plus d'un quart d'heure est rechargé toutes les 20 s, pour que carte et liste soient à jour à l'ouverture.
+- Journal : une ligne « map prewarm … » quand la préparation se fait (durée totale, nombre d'étapes).
+- Non préparé : la vue Globe, qui reconstruit encore ses textures à l'ouverture.
+
 ## 1.24.5 · 17/11/2026
 
 Signalé par Matt : passer de la ville à la carte reste lent, même deux fois de suite. Le journal de l'iPad montrait 4,6 à 4,8 s de construction à chaque ouverture, sans requête en cours.
