@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.23.1 · 17/11/2026
+
+Signalé par Matt : après quelques minutes sur une ville, toucher le globe mettait plusieurs secondes à afficher la carte du monde.
+
+- Carte du monde et liste : elles sont peintes d'abord avec les données en mémoire, puis les lieux dont la météo a plus d'un quart d'heure se rafraîchissent un par un, avec une pause après chaque requête. Avant, jusqu'à 17 lieux étaient rechargés d'un coup au moment même de l'ouverture, et la carte était redessinée dès la première réponse.
+- Journal : à l'ouverture de la carte ou de la liste, une ligne donne le temps de construction, le délai jusqu'à l'affichage et le nombre de lieux à rafraîchir.
+
 ## 1.23.0 · 17/11/2026
 
 - Carte et globe, points des lieux : deux nouveaux réglages dans le panneau d'options de la carte. Le clignotement (l'onde autour du point) peut être coupé ; la couleur se choisit parmi la couleur de la température (comme avant) et sept couleurs fixes. Le contour blanc des points est supprimé ; l'onde prend la couleur du point.

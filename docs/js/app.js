@@ -517,16 +517,36 @@
   A.toggleMap = function () { setMode(A.mode === 'map' ? 'place' : 'map'); };
   A.rerender = function () { render(0); };
   A.toggleList = function () { setMode(A.mode === 'list' ? 'place' : 'list'); };
+  /* Ouverture de la carte ou de la liste : elle est peinte d'abord avec les données en mémoire (même anciennes),
+     les lieux se rafraîchissent ensuite. Constaté par Matt : après quelques minutes sur une ville, la carte mettait
+     plusieurs secondes à s'afficher ; le journal montrait 17 lieux périmés rechargés d'un coup au moment même où
+     elle devait se peindre. */
   function setMode(m) {
     A.mode = m;
-    SM.diag.info('view ' + A.mode);
     SM.store.saveMode(A.mode);
+    var t0 = Date.now(), stale = A.places.filter(function (p) { var w = A.data[p.id]; return !w || Date.now() - w.fetchedAt >= SM.REFRESH_MS; }).length;
+    var coded = !!SM.map;
     render(0);
-    if (A.mode === 'place') scene(true);
-    else loadAll();
+    var tr = Date.now() - t0;
+    if (A.mode === 'place') { scene(true); SM.diag.info('view place'); return; }
+    A.modeAt = Date.now();
+    // Deux images après la construction = affichée. Page cachée (pas d'images) : la ligne le dit au bout de 5 s.
+    var logged = false, note = function (seen) {
+      if (logged) return; logged = true;
+      SM.diag.info('view ' + A.mode + ' · render ' + tr + ' ms · ' + (seen ? 'painted after ' + (Date.now() - t0) + ' ms' : 'no frame in 5 s') + ' · ' + stale + ' stale' + (A.mode === 'map' && !coded ? ' · map code loading' : ''));
+    };
+    U.raf(function () { U.raf(function () { note(true); }); });
+    setTimeout(function () { note(false); }, 5000);
+    setTimeout(loadAll, 900);
   }
+  // Un lieu après l'autre, avec un temps de respiration après chaque vraie requête : 20 réponses d'affilée occupaient la page.
   function loadAll() {
-    A.places.reduce(function (pr, p) { return pr.then(function () { return load(p); }); }, Promise.resolve());
+    A.places.reduce(function (pr, p) {
+      return pr.then(function () {
+        var w = A.data[p.id], due = !w || Date.now() - w.fetchedAt >= SM.REFRESH_MS;
+        return load(p).then(function () { if (due) return new Promise(function (r) { setTimeout(r, 350); }); });
+      });
+    }, Promise.resolve());
   }
   A.nowMs = function () { return nowMs(); };
 
@@ -664,7 +684,7 @@
   var mapT = 0, mapLast = 0;
   function mapRefreshSoon() {
     if (mapT) return;
-    var wait = Math.max(0, 1500 - (Date.now() - mapLast));
+    var wait = Math.max(0, 1500 - (Date.now() - mapLast), 1500 - (Date.now() - (A.modeAt || 0)));
     mapT = setTimeout(function () {
       mapT = 0; mapLast = Date.now();
       if (A.mode === 'map' && !A.sheet && SM.map) SM.map.refresh();
