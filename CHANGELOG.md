@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.15.1 · 17/11/2026
+
+- Carte du monde : les sélecteurs (style, carte ou globe, horloges ou météo) passent dans un panneau qui s'ouvre et se ferme par un bouton à curseurs dans l'en-tête, posé sur la carte sans lui prendre de place. Il se referme en touchant ailleurs.
+
 ## 1.15.0 · 17/11/2026
 
 - Carte du monde : plus de titre « Carte du monde » ; les sélecteurs (style, carte ou globe, horloges ou météo) prennent sa place dans l'en-tête, en plus petit. La carte gagne la hauteur de la rangée de sélecteurs qui était sous elle. En portrait, ils tiennent sur deux lignes.

@@ -581,13 +581,15 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 .vrange::-webkit-slider-thumb { -webkit-appearance: none; width: 1.6rem; height: 1.6rem; margin-top: -.6rem; border-radius: 50%; background: #fff; box-shadow: 0 .15rem .5rem rgba(0, 0, 0, .45); }
 .vends { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; font-size: .8rem; color: var(--muted); }
 
-/* Carte du monde : pas de titre, les sélecteurs prennent sa place dans l'en-tête. */
+/* Carte du monde : pas de titre ; les sélecteurs vivent dans un panneau qui s'ouvre sous l'en-tête (bouton à curseurs). */
 #hbar { display: none; }
-.mapmode header.top { height: auto; min-height: 3.6rem; padding-top: .3rem; padding-bottom: .3rem; }
-.mapmode .ptitle { display: none; }
-.mapmode #hbar { display: block; -webkit-flex: 1; flex: 1; min-width: 0; }
+.mapctl { display: none; }
+.mapmode .mapctl { display: -webkit-flex; display: flex; }
+.mapmode .ptitle { visibility: hidden; }
+.mapmode #hbar.open { display: block; position: absolute; z-index: 35; top: 100%; left: 50%; -webkit-transform: translateX(-50%); transform: translateX(-50%);
+  width: -webkit-max-content; width: max-content; max-width: 94vw; padding: .5rem .4rem; border-radius: 1.1rem;
+  background: rgba(14, 22, 42, .94); border: 1px solid rgba(255, 255, 255, .18); box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .5); }
+header.top { position: relative; }
 #hbar .mbar { margin: 0; }
-#hbar .mbar .seg { margin: .15rem .35rem; }
-#hbar .seg button { margin: 0 .25rem 0 0; padding: .32rem .7rem; font-size: .8rem; }
-.mapmode .hside { -webkit-flex: none; flex: none; }
-.mapmode .hside.l { margin-right: .5rem; }
+#hbar .mbar .seg { margin: .2rem .35rem; }
+#hbar .seg button { margin: 0 .25rem 0 0; padding: .36rem .75rem; font-size: .85rem; }

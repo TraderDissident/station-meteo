@@ -161,7 +161,7 @@
     // Pas de nouveau rendu pendant qu'un bloc est tenu au doigt.
     if (SM.edit && SM.edit.dragging) return;
     if (A.mode === 'map') { renderMap(); return; }
-    if (el.app.className.indexOf('mapmode') >= 0) { if (SM.map) SM.map.leave(); el.hbar.innerHTML = ''; appClass(); SM.sky.pause(false); }
+    if (el.app.className.indexOf('mapmode') >= 0) { if (SM.map) SM.map.leave(); el.hbar.innerHTML = ''; el.hbar.className = ''; appClass(); SM.sky.pause(false); }
     U.$('[data-act=map]').className = 'iconbtn';
     var w = A.data[p.id];
     var now = Math.floor(nowMs() / 1000);
@@ -486,6 +486,17 @@
     });
     document.addEventListener('mousedown', function () { A.lastTouch = Date.now(); });
 
+    // Sélecteurs de la carte : un panneau qui s'ouvre et se ferme, posé sur la carte sans lui prendre de place.
+    el.app.addEventListener('click', function (e) {
+      var open = el.hbar.className === 'open';
+      if (e.target.closest('[data-act=mapctl]')) {
+        el.hbar.className = open ? '' : 'open';
+        U.$('[data-act=mapctl]').className = 'iconbtn mapctl' + (open ? '' : ' on');
+        e.stopImmediatePropagation();
+        return;
+      }
+      if (open && !e.target.closest('#hbar')) { el.hbar.className = ''; U.$('[data-act=mapctl]').className = 'iconbtn mapctl'; }
+    }, true);
     el.app.addEventListener('click', function (e) {
       A.lastTouch = Date.now();
       if (e.target.closest('[data-act=map]')) { A.toggleMap(); return; }
@@ -566,7 +577,8 @@
           '<div class="hside"><button class="iconbtn" data-sheet="places" aria-label="Places">' + IC.ui('pin') + '</button></div>' +
           '<div class="ptitle"><div><span id="pname"></span><span id="pcountry"></span><span id="badge"></span></div><div id="dots"></div></div>' +
           '<div id="hbar"></div>' +
-          '<div class="hside r"><button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button>' +
+          '<div class="hside r"><button class="iconbtn mapctl" data-act="mapctl" aria-label="Map options">' + IC.ui('sliders') + '</button>' +
+          '<button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button>' +
           '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button></div>' +
         '</header>' +
         '<main id="pages"></main>' +
