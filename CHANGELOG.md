@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.13.4 · 17/11/2026
+
+- Carte du monde, glisser des étiquettes : le glisser s'arrête net au relâchement (avant, l'étiquette restait accrochée au curseur 0,4 s, et un nouveau glisser commencé dans ce délai était coupé en route) ; l'arrivée de données météo pendant un glisser ne reconstruit plus l'étiquette sous le curseur ; bouton relâché hors de la fenêtre, le glisser se termine.
+
 ## 1.13.3 · 17/11/2026
 
 - Globe : les étiquettes ne sautent plus d'un côté à l'autre. Comme sur la carte des trajets de Travel Hub, chacune reste collée à droite de son point et tourne avec lui ; quand deux se recouvrent, la seconde s'efface (son point reste) au lieu de se déplacer. Plus de traits de rappel sur le globe.

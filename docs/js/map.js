@@ -653,6 +653,8 @@
   }
   function dragMove(e) {
     if (!drag) return;
+    // Bouton relâché hors de la fenêtre : on termine là, l'étiquette ne reste pas accrochée au curseur.
+    if (e.type === 'mousemove' && e.buttons === 0) { dragEnd(); return; }
     var pt = pointOf(e), dx = pt[0] - drag.sx, dy = pt[1] - drag.sy, p = drag.p;
     if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 6) return;
     drag.moved = true;
@@ -673,15 +675,19 @@
   function dragEnd() {
     if (!drag) return;
     var d = drag;
-    // Le clic qui suit le relâchement ne doit pas ouvrir la ville.
-    setTimeout(function () { drag = null; }, 400);
+    // Le glisser s'arrête net au relâchement ; seul le clic qui suit est ignoré (il ne doit pas ouvrir la ville).
+    drag = null;
     if (!d.moved) return;
+    draggedAt = Date.now();
     // Ramenée tout contre son point : l'étiquette repasse au placement automatique.
     var b = d.p.box, ax = U.clamp(d.p.x, b[0], b[0] + b[2]), ay = U.clamp(d.p.y, b[1], b[1] + b[3]);
     var near = Math.abs(ax - d.p.x) + Math.abs(ay - d.p.y) < 6;
     saveManual(d.p.id, near ? null : [d.p.off[0] / st.w, d.p.off[1] / st.h]);
     layoutLabels();
+    // Données arrivées pendant le glisser : la carte se met à jour maintenant.
+    if (pendingRefresh) { pendingRefresh = false; M.refresh(); }
   }
+  var draggedAt = 0, pendingRefresh = false;
   document.addEventListener('mousedown', dragStart);
   document.addEventListener('mousemove', dragMove);
   document.addEventListener('mouseup', dragEnd);
@@ -747,6 +753,8 @@
   /* Nouvelles données : on refait villes et cartes, pas le fond. */
   M.refresh = function () {
     if (!st.root) return;
+    // Pas de reconstruction des étiquettes sous le doigt : elle attend la fin du glisser.
+    if (drag) { pendingRefresh = true; return; }
     var ms = SM.app.nowMs();
     var infos = st.places.map(function (p) { return cityInfo(p, ms); });
     U.$('.mks', st.box).innerHTML = infos.map(markerHTML).join('');
@@ -866,6 +874,6 @@
   M.active = function () { return !!(st.root && document.body.contains(st.root)); };
   M.leave = function () { SM.globe.detach(); freeLayers(); free(st.cv); st.root = null; st.infos = null; st.cv = st.ctx = null; st.w = st.h = 0; };
 
-  M.labelDragging = function () { return !!(drag && drag.moved); };
+  M.labelDragging = function () { return !!(drag && drag.moved) || Date.now() - draggedAt < 400; };
   SM.map = M;
 })();
