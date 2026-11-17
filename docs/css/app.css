@@ -573,3 +573,10 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 .tplist button.on { background: #fff; color: #0b1226; font-weight: 600; }
 .tpfoot { margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--line); }
 .tpfoot button { border: 0; background: none; color: #9fd4ff; font-size: .88rem; padding: .3rem .4rem; border-radius: .4rem; }
+
+/* Curseur pleine largeur (assombrissement de nuit) */
+.vrange { display: block; width: 100%; margin: .6rem 0 .2rem; height: 1.8rem; background: none; -webkit-appearance: none; appearance: none; }
+.vrange:focus { outline: none; }
+.vrange::-webkit-slider-runnable-track { height: .4rem; border-radius: .2rem; background: -webkit-linear-gradient(left, rgba(255, 255, 255, .55), rgba(255, 255, 255, .06)); background: linear-gradient(to right, rgba(255, 255, 255, .55), rgba(255, 255, 255, .06)); }
+.vrange::-webkit-slider-thumb { -webkit-appearance: none; width: 1.6rem; height: 1.6rem; margin-top: -.6rem; border-radius: 50%; background: #fff; box-shadow: 0 .15rem .5rem rgba(0, 0, 0, .45); }
+.vends { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; font-size: .8rem; color: var(--muted); }

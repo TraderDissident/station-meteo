@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.14.1 · 17/11/2026
+
+- Réglages : « Intensité » devient « Assombrissement de l’écran la nuit », réglé par un curseur sur toute la largeur, « Plus clair » à gauche, « Plus sombre » à droite (de 20 % à 85 % par pas de 5 %), au lieu de trois boutons 35, 55 et 70 %.
+
 ## 1.14.0 · 17/11/2026
 
 - Réglages, voile de nuit : « De » et « À » prennent le champ d'heure de Travel Hub (TimePickerField). Un bouton à horloge ouvre deux colonnes, heures puis minutes, chacune centrée sur la valeur choisie, et « Maintenant ». Choisir l'heure garde les minutes ; choisir les minutes referme. Le voile se règle donc à la minute (23:45 par exemple) ; les horaires enregistrés en heures entières restent valables.

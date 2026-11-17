@@ -40,7 +40,9 @@
     if (s.veil === 'hours') {
       html += '<div class="twocol">' + field(tt.from, timeField('veilFrom', s.veilFrom)) + field(tt.to, timeField('veilTo', s.veilTo)) + '</div>';
     }
-    if (s.veil !== 'off') html += field(tt.level, seg('veilLevel', [[0.35, '35 %'], [0.55, '55 %'], [0.7, '70 %']], s.veilLevel));
+    // Opacité du voile noir posé sur l'écran la nuit : à gauche l'écran reste plus clair, à droite il s'assombrit.
+    if (s.veil !== 'off') html += field(tt.level, '<input type="range" class="vrange" data-key="veilLevel" min="0.2" max="0.85" step="0.05" value="' + s.veilLevel + '">' +
+      '<div class="vends"><span>' + U.esc(tt.lighter) + '</span><span>' + U.esc(tt.darker) + '</span></div>');
     html +=
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
@@ -101,6 +103,10 @@
       }
       if (pop) pop.parentNode.removeChild(pop);
     };
+    U.$$('.vrange', body).forEach(function (r) {
+      var save = function () { SM.app.setSetting('veilLevel', parseFloat(r.value)); };
+      r.oninput = save; r.onchange = save;
+    });
     U.$$('select', body).forEach(function (sel) {
       sel.onchange = function () { SM.app.setSetting(sel.getAttribute('data-key'), parse(sel.getAttribute('data-key'), sel.value)); };
     });
