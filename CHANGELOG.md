@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.21.7 · 17/11/2026
+
+Signalé par Matt sur l'iPad : la plupart des changements de lieu sont rapides, mais certains mettent jusqu'à une seconde et demie. Le journal montre qu'ils arrivent quand deux glissements s'enchaînent à 1 à 4 secondes d'écart.
+
+- Tant qu'un doigt glisse ou qu'un écran sort ou entre, tout le travail différé de l'écran en place attend : suite des heures, jours restants, détails, teinte des nuages, chargement des lieux voisins, vidage de l'ancien écran, et nouveau rendu à l'arrivée de données. Avant, ce travail pouvait tomber au milieu du geste suivant et le retarder.
+
 ## 1.21.6 · 17/11/2026
 
 Signalé par Matt sur l'iPad après la 1.21.5 : le suivi du doigt est bon, mais au lâcher l'écran repasse un instant au centre avant de sortir.

@@ -166,7 +166,16 @@
   // Conteneurs d'un écran que le code touche (donc qui retiendraient leur contenu), du plus profond au plus haut.
   var VIEW_PARTS = ['.hstrip', '.hscroll', '.dexp', '.tslot', '.tiles', '.mk', '.mcard', '.card', '.side-in', '.side', '.dial', '.hero', '.mapwrap', '.mbottom'];
   // Un peu après, pour ne rien ajouter au moment où un écran se construit ou s'anime.
-  function release(node) { setTimeout(function () { U.release(node, VIEW_PARTS); }, 1500); }
+  function release(node) {
+    var go = function () { if (busy()) setTimeout(go, 500); else U.release(node, VIEW_PARTS); };
+    setTimeout(go, 1500);
+  }
+  /* Un geste de changement de lieu est en cours (doigt qui glisse, sortie ou entrée d'un écran). Tout le travail
+     différé de l'écran en place (suite des heures, jours, détails, teinte des nuages, lieux voisins, vidage de
+     l'ancien écran) attend alors son tour. Constaté sur l'iPad : en enchaînant deux glissements à 1 à 4 s d'écart,
+     ce travail tombait pendant le second et le retardait jusqu'à 1,5 s. */
+  function busy() { return !!A.gesture || Date.now() < (A.transitionUntil || 0); }
+  SM.sky.busy = busy;
 
   function render(dir, old, t0) {
     var p = A.places[A.idx];
@@ -257,6 +266,7 @@
     if (!p || p.id !== id || !old || A.mode !== 'place' || !A.data[id]) return;
     // Doigt posé sur les heures : on attend qu'il les lâche.
     if (hoursBusy) { hoursT = setTimeout(function () { fillHours(id); }, 600); return; }
+    if (busy()) { hoursT = setTimeout(function () { fillHours(id); }, 300); return; }
     var x = old.scrollLeft, box = document.createElement('div');
     box.innerHTML = SM.ui.hoursFull(A.data[id], Math.floor(nowMs() / 1000));
     var strip = box.firstChild;
@@ -271,6 +281,7 @@
   function fillRest(id, step) {
     var p = A.places[A.idx];
     if (!p || p.id !== id || A.mode !== 'place' || !A.data[id]) return;
+    if (busy()) { hoursT = setTimeout(function () { fillRest(id, step); }, 300); return; }
     var now = Math.floor(nowMs() / 1000);
     if (step === 0) {
       var days = U.$('.card.days.partial', el.pages);
@@ -364,6 +375,7 @@
         var go = function () {
           var wait = (A.transitionUntil || 0) - Date.now();
           if (wait > 0) { setTimeout(go, Math.min(wait + 20, 200)); return; }
+          if (A.gesture) { setTimeout(go, 200); return; }
           if (A.mode === 'place' && A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) { scene(false); render(0); }
         };
         go();
@@ -598,6 +610,7 @@
     nearT = setTimeout(function () {
       var n = A.places.length;
       if (n < 2 || A.mode !== 'place' || document.hidden) return;
+      if (busy()) { loadNear(); return; }
       var a = A.places[(A.idx + 1) % n], b = A.places[(A.idx - 1 + n) % n];
       load(a).then(function () { if (b !== a) return load(b); });
     }, 3500);
@@ -659,6 +672,7 @@
       var tch = e.touches[0];
       ok = e.touches.length === 1 && A.mode === 'place' && A.places.length > 1 && !e.target.closest('.hscroll') && !SM.ui.editing;
       sx = tch.clientX; sy = tch.clientY; st = Date.now(); mode = ''; dx = 0;
+      A.gesture = false;
       view = U.$('.view', el.pages);
     }, { passive: true });
     el.pages.addEventListener('touchmove', function (e) {
@@ -667,10 +681,12 @@
       if (!mode && (Math.abs(mx) > 10 || Math.abs(my) > 10)) mode = Math.abs(mx) > Math.abs(my) * 1.2 ? 'h' : 'v';
       if (mode !== 'h') return;
       e.preventDefault();
+      A.gesture = true;
       dx = mx;
       setShift(dx * 0.6, false);
     }, { passive: false });
     function endSwipe() {
+      A.gesture = false;
       if (!ok || mode !== 'h') return;
       var fast = Math.abs(dx) > 30 && Date.now() - st < 300;
       if (Math.abs(dx) > 60 || fast) step(dx < 0 ? 1 : -1);
@@ -678,7 +694,7 @@
       mode = '';
     }
     el.pages.addEventListener('touchend', endSwipe, { passive: true });
-    el.pages.addEventListener('touchcancel', function () { if (mode === 'h') setShift(0, true); mode = ''; }, { passive: true });
+    el.pages.addEventListener('touchcancel', function () { A.gesture = false; if (mode === 'h') setShift(0, true); mode = ''; }, { passive: true });
     document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
     document.addEventListener('keydown', function (e) {
       if (A.sheet) { if (e.keyCode === 27) A.close(); return; }

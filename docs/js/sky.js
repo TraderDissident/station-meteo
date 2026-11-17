@@ -497,8 +497,10 @@
     clearTimeout(S.paintT);
     if (pending.length) {
       var paintNext = function () {
+        if (!pending.length) return;
+        // Un changement de lieu est en cours : la teinte attend (voir busy() dans app.js).
+        if (S.busy && S.busy()) { S.paintT = setTimeout(paintNext, 300); return; }
         var c2 = pending.shift();
-        if (!c2) return;
         c2.paintKey = paintKey; paintCloud(c2, light, shd, ca);
         S.paintT = setTimeout(paintNext, 60);
       };
