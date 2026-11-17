@@ -179,6 +179,9 @@
     SM.ui.align(el.pages);
     // Polices et icônes peuvent encore bouger la mise en page : on recale un peu après.
     setTimeout(function () { SM.ui.align(el.pages); }, 400);
+    // Le reste des heures, une fois l'écran posé (et seulement si on n'a pas déjà changé de lieu).
+    clearTimeout(hoursT);
+    if (w) hoursT = setTimeout(function () { fillHours(p.id); }, 1000);
     var v = U.$('.view', el.pages);
     if (dir) v.className += dir > 0 ? ' enter-r' : ' enter-l';
     else {
@@ -199,6 +202,25 @@
     clock();
     status();
   }
+
+  var hoursT = 0;
+  function fillHours(id) {
+    var p = A.places[A.idx], old = U.$('.card.hours .hscroll', el.pages);
+    if (!p || p.id !== id || !old || A.mode !== 'place' || !A.data[id]) return;
+    // Doigt posé sur les heures : on attend qu'il les lâche.
+    if (hoursBusy) { hoursT = setTimeout(function () { fillHours(id); }, 600); return; }
+    var x = old.scrollLeft, box = document.createElement('div');
+    box.innerHTML = SM.ui.hoursFull(A.data[id], Math.floor(nowMs() / 1000));
+    var strip = box.firstChild;
+    if (!strip) return;
+    old.parentNode.replaceChild(strip, old);
+    strip.scrollLeft = x;
+    SM.ui.align(strip.parentNode);
+  }
+  var hoursBusy = false;
+  document.addEventListener('touchstart', function (e) { if (e.target.closest && e.target.closest('.card.hours .hscroll')) hoursBusy = true; }, { passive: true });
+  document.addEventListener('touchend', function () { hoursBusy = false; }, { passive: true });
+  document.addEventListener('touchcancel', function () { hoursBusy = false; }, { passive: true });
 
   function hourKey(w) { return SM.ui.hourIndex(w, Math.floor(nowMs() / 1000)) + '|' + w.fetchedAt; }
 
@@ -277,10 +299,16 @@
     var n = A.places.length;
     if (A.mode === 'map') { A.mode = 'place'; SM.store.saveMode('place'); dir = 0; }
     A.idx = ((i % n) + n) % n;
-    SM.diag.info('show ' + A.places[A.idx].id);
     SM.store.saveCurrent(A.places[A.idx].id);
+    // Chronométré dans le journal : le calcul de l'écran, le ciel, puis le temps jusqu'à l'image suivante (affichage réel).
+    var t0 = Date.now(), id = A.places[A.idx].id;
     render(dir || 0);
+    var t1 = Date.now();
     scene(false);
+    var t2 = Date.now();
+    U.raf(function () { U.raf(function () {
+      SM.diag.info('show ' + id + ' · screen ' + (t1 - t0) + ' ms · sky ' + (t2 - t1) + ' ms · painted after ' + (Date.now() - t0) + ' ms');
+    }); });
     load(A.places[A.idx]);
   }
   function step(d) { if (A.places.length > 1) show(A.idx + d, d); }

@@ -225,11 +225,14 @@
     return '<div class="hscroll' + (opts.day ? ' dayx' : '') + '"><div class="hstrip" style="width:' + (hs.length * 4.4) + 'rem">' + curve + items.join('') + '</div></div>';
   }
 
+  /* Les 48 heures pèsent les deux tiers de l'écran (1 250 éléments sur 1 900) alors qu'on en voit 7. Au changement
+     de lieu, seules les 12 premières sont construites ; le reste arrive une seconde plus tard (app.js, fillHours). */
+  var FIRST_HOURS = 12;
   function hoursCard(w, now) {
     var tt = t(), v = hourView();
     return '<div class="card hours"><div class="hhead"><div><h2>' + (v === 'wind' ? tt.hvWind : (v === 'precip' ? tt.hvPrecip : tt.hvCond)) + '</h2>' +
       '<p class="hsub">' + (v === 'wind' ? tt.hvWindSub : (v === 'precip' ? tt.hvPrecipSub : tt.hvCondSub)) + '</p></div>' + viewSwitch(v) + '</div>' +
-      hourStrip(w, hourIndex(w, now), 48, now) + '</div>';
+      hourStrip(w, hourIndex(w, now), FIRST_HOURS, now) + '</div>';
   }
 
   // Le sélecteur à trois icônes de Météo d'Apple (iOS 27) : nuage, goutte, vent.
@@ -465,6 +468,7 @@
     });
   };
 
+  R.hoursFull = function (w, now) { return hourStrip(w, hourIndex(w, now), 48, now); };
   R.hourIndex = hourIndex;
   R.tempColor = tempColor;
   R.summary = summary;

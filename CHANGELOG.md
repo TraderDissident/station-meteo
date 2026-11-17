@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.19.1 · 17/11/2026
+
+- Changement de lieu allégé : la carte horaire ne construit d'abord que 12 heures au lieu de 48 (840 éléments à l'écran au lieu de 1 900), le reste arrive une seconde plus tard, sans toucher au défilement en cours.
+- Journal : chaque changement de lieu est chronométré (calcul de l'écran, ciel, délai jusqu'à l'affichage réel), pour mesurer la lenteur sur l'iPad lui-même.
+
 ## 1.19.0 · 17/11/2026
 
 - Vrai journal : gardé 7 jours (4 000 lignes au plus), ouvert en plein écran depuis Diagnostic, avec Copier (tout le journal et l'état de l'appareil dans le presse-papiers), Vider et Fermer ; avertissements en jaune, erreurs en rouge.
