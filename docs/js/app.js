@@ -141,12 +141,15 @@
     appClass();
     SM.sky.pause(true);
     if (!SM.map) {
+      [].slice.call(el.pages.children).forEach(release);
       el.pages.innerHTML = '';
       loadMapCode().then(function () { if (A.mode === 'map') { renderMap(); loadAll(); } }, function () {
         if (A.mode === 'map') { A.mode = 'place'; SM.store.saveMode('place'); render(0); scene(true); A.toast(I.t().offline); }
       });
     } else {
+      var before = [].slice.call(el.pages.children);
       SM.map.render(el.pages, A.places);
+      before.forEach(release);
       // Les sélecteurs (style, carte ou globe, horloges ou météo) montent dans l'en-tête, à la place du titre :
       // la carte gagne leur hauteur. La carte se recalcule ensuite avec la place libérée.
       var bar = U.$('.mbar', el.pages);
@@ -159,6 +162,11 @@
     el.badge.style.display = A.demo.time || A.demo.weather || A.demo.cycle ? '' : 'none';
     U.$('[data-act=map]').className = 'iconbtn on';
   }
+
+  // Conteneurs d'un écran que le code touche (donc qui retiendraient leur contenu), du plus profond au plus haut.
+  var VIEW_PARTS = ['.hstrip', '.hscroll', '.dexp', '.tslot', '.tiles', '.mk', '.mcard', '.card', '.side-in', '.side', '.dial', '.hero', '.mapwrap', '.mbottom'];
+  // Un peu après, pour ne rien ajouter au moment où un écran se construit ou s'anime.
+  function release(node) { setTimeout(function () { U.release(node, VIEW_PARTS); }, 1500); }
 
   function render(dir, old, t0) {
     var p = A.places[A.idx];
@@ -195,10 +203,10 @@
       box.innerHTML = html;
       var nv = box.firstChild, side = dir > 0 ? 'r' : 'l';
       nv.className += ' pre-' + side;
-      U.$$('.view', el.pages).forEach(function (x) { if (x !== old) el.pages.removeChild(x); });
+      U.$$('.view', el.pages).forEach(function (x) { if (x !== old) { el.pages.removeChild(x); release(x); } });
       el.pages.insertBefore(nv, el.pages.firstChild);
       var outLeft = old ? Math.max(0, 230 - (Date.now() - (t0 || 0))) : 0;
-      if (old) setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, outLeft);
+      if (old) setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); release(old); }, outLeft);
       // Tant que l'entrée n'est pas finie, aucun autre rendu ne doit la couper.
       A.transitionUntil = Date.now() + 4000;
       afterFrames(function () {
@@ -211,7 +219,10 @@
         }, Math.max(0, 230 - (Date.now() - (t0 || 0))));
       });
     } else {
+      // L'ancien écran est retiré puis vidé tout de suite (voir U.release).
+      var olds = [].slice.call(el.pages.children);
       el.pages.innerHTML = html;
+      olds.forEach(release);
       fillLater(1000);
     }
     // Polices et icônes peuvent encore bouger la mise en page : on recale un peu après.
@@ -249,6 +260,7 @@
     var strip = box.firstChild;
     if (!strip) return;
     old.parentNode.replaceChild(strip, old);
+    U.release(old, ['.hstrip']);
     strip.scrollLeft = x;
     SM.ui.align(strip.parentNode);
     // La suite en tranches, pour ne jamais occuper la page d'un bloc : jours restants, puis détails.

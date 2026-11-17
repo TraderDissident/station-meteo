@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.21.3 · 17/11/2026
+
+D'après la mesure sur l'iPad de 20 rafraîchissements d'une même ville : la mémoire montait de 2,3 Mo à chaque rafraîchissement, jusqu'à 46 Mo d'avance.
+
+- Mémoire : un écran remplacé (rafraîchissement toutes les 15 min, changement de lieu, passage à la carte) est maintenant vidé tout de suite. Avant, il restait entier en mémoire tant que le code gardait une référence sur un de ses nœuds, ce que Safari ne lâche qu'à son ramasse-miettes suivant, parfois vingt rendus plus tard. Même traitement pour l'ancienne bande d'heures, et pour les points et les cartes de la carte du monde à chaque rafraîchissement.
+- Carte du monde reconstruite alors qu'elle est affichée : l'ancien canevas et ses calques sont rendus tout de suite.
+
 ## 1.21.2 · 17/11/2026
 
 D'après les mesures en paysage sur l'iPad : 264 Mo et 48 couches sous la pluie, contre 118 Mo par ciel clair.

@@ -751,6 +751,8 @@
 
   M.render = function (container, places) {
     if (drag && st.root) { pendingRefresh = true; return; }
+    // Carte reconstruite alors qu'elle était déjà affichée : l'ancien canevas et ses calques sont rendus tout de suite.
+    if (st.cv) { freeLayers(); free(st.cv); st.cv = st.ctx = null; }
     var tt = I.t();
     try { st.cards = localStorage.getItem('sm.mapCards') || 'clocks'; } catch (e) { st.cards = 'clocks'; }
     try { st.style = localStorage.getItem('sm.mapStyle') || 'nature'; } catch (e) { st.style = 'nature'; }
@@ -790,10 +792,13 @@
     if (drag) { pendingRefresh = true; return; }
     var ms = SM.app.nowMs();
     var infos = st.places.map(function (p) { return cityInfo(p, ms); });
+    // Les anciens points et les anciennes cartes sont vidés après remplacement (voir U.release).
+    var oldMk = U.$$('.mk', st.box), oldCards = U.$$('.mcard', st.root);
     U.$('.mks', st.box).innerHTML = infos.map(markerHTML).join('');
     st.infos = infos;
     if (st.view === 'globe') placeOnGlobe(true);
     U.$('.mcards', st.root).innerHTML = infos.map(cardHTML).join('');
+    oldMk.concat(oldCards).forEach(function (n) { n.textContent = ''; });
     st.infos = infos;
     st.minuteKey = '';
     M.tick(true);

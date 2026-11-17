@@ -5,6 +5,20 @@
   U.$ = function (sel, root) { return (root || document).querySelector(sel); };
   U.$$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
 
+  /* Un écran retiré de la page reste entier en mémoire tant que JavaScript garde une référence sur un de ses nœuds
+     (sa racine, une carte, une bande d'heures), et Safari ne lâche ces références qu'à son ramasse-miettes suivant,
+     parfois vingt rendus plus tard. Mesuré sur l'iPad : +2,3 Mo par rendu, jusqu'à 46 Mo d'avance sur une seule
+     ville rafraîchie. On vide donc l'arbre nous-mêmes, des conteneurs les plus profonds vers la racine : ce qui
+     reste accroché à une référence ne pèse plus rien. « parts » : sélecteurs des conteneurs, du plus profond au plus haut. */
+  U.release = function (node, parts) {
+    if (!node || !node.querySelectorAll) return;
+    (parts || []).forEach(function (sel) {
+      var list = node.querySelectorAll(sel);
+      for (var i = 0; i < list.length; i++) list[i].textContent = '';
+    });
+    node.textContent = '';
+  };
+
   U.el = function (tag, cls, html) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
