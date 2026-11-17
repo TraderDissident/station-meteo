@@ -250,10 +250,23 @@
     old.parentNode.replaceChild(strip, old);
     strip.scrollLeft = x;
     SM.ui.align(strip.parentNode);
-    // Les détails, laissés vides au premier temps.
+    // La suite en tranches, pour ne jamais occuper la page d'un bloc : jours restants, puis détails.
+    hoursT = setTimeout(function () { fillRest(id, 0); }, 250);
+  }
+  function fillRest(id, step) {
+    var p = A.places[A.idx];
+    if (!p || p.id !== id || A.mode !== 'place' || !A.data[id]) return;
+    var now = Math.floor(nowMs() / 1000);
+    if (step === 0) {
+      var days = U.$('.card.days.partial', el.pages);
+      if (days) { days.insertAdjacentHTML('beforeend', SM.ui.daysRest(A.data[id], now)); days.className = 'card days'; }
+      hoursT = setTimeout(function () { fillRest(id, 1); }, 250);
+      return;
+    }
     var lazy = U.$('.card.details.lazy', el.pages);
     if (lazy) {
-      box.innerHTML = SM.ui.detailsCard(p, A.data[id], Math.floor(nowMs() / 1000));
+      var box = document.createElement('div');
+      box.innerHTML = SM.ui.detailsCard(p, A.data[id], now);
       if (box.firstChild) lazy.parentNode.replaceChild(box.firstChild, lazy);
     }
   }
@@ -743,7 +756,6 @@
     A.places = SM.store.places();
     A.places.forEach(function (p) { var w = SM.store.weather(p.id); if (w) A.data[p.id] = w; });
 
-    document.body.insertAdjacentHTML('afterbegin', IC.defs);
     el.app = U.$('#app');
     el.app.innerHTML =
       '<div id="sky"></div>' +
@@ -762,7 +774,7 @@
       '<button class="iconbtn mapexit" data-act="mapfull" aria-label="Exit full screen">' + IC.ui('shrink') + '</button>' +
       '<div id="veil"></div>' +
       '<div class="sheet" id="sheet"><div class="sheet-in"><header><h2></h2><button class="iconbtn sheet-close" aria-label="Close">' + IC.ui('close') + '</button></header><div class="sheet-body"></div></div></div>' +
-      '<div id="toast"></div>';
+      '<div id="toast"></div>' + IC.defs;
     el.pages = U.$('#pages'); el.pname = U.$('#pname'); el.pcountry = U.$('#pcountry'); el.dots = U.$('#dots');
     el.hbar = U.$('#hbar'); el.badge = U.$('#badge'); el.veil = U.$('#veil'); el.sheet = U.$('#sheet'); el.toast = U.$('#toast');
 

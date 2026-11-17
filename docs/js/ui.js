@@ -227,12 +227,13 @@
 
   /* Les 48 heures pèsent les deux tiers de l'écran (1 250 éléments sur 1 900) alors qu'on en voit 7. Au changement
      de lieu, seules les 12 premières sont construites ; le reste arrive une seconde plus tard (app.js, fillHours). */
-  var FIRST_HOURS = 12;
+  var FIRST_DAYS = 4;
+  function firstHours() { return document.getElementById('app').className.indexOf('land') >= 0 ? 8 : 11; }
   function hoursCard(w, now) {
     var tt = t(), v = hourView();
     return '<div class="card hours"><div class="hhead"><div><h2>' + (v === 'wind' ? tt.hvWind : (v === 'precip' ? tt.hvPrecip : tt.hvCond)) + '</h2>' +
       '<p class="hsub">' + (v === 'wind' ? tt.hvWindSub : (v === 'precip' ? tt.hvPrecipSub : tt.hvCondSub)) + '</p></div>' + viewSwitch(v) + '</div>' +
-      hourStrip(w, hourIndex(w, now), R.lazy ? FIRST_HOURS : 48, now) + '</div>';
+      hourStrip(w, hourIndex(w, now), R.lazy ? firstHours() : 48, now) + '</div>';
   }
 
   // Le sélecteur à trois icônes de Météo d'Apple (iOS 27) : nuage, goutte, vent.
@@ -268,7 +269,7 @@
       '<path d="M' + spd + '" fill="none" stroke="#2ee0d0" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
   }
 
-  function daysCard(w, now) {
+  function daysCard(w, now, part) {
     var tt = t(), di = dayIndex(w, now);
     var days = w.daily.slice(di);
     var lo = Math.min.apply(null, days.map(function (d) { return d.min; }));
@@ -308,8 +309,12 @@
         '<div class="dmax">' + I.temp(d.max) + '</div>' +
         '<div class="dw">' + arrow(d.dir, 'sm') + Math.round(d.windMax) + '</div>' +
       '</div><div class="dexp" data-for="' + (di + i) + '"></div>';
-    }).join('');
-    return '<div class="card days"><h2>' + IC.ui(v === 'wind' ? 'wind' : (v === 'precip' ? 'drop' : 'sunny')) + tt.daily + '</h2>' + rows + '</div>';
+    });
+    // part : 'first' = les premiers jours seulement (carte marquée « partial »), 'rest' = les lignes suivantes seules.
+    if (part === 'rest') return rows.slice(FIRST_DAYS).join('');
+    var partial = part === 'first' && rows.length > FIRST_DAYS;
+    rows = (partial ? rows.slice(0, FIRST_DAYS) : rows).join('');
+    return '<div class="card days' + (partial ? ' partial' : '') + '"><h2>' + IC.ui(v === 'wind' ? 'wind' : (v === 'precip' ? 'drop' : 'sunny')) + tt.daily + '</h2>' + rows + '</div>';
   }
 
   var R = { editing: false };
@@ -437,7 +442,7 @@
       '<section class="side"><div class="side-in">' +
         '<div class="card summary">' + IC.ui(sm.icon) + '<span>' + U.esc(sm.text) + '</span></div>' +
         (al.length ? '<div class="alerts">' + al.map(function (a) { return '<div class="alert l' + a.lvl + '">' + IC.ui(a.icon) + '<span>' + U.esc(a.text) + '</span></div>'; }).join('') + '</div>' : '') +
-        nowcast(w, now) + hoursCard(w, now) + daysCard(w, now) +
+        nowcast(w, now) + hoursCard(w, now) + daysCard(w, now, R.lazy ? 'first' : '') +
         // Les détails sont toujours sous le bas de l'écran à l'arrivée : construits au second temps, à la même hauteur.
         (R.lazy && !R.editing ? '<div class="card details lazy" style="min-height:' + (R.detailsH || 520) + 'px"></div>' : details(place, w, now)) +
         '<p class="credit">' + U.esc(t().source) + '</p>' +
@@ -470,6 +475,7 @@
     });
   };
 
+  R.daysRest = function (w, now) { return daysCard(w, now, 'rest'); };
   R.detailsCard = function (place, w, now) { return details(place, w, now); };
   R.hoursFull = function (w, now) { return hourStrip(w, hourIndex(w, now), 48, now); };
   R.hourIndex = hourIndex;

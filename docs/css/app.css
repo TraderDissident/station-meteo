@@ -6,7 +6,10 @@
 * { box-sizing: border-box; }
 #moonEl::before, .hi.midnight::before, .mapbox::after, .msun::after, .mmoon::before, .mk.night::before,
 .mcards::before, .mcards::after, .pslot::before, .pslot::after, .hstrip.vprecip::after, .zones span.me::before { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0b1226; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+/* Le fond est porté par html seul. body est en position fixe : s'il peignait quoi que ce soit lui-même (un fond, le
+   dessin partagé des icônes), l'iPad lui donnait une couche plein écran de 11 Mo en double de la racine (mesuré). */
+html { background: #0b1226; }
 body {
   position: fixed; top: 0; left: 0; right: 0;
   color: #fff;

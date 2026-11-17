@@ -1,5 +1,13 @@
 # Journal des modifications
 
+## 1.21.1 · 17/11/2026
+
+D'après la deuxième série de mesures sur l'iPad (40 changements de ville enchaînés).
+
+- Mémoire : une couche plein écran de 11 Mo en moins. body, en position fixe, peignait lui-même un fond et le dessin partagé des icônes, ce qui lui donnait une couche en double de la racine ; le fond est maintenant porté par html seul et le dessin des icônes vit dans #app (essai fait en direct sur l'iPad : la couche tombe à 0).
+- Changement de lieu : le premier temps ne construit plus que ce qu'on voit à l'arrivée, soit 336 éléments au lieu de 820 (8 heures en paysage ou 11 en portrait, 4 jours) ; la suite arrive par tranches (heures, puis jours restants, puis détails, à 250 ms d'écart) au lieu d'un seul bloc de 180 à 200 ms.
+- Pas de fuite mémoire : sur deux tours des 20 lieux, la mémoire plafonne dès la fin du premier tour (mesuré).
+
 ## 1.21.0 · 17/11/2026
 
 D'après les mesures prises sur l'iPad (retour de Matt : l'animation de changement de ville commence, se fige une demi-seconde à une seconde, puis l'autre ville apparaît).
