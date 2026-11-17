@@ -888,6 +888,8 @@
     st.pr = Math.min(window.devicePixelRatio || 1, 1.5);
     U.$('.zones', st.root).style.width = W + 'px';
     st.box.style.width = W + 'px'; st.box.style.height = H + 'px';
+    // Points des lieux proportionnels à la carte : 1,2 % de sa largeur (12 points sur l'iPad), entre 6 et 14 points.
+    st.box.style.setProperty('--dot', Math.round(U.clamp(W * 0.0121, 6, 14)) + 'px');
     st.cv.width = Math.round(W * st.pr); st.cv.height = Math.round(H * st.pr);
     st.cv.style.width = W + 'px'; st.cv.style.height = H + 'px';
     st.box.className = 'mapbox' + (st.view === 'globe' ? ' globe' : '');

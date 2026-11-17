@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.23.11 · 17/11/2026
+
+- Carte et globe : la taille des points des lieux suit la largeur de la carte (1,2 %, soit 12 points sur l'iPad en paysage), entre 6 et 14 points, au lieu d'une taille fixe.
+
 ## 1.23.10 · 17/11/2026
 
 - Feuille des lieux : le champ « Rechercher une ville » suit la même échelle que le reste de l'app. Il était en taille fixe et paraissait énorme sur un écran plus petit que l'iPad. Sur l'iPad, il ne change pas.
