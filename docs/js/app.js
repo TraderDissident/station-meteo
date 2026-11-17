@@ -86,7 +86,7 @@
     var land = isLand(), w = innerWidth, base = parseFloat(document.documentElement.style.fontSize) || 16;
     // Colonne des prévisions trop étroite pour les 7 colonnes du tableau des jours : version resserrée.
     var narrow = (land ? w * 0.55 : w) < 31 * base;
-    el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' : '');
+    el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' + (A.mapFull ? ' mapfull' : '') : '');
   }
 
   /* iOS 12 en plein écran garde parfois les dimensions d'avant la rotation : window.orientation fait foi. */
@@ -489,6 +489,20 @@
     // Sélecteurs de la carte : un panneau qui s'ouvre et se ferme, posé sur la carte sans lui prendre de place.
     el.app.addEventListener('click', function (e) {
       var open = el.hbar.className === 'open';
+      // Plein écran de la carte : en-tête et cartes de villes masqués, il reste les fuseaux, la carte et un bouton de sortie.
+      if (e.target.closest('[data-act=mapfull]')) {
+        A.mapFull = !A.mapFull;
+        el.hbar.className = '';
+        appClass();
+        if (SM.map) {
+          SM.map.resize(true);
+          // La carte dépasse en largeur : on la centre sur le lieu affiché.
+          var wrap = U.$('.mapwrap', el.pages), p0 = A.places[A.idx];
+          if (wrap && A.mapFull && p0) wrap.scrollLeft = Math.max(0, (((p0.lon + 172.5) % 360 + 360) % 360) / 360 * wrap.scrollWidth - wrap.clientWidth / 2);
+        }
+        e.stopImmediatePropagation();
+        return;
+      }
       if (e.target.closest('[data-act=mapctl]')) {
         el.hbar.className = open ? '' : 'open';
         U.$('[data-act=mapctl]').className = 'iconbtn mapctl' + (open ? '' : ' on');
@@ -578,11 +592,13 @@
           '<div class="ptitle"><div><span id="pname"></span><span id="pcountry"></span><span id="badge"></span></div><div id="dots"></div></div>' +
           '<div id="hbar"></div>' +
           '<div class="hside r"><button class="iconbtn mapctl" data-act="mapctl" aria-label="Map options">' + IC.ui('sliders') + '</button>' +
+          '<button class="iconbtn mapctl" data-act="mapfull" aria-label="Full screen">' + IC.ui('expand') + '</button>' +
           '<button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button>' +
           '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button></div>' +
         '</header>' +
         '<main id="pages"></main>' +
       '</div>' +
+      '<button class="iconbtn mapexit" data-act="mapfull" aria-label="Exit full screen">' + IC.ui('shrink') + '</button>' +
       '<div id="veil"></div>' +
       '<div class="sheet" id="sheet"><div class="sheet-in"><header><h2></h2><button class="iconbtn sheet-close" aria-label="Close">' + IC.ui('close') + '</button></header><div class="sheet-body"></div></div></div>' +
       '<div id="toast"></div>';

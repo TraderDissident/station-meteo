@@ -95,6 +95,8 @@
     sunrise: '<path d="M2 16.5h20M7 16.5a5 5 0 0 1 10 0M12 7.5v2M5.6 10.1l1.4 1.4M18.4 10.1L17 11.5M9.5 22L12 19.5l2.5 2.5"/>',
     sunset: '<path d="M2 16.5h20M7 16.5a5 5 0 0 1 10 0M12 7.5v2M5.6 10.1l1.4 1.4M18.4 10.1L17 11.5M9.5 19.5L12 22l2.5-2.5"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    expand: '<path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/>',
+    shrink: '<path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7"/>',
     sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
     globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/>',
     trash: '<path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/>',

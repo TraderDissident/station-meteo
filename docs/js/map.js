@@ -816,10 +816,14 @@
       var availH = st.root.clientHeight - bottom.offsetHeight - rulerH - 8;
       W = Math.min(availW, availH / ASPECT);
     }
+    // Plein écran : la carte prend toute la hauteur et dépasse en largeur ; on la fait glisser de côté.
+    var full = document.getElementById('app').className.indexOf('mapfull') >= 0;
+    var fullH = full ? st.root.clientHeight - U.$('.zones', st.root).offsetHeight - 2 : 0;
+    if (full) W = st.view === 'globe' ? availW : Math.max(availW, fullH / ASPECT);
     W = Math.floor(Math.max(W, 280));
-    var H = Math.round(W * ASPECT);
+    var H = full && st.view === 'globe' ? fullH : Math.round(W * ASPECT);
     // En portrait, le globe prend la hauteur libre au lieu de celle de la carte plate.
-    if (st.view === 'globe' && !land) H = Math.round(Math.max(H, Math.min(W * 0.85, st.root.clientHeight - bottom.offsetHeight - 60)));
+    if (st.view === 'globe' && !land && !full) H = Math.round(Math.max(H, Math.min(W * 0.85, st.root.clientHeight - bottom.offsetHeight - 60)));
     if (!force && W === st.w && H === st.h) return;
     st.w = W; st.h = H;
     st.pr = Math.min(window.devicePixelRatio || 1, 1.5);

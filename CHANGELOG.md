@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.16.0 · 17/11/2026
+
+- Carte du monde en plein écran : un bouton dans l'en-tête masque l'en-tête et les cartes de villes ; il reste la règle des fuseaux, la carte et un bouton de sortie posé dessus. La carte prend toute la hauteur de l'écran (sur l'iPad en paysage, 1625 × 722 au lieu de 992 × 441) et se fait glisser de côté ; elle s'ouvre centrée sur le lieu affiché.
+
 ## 1.15.1 · 17/11/2026
 
 - Carte du monde : les sélecteurs (style, carte ou globe, horloges ou météo) passent dans un panneau qui s'ouvre et se ferme par un bouton à curseurs dans l'en-tête, posé sur la carte sans lui prendre de place. Il se referme en touchant ailleurs.
