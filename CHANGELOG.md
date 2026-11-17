@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.19.0 · 17/11/2026
+
+- Vrai journal : gardé 7 jours (4 000 lignes au plus), ouvert en plein écran depuis Diagnostic, avec Copier (tout le journal et l'état de l'appareil dans le presse-papiers), Vider et Fermer ; avertissements en jaune, erreurs en rouge.
+- Le journal note maintenant chaque météo reçue ou ratée avec sa durée, la page masquée, montrée, mise en veille ou réveillée par le système, le réseau qui tombe ou revient, le voile de nuit, les changements de lieu et de vue, les recherches de mise à jour, le premier toucher après un long silence, un point de situation par heure, et tout gel de plus de 6 s avec son heure de début et sa durée.
+
 ## 1.18.3 · 17/11/2026
 
 - Mémoire : les images des nuages sont rendues tout de suite quand le ciel les recrée (à chaque changement de vent, donc à peu près à chaque rafraîchissement). Piste du blocage nocturne de l'iPad, pas encore prouvée.

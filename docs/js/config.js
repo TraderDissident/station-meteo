@@ -2,7 +2,7 @@
 var SM = window.SM || {};
 window.SM = SM;
 
-SM.VERSION = '1.18.3';
+SM.VERSION = '1.19.0';
 
 // D'ouest en est, comme sur une carte classique.
 SM.DEFAULT_PLACES = [

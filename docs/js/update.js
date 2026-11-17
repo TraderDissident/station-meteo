@@ -19,6 +19,7 @@
   // Efface tout ce qui garde l'ancienne version, puis recharge depuis le réseau.
   U.force = function () {
     try { localStorage.setItem(KEY, String(Date.now())); } catch (e) { /* stockage indisponible */ }
+    SM.diag.info('update: clearing caches and reloading'); SM.diag.flush();
     var jobs = [];
     if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
       jobs.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
@@ -38,6 +39,7 @@
     if (Date.now() - U.lastCheck < 30 * 60000) return Promise.resolve(U.latest);
     U.lastCheck = Date.now();
     return U.latestVersion().then(function (v) {
+      SM.diag.info('update check: online ' + v + ', running ' + SM.VERSION);
       if (!v || v === SM.VERSION) return v;
       var last = 0;
       try { last = parseInt(localStorage.getItem(KEY), 10) || 0; } catch (e) { /* rien */ }

@@ -625,3 +625,17 @@ header.top { position: relative; }
 .gspeed i { width: 1px; height: 1.3rem; margin: 0 .3rem; background: rgba(255, 255, 255, .2); }
 .gspeed button { height: 2.1rem; min-width: 2.4rem; margin: 0 .1rem; padding: 0 .4rem; border: 0; border-radius: 1.1rem; background: none; color: var(--muted); font-size: .75rem; font-weight: 600; }
 @media (hover: hover) { .gctl:hover .gspeed { max-width: 12rem; opacity: 1; } }
+
+/* Journal en plein écran */
+#logview { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; background: #0a101f; color: #dfe6f5;
+  display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
+  padding-top: 20px; padding-top: max(20px, env(safe-area-inset-top)); }
+#logview header { -webkit-flex: none; flex: none; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: .6rem 1rem; border-bottom: 1px solid var(--line, rgba(255,255,255,.14)); }
+#logview h2 { margin: 0 .8rem 0 0; font-size: 1.15rem; }
+#logview .lgn { -webkit-flex: 1; flex: 1; font-size: .8rem; color: rgba(255, 255, 255, .6); }
+#logview .btn { margin-left: .5rem; }
+.lgbody { -webkit-flex: 1; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .6rem 1rem 2rem;
+  font-family: Menlo, Consolas, monospace; font-size: .78rem; line-height: 1.5; -webkit-user-select: text; user-select: text; }
+.lgl { white-space: pre-wrap; word-break: break-word; padding: .05rem 0; }
+.lgl.w { color: #ffd479; }
+.lgl.e { color: #ff9d8f; font-weight: 600; }

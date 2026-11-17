@@ -65,12 +65,15 @@
     return SM.U.fetchJSON(A.forecastURL(p), 20000).then(function (j) {
       if (j.error) throw new Error(j.reason || 'invalid response');
       SM.diag.lastFetch = p.name + ' · ' + (Date.now() - t0) + ' ms · ' + new Date().toTimeString().slice(0, 8);
+      SM.diag.info('forecast ok ' + p.name + ' · ' + (Date.now() - t0) + ' ms');
       return normalize(j);
     });
   };
 
   A.air = function (p) {
+    var t1 = Date.now();
     return SM.U.fetchJSON(AIR + '?' + coords(p) + '&timezone=auto&current=' + AIRQ, 15000).then(function (j) {
+      SM.diag.info('air ok ' + p.name + ' · ' + (Date.now() - t1) + ' ms');
       var c = j.current || {};
       return { aqi: c.european_aqi, pm10: c.pm10, pm25: c.pm2_5, no2: c.nitrogen_dioxide, o3: c.ozone,
         alder: c.alder_pollen, birch: c.birch_pollen, grass: c.grass_pollen };

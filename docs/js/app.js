@@ -277,6 +277,7 @@
     var n = A.places.length;
     if (A.mode === 'map') { A.mode = 'place'; SM.store.saveMode('place'); dir = 0; }
     A.idx = ((i % n) + n) % n;
+    SM.diag.info('show ' + A.places[A.idx].id);
     SM.store.saveCurrent(A.places[A.idx].id);
     render(dir || 0);
     scene(false);
@@ -287,6 +288,7 @@
   /* Carte du monde : ouvre ou referme, et charge les lieux qui n'ont pas de données fraîches. */
   A.toggleMap = function () {
     A.mode = A.mode === 'map' ? 'place' : 'map';
+    SM.diag.info('view ' + A.mode);
     SM.store.saveMode(A.mode);
     render(0);
     if (A.mode === 'place') scene(true);
@@ -373,6 +375,7 @@
     var key = on ? String(A.settings.veilLevel) : '0';
     if (key === veilKey) return;
     veilKey = key;
+    SM.diag.info(on ? 'night dim on (' + key + ')' : 'night dim off');
     el.veil.style.opacity = key;
     el.veil.className = on ? 'on' : '';
   }
@@ -423,7 +426,7 @@
     // Rechargement quotidien vers 4 h pour repartir d'une mémoire propre.
     var d = new Date();
     if (d.getHours() === 4 && Date.now() - SM.diag.started > 3 * 3600000 && navigator.onLine && !A.sheet) {
-      SM.diag.info('daily reload');
+      SM.diag.info('daily reload'); SM.diag.flush();
       location.reload();
     }
   }

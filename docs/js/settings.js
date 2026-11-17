@@ -137,8 +137,7 @@
         var on = (k === 'reel' && !demo.weather) || demo.weather === k;
         return '<button data-v="' + k + '"' + (on ? ' class="on"' : '') + '>' + tt.demoWeathers[k] + '</button>';
       }).join('') + '</div>') +
-      '<div class="btnrow"><button class="btn" data-x="reload">' + tt.reload + '</button><button class="btn" data-x="clear">' + tt.clearLog + '</button></div>' +
-      '<pre class="log">' + U.esc(d.lines().slice().reverse().join('\n')) + '</pre>';
+      '<div class="btnrow"><button class="btn" data-x="log">' + tt.openLog + ' (' + d.count() + ')</button><button class="btn" data-x="reload">' + tt.reload + '</button></div>';
   }
 
   function bindDiag(body) {
@@ -155,8 +154,58 @@
       var x = e.target.closest('[data-x]');
       if (!x) return;
       if (x.getAttribute('data-x') === 'reload') location.reload();
-      if (x.getAttribute('data-x') === 'clear') { SM.diag.clear(); bindDiag(body); }
+      if (x.getAttribute('data-x') === 'log') openLog();
     };
+  }
+
+  /* Journal en plein écran : toutes les lignes des 7 derniers jours, les plus récentes en haut, avec Copier
+     (tout le journal et l'état de l'appareil dans le presse-papiers), Vider et Fermer. */
+  function openLog() {
+    var tt = t(), old = document.getElementById('logview');
+    if (old) old.parentNode.removeChild(old);
+    var v = document.createElement('div');
+    v.id = 'logview';
+    var lines = SM.diag.lines().reverse();
+    v.innerHTML = '<header><h2>' + U.esc(tt.logTitle) + '</h2><span class="lgn">' + lines.length + ' · ' + tt.logKept + '</span>' +
+      '<button class="btn" data-lg="copy">' + U.esc(tt.copy) + '</button><button class="btn" data-lg="clear">' + U.esc(tt.clearLog) + '</button>' +
+      '<button class="btn" data-lg="close">' + U.esc(tt.close) + '</button></header>' +
+      '<div class="lgbody">' + lines.map(function (l) {
+        var lv = l.charAt(15);
+        return '<div class="lgl' + (lv === '✕' ? ' e' : (lv === '!' ? ' w' : '')) + '">' + U.esc(l) + '</div>';
+      }).join('') + '</div>';
+    document.body.appendChild(v);
+    v.onclick = function (e) {
+      var b = e.target.closest('[data-lg]');
+      if (!b) return;
+      var act = b.getAttribute('data-lg');
+      if (act === 'close') v.parentNode.removeChild(v);
+      if (act === 'clear') { SM.diag.clear(); openLog(); }
+      if (act === 'copy') copyText(SM.diag.report(), function (ok) { b.textContent = ok ? tt.copied : tt.copyFailed; setTimeout(function () { b.textContent = tt.copy; }, 2000); });
+    };
+  }
+  // Presse-papiers : l'API moderne si elle existe, sinon une zone de texte sélectionnée (Safari 12).
+  function copyText(text, done) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(legacyCopy(text)); });
+      return;
+    }
+    done(legacyCopy(text));
+  }
+  function legacyCopy(text) {
+    var ta = document.createElement('textarea'), ok = false;
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';
+    document.body.appendChild(ta);
+    try {
+      var range = document.createRange();
+      range.selectNodeContents(ta);
+      var sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+      ta.setSelectionRange(0, text.length);
+      ok = document.execCommand('copy');
+    } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
   }
 
   // Bouton « Forcer la mise à jour » et version en ligne, lue à l'ouverture des réglages.
