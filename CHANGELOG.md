@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.15.0 · 17/11/2026
+
+- Carte du monde : plus de titre « Carte du monde » ; les sélecteurs (style, carte ou globe, horloges ou météo) prennent sa place dans l'en-tête, en plus petit. La carte gagne la hauteur de la rangée de sélecteurs qui était sous elle. En portrait, ils tiennent sur deux lignes.
+
 ## 1.14.1 · 17/11/2026
 
 - Réglages : « Intensité » devient « Assombrissement de l’écran la nuit », réglé par un curseur sur toute la largeur, « Plus clair » à gauche, « Plus sombre » à droite (de 20 % à 85 % par pas de 5 %), au lieu de trois boutons 35, 55 et 70 %.

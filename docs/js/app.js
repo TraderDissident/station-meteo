@@ -140,8 +140,13 @@
       loadMapCode().then(function () { if (A.mode === 'map') { renderMap(); loadAll(); } }, function () {
         if (A.mode === 'map') { A.mode = 'place'; SM.store.saveMode('place'); render(0); scene(true); A.toast(I.t().offline); }
       });
-    } else
-    SM.map.render(el.pages, A.places);
+    } else {
+      SM.map.render(el.pages, A.places);
+      // Les sélecteurs (style, carte ou globe, horloges ou météo) montent dans l'en-tête, à la place du titre :
+      // la carte gagne leur hauteur. La carte se recalcule ensuite avec la place libérée.
+      var bar = U.$('.mbar', el.pages);
+      if (bar) { el.hbar.innerHTML = ''; el.hbar.appendChild(bar); SM.map.resize(true); }
+    }
     el.pname.textContent = tt.worldMap;
     el.pcountry.textContent = '';
     el.dots.innerHTML = '';
@@ -156,7 +161,7 @@
     // Pas de nouveau rendu pendant qu'un bloc est tenu au doigt.
     if (SM.edit && SM.edit.dragging) return;
     if (A.mode === 'map') { renderMap(); return; }
-    if (el.app.className.indexOf('mapmode') >= 0) { if (SM.map) SM.map.leave(); appClass(); SM.sky.pause(false); }
+    if (el.app.className.indexOf('mapmode') >= 0) { if (SM.map) SM.map.leave(); el.hbar.innerHTML = ''; appClass(); SM.sky.pause(false); }
     U.$('[data-act=map]').className = 'iconbtn';
     var w = A.data[p.id];
     var now = Math.floor(nowMs() / 1000);
@@ -560,6 +565,7 @@
         '<header class="top">' +
           '<div class="hside"><button class="iconbtn" data-sheet="places" aria-label="Places">' + IC.ui('pin') + '</button></div>' +
           '<div class="ptitle"><div><span id="pname"></span><span id="pcountry"></span><span id="badge"></span></div><div id="dots"></div></div>' +
+          '<div id="hbar"></div>' +
           '<div class="hside r"><button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button>' +
           '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button></div>' +
         '</header>' +
@@ -569,7 +575,7 @@
       '<div class="sheet" id="sheet"><div class="sheet-in"><header><h2></h2><button class="iconbtn sheet-close" aria-label="Close">' + IC.ui('close') + '</button></header><div class="sheet-body"></div></div></div>' +
       '<div id="toast"></div>';
     el.pages = U.$('#pages'); el.pname = U.$('#pname'); el.pcountry = U.$('#pcountry'); el.dots = U.$('#dots');
-    el.badge = U.$('#badge'); el.veil = U.$('#veil'); el.sheet = U.$('#sheet'); el.toast = U.$('#toast');
+    el.hbar = U.$('#hbar'); el.badge = U.$('#badge'); el.veil = U.$('#veil'); el.sheet = U.$('#sheet'); el.toast = U.$('#toast');
 
     SM.sky.init(U.$('#sky'));
     SM.sky.motion = A.settings.motion;

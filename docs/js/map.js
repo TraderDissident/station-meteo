@@ -781,7 +781,7 @@
   M.setCards = function (mode) {
     st.cards = mode;
     try { localStorage.setItem('sm.mapCards', mode); } catch (e) { /* rien */ }
-    U.$$('.mswitch button', st.root).forEach(function (b) { b.className = b.getAttribute('data-cards') === mode ? 'on' : ''; });
+    U.$$('.mswitch button').forEach(function (b) { b.className = b.getAttribute('data-cards') === mode ? 'on' : ''; });
     M.refresh();
     M.resize(true);
   };
@@ -790,7 +790,7 @@
     if (!st.root || (view === 'globe' && !SM.globe.supported())) return;
     st.view = view;
     try { localStorage.setItem('sm.mapView', view); } catch (e) { /* rien */ }
-    U.$$('.mview button', st.root).forEach(function (b) { b.className = b.getAttribute('data-view') === view ? 'on' : ''; });
+    U.$$('.mview button').forEach(function (b) { b.className = b.getAttribute('data-view') === view ? 'on' : ''; });
     if (view === 'map') { SM.globe.detach(); U.$$('.mk', st.box).forEach(function (mk) { mk.style.display = ''; }); st.sunEl.style.display = st.moonEl.style.display = ''; }
     M.refresh();
     M.resize(true);
@@ -800,7 +800,7 @@
     if (!STYLES[style] || !st.root) return;
     st.style = style;
     try { localStorage.setItem('sm.mapStyle', style); } catch (e) { /* rien */ }
-    U.$$('.mstyle button', st.root).forEach(function (b) { b.className = b.getAttribute('data-style') === style ? 'on' : ''; });
+    U.$$('.mstyle button').forEach(function (b) { b.className = b.getAttribute('data-style') === style ? 'on' : ''; });
     buildLayers();
     M.tick(true);
   };

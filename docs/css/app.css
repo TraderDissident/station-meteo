@@ -580,3 +580,14 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 .vrange::-webkit-slider-runnable-track { height: .4rem; border-radius: .2rem; background: -webkit-linear-gradient(left, rgba(255, 255, 255, .55), rgba(255, 255, 255, .06)); background: linear-gradient(to right, rgba(255, 255, 255, .55), rgba(255, 255, 255, .06)); }
 .vrange::-webkit-slider-thumb { -webkit-appearance: none; width: 1.6rem; height: 1.6rem; margin-top: -.6rem; border-radius: 50%; background: #fff; box-shadow: 0 .15rem .5rem rgba(0, 0, 0, .45); }
 .vends { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; font-size: .8rem; color: var(--muted); }
+
+/* Carte du monde : pas de titre, les sélecteurs prennent sa place dans l'en-tête. */
+#hbar { display: none; }
+.mapmode header.top { height: auto; min-height: 3.6rem; padding-top: .3rem; padding-bottom: .3rem; }
+.mapmode .ptitle { display: none; }
+.mapmode #hbar { display: block; -webkit-flex: 1; flex: 1; min-width: 0; }
+#hbar .mbar { margin: 0; }
+#hbar .mbar .seg { margin: .15rem .35rem; }
+#hbar .seg button { margin: 0 .25rem 0 0; padding: .32rem .7rem; font-size: .8rem; }
+.mapmode .hside { -webkit-flex: none; flex: none; }
+.mapmode .hside.l { margin-right: .5rem; }
