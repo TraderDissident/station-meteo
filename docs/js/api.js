@@ -60,9 +60,9 @@
       '&wind_speed_unit=kmh&current=' + CURRENT + '&minutely_15=precipitation,weather_code&hourly=' + HOURLY + '&daily=' + DAILY;
   };
 
-  A.forecast = function (p) {
+  A.forecast = function (p, timeout) {
     var t0 = Date.now();
-    return SM.U.fetchJSON(A.forecastURL(p), 20000).then(function (j) {
+    return SM.U.fetchJSON(A.forecastURL(p), timeout || 20000).then(function (j) {
       if (j.error) throw new Error(j.reason || 'invalid response');
       SM.diag.lastFetch = p.name + ' · ' + (Date.now() - t0) + ' ms · ' + new Date().toTimeString().slice(0, 8);
       SM.diag.info('forecast ok ' + p.name + ' · ' + (Date.now() - t0) + ' ms');

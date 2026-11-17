@@ -282,7 +282,8 @@
     if ((fresh && !force) || A.inflight[p.id]) return Promise.resolve();
     if (!force && A.retryAt[p.id] && Date.now() < A.retryAt[p.id]) return Promise.resolve();
     A.inflight[p.id] = true;
-    return SM.api.forecast(p).then(function (nw) {
+    // Juste après un gel, la première connexion est souvent morte : délai court, nouvel essai rapide.
+    return SM.api.forecast(p, quickMode() ? 7000 : 0).then(function (nw) {
       var old = A.data[p.id];
       if (old && old.air && Date.now() - old.airAt < SM.AIR_REFRESH_MS) { nw.air = old.air; nw.airAt = old.airAt; }
       // Lieu supprimé pendant le chargement : on n'enregistre rien.
@@ -299,7 +300,10 @@
     }).catch(function (e) {
       var n = (A.failures[p.id] || 0) + 1;
       A.failures[p.id] = n;
-      A.retryAt[p.id] = Date.now() + [30, 60, 120, 300][Math.min(n - 1, 3)] * 1000;
+      // Évalué à l'échec, pas au départ : une requête partie avant le gel échoue juste après la reprise.
+      var quick = quickMode() && n <= 4;
+      A.retryAt[p.id] = Date.now() + (quick ? 4 : [30, 60, 120, 300][Math.min(n - 1, 3)]) * 1000;
+      if (quick) setTimeout(function () { if (A.places[A.idx] && A.places[A.idx].id === p.id) load(p); }, 4500);
       SM.diag.warn('forecast ' + p.name + ': ' + e.message);
     }).then(function () {
       A.inflight[p.id] = false;
@@ -447,6 +451,20 @@
       if (A.demo.cycle) clock();
     }, A.demo.cycle ? 200 : 30000);
   }
+
+  /* Après un gel de plus d'une minute (page arrêtée par le système, appareil endormi) : heure, voile de nuit et
+     météo repartent tout de suite, sans attendre la prochaine minuterie. */
+  function quickMode() { return !!A.resumedAt && Date.now() - A.resumedAt < 180000; }
+  SM.diag.onResume = function (gap) {
+    if (gap < 60000) return;
+    A.resumedAt = Date.now();
+    minuteKey = -1;
+    veil();
+    if (A.mode === 'map') { loadAll(); return; }
+    clock();
+    var p = A.places[A.idx];
+    if (p) { A.retryAt[p.id] = 0; load(p, true); }
+  };
 
   var minuteKey = -1;
   function everySecond() {

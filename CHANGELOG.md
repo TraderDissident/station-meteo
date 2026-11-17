@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.20.1 · 17/11/2026
+
+- Journal : la ligne « FROZEN » dit maintenant si l'iPad lui-même dormait ou si seule la page était arrêtée (comparaison de l'heure murale et de l'horloge monotone, qui s'arrête quand l'appareil dort), et note si la page avait le focus et le réseau.
+- Après un gel de plus d'une minute, l'heure, le voile de nuit et la météo repartent tout de suite ; pendant trois minutes, la requête météo n'attend que 7 s et réessaie 4 s plus tard (avant : 20 s d'attente puis 30 s, d'où « hors connexion » pendant près d'une minute au réveil).
+
 ## 1.20.0 · 17/11/2026
 
 Passe complète sur la rapidité, sans toucher à l'apparence ni aux animations.

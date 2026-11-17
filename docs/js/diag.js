@@ -102,17 +102,27 @@
 
   /* Gel : une minuterie d'une seconde qui revient avec plus de 6 s de retard, alors que la page est à l'écran,
      veut dire que tout était arrêté. On note la durée et l'heure du début : c'est la trace du blocage nocturne. */
-  var tick = Date.now(), hiddenAt = 0;
+  /* Deux horloges pour savoir ce qui s'est arrêté : l'heure murale (Date.now) avance toujours ; l'horloge monotone
+     (performance.now) s'arrête quand l'appareil lui-même dort. Si les deux ont avancé pareil, l'iPad était éveillé
+     et seule la page était arrêtée ; si la monotone n'a presque pas bougé, c'est l'iPad qui dormait. */
+  function mono() { return window.performance && performance.now ? performance.now() : Date.now(); }
+  var tick = Date.now(), monoTick = mono(), hiddenAt = 0;
   setInterval(function () {
-    var now = Date.now(), gap = now - tick;
-    if (gap > 6000 && !document.hidden) SM.diag.error('FROZEN ' + Math.round(gap / 1000) + ' s (since ' + stamp(tick) + ') · ' + context());
-    tick = now;
+    var now = Date.now(), gap = now - tick, m = mono(), mgap = m - monoTick;
+    if (gap > 6000 && !document.hidden) {
+      SM.diag.error('FROZEN ' + Math.round(gap / 1000) + ' s (since ' + stamp(tick) + ') · monotonic clock +' + Math.round(mgap / 1000) + ' s: ' +
+        (mgap < gap * 0.5 ? 'DEVICE WAS ASLEEP' : 'device awake, page stopped') +
+        ' · focus ' + (document.hasFocus ? document.hasFocus() : '?') + ' · ' + (navigator.onLine ? 'online' : 'offline') + ' · ' + context());
+      // L'app se remet à jour tout de suite (heure, voile, météo) au lieu d'attendre ses minuteries.
+      if (SM.diag.onResume) { try { SM.diag.onResume(gap); } catch (e) { SM.diag.error('resume: ' + e.message); } }
+    }
+    tick = now; monoTick = m;
   }, 1000);
 
   /* Tout ce que le système fait à la page : masquée, montrée, mise en veille, réveillée, réseau, taille. */
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) { hiddenAt = Date.now(); SM.diag.info('page hidden'); saveNow(); }
-    else { SM.diag.info('page visible' + (hiddenAt ? ' after ' + Math.round((Date.now() - hiddenAt) / 1000) + ' s' : '')); tick = Date.now(); }
+    else { SM.diag.info('page visible' + (hiddenAt ? ' after ' + Math.round((Date.now() - hiddenAt) / 1000) + ' s' : '')); tick = Date.now(); monoTick = mono(); }
   });
   window.addEventListener('pagehide', function (e) { SM.diag.info('pagehide' + (e.persisted ? ' (kept in memory)' : '')); alive(true); saveNow(); });
   window.addEventListener('pageshow', function (e) { if (e.persisted) SM.diag.info('pageshow (back from memory)'); });
