@@ -496,9 +496,6 @@
         appClass();
         if (SM.map) {
           SM.map.resize(true);
-          // La carte dépasse en largeur : on la centre sur le lieu affiché.
-          var wrap = U.$('.mapwrap', el.pages), p0 = A.places[A.idx];
-          if (wrap && A.mapFull && p0) wrap.scrollLeft = Math.max(0, (((p0.lon + 172.5) % 360 + 360) % 360) / 360 * wrap.scrollWidth - wrap.clientWidth / 2);
         }
         e.stopImmediatePropagation();
         return;

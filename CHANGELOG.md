@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.16.1 · 17/11/2026
+
+- Carte en plein écran : plus de débord ni de glisser de côté. La carte entière s'adapte à l'écran, bord à bord en largeur, centrée en hauteur ; le reste reste vide.
+
 ## 1.16.0 · 17/11/2026
 
 - Carte du monde en plein écran : un bouton dans l'en-tête masque l'en-tête et les cartes de villes ; il reste la règle des fuseaux, la carte et un bouton de sortie posé dessus. La carte prend toute la hauteur de l'écran (sur l'iPad en paysage, 1625 × 722 au lieu de 992 × 441) et se fait glisser de côté ; elle s'ouvre centrée sur le lieu affiché.
