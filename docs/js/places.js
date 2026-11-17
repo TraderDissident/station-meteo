@@ -103,6 +103,9 @@
 
   function render() {
     var tt = t();
+    // Nombre de lieux à côté du titre de la feuille, tenu à jour à chaque ajout, retrait ou déplacement.
+    var h2 = document.querySelector('#sheet h2');
+    if (h2) h2.innerHTML = U.esc(tt.places) + ' <span class="hcount">' + SM.app.places.length + '</span>';
     body.innerHTML =
       '<div class="searchbox">' + IC.ui('search') + '<input class="search" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="' + U.esc(tt.search) + '" value="' + U.esc(lastQuery) + '"></div>' +
       '<div class="results">' + resultsHTML() + '</div>' +

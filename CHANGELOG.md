@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.23.9 · 17/11/2026
+
+- Feuille des lieux : le nombre de lieux est affiché à côté du titre, et suit les ajouts et les retraits.
+
 ## 1.23.8 · 17/11/2026
 
 - En-tête : trois boutons, un par vue (ville, liste de tous les lieux, carte du monde). Celui de la vue affichée est allumé ; toucher un bouton ouvre sa vue, sans aller-retour. Avant, la liste et la carte se refermaient en touchant de nouveau leur bouton, et la ville n'avait pas le sien.
