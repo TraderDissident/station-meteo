@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.24.3 · 17/11/2026
+
+- Carte en plein écran : le bouton de l'en-tête montre des flèches vers l'intérieur (sortir du plein écran) ; hors plein écran, des flèches vers l'extérieur comme avant.
+
 ## 1.24.2 · 17/11/2026
 
 - Carte et globe : les étiquettes des villes sont opaques (même teinte bleu nuit, sans transparence) ; la carte ne se voit plus au travers.

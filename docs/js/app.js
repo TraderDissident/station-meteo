@@ -108,6 +108,9 @@
     // Colonne des prévisions trop étroite pour les 7 colonnes du tableau des jours : version resserrée.
     var narrow = (land ? w * 0.55 : w) < 31 * base;
     el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' + (A.mapFull ? ' mapfull' : '') : '') + (A.mode === 'list' ? ' listmode' : '');
+    // Bouton plein écran de l'en-tête : flèches vers l'extérieur pour y entrer, vers l'intérieur pour en sortir.
+    var fb = U.$('header [data-act=mapfull]'), want = A.mapFull ? 'shrink' : 'expand';
+    if (fb && fb.getAttribute('data-icon') !== want) { fb.innerHTML = IC.ui(want); fb.setAttribute('data-icon', want); }
     var hc = A.mode === 'map' ? 'mapmode' : (A.mode === 'list' ? 'listmode' : '');
     if (document.documentElement.className !== hc) document.documentElement.className = hc;
   }
