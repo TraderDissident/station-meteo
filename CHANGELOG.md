@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.23.3 · 17/11/2026
+
+- Options de la carte : les pastilles de couleur des points sont rondes (elles étaient étirées en ovales dans le panneau d'options).
+
 ## 1.23.2 · 17/11/2026
 
 - Carte et globe : les points des lieux font 12 points de diamètre, quelle que soit la taille de l'écran (environ 13 avant sur l'iPad en paysage).
