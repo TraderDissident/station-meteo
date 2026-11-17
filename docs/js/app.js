@@ -178,8 +178,7 @@
     el.dots.innerHTML = '';
     el.badge.textContent = tt.badge;
     el.badge.style.display = A.demo.time || A.demo.weather || A.demo.cycle ? '' : 'none';
-    U.$('[data-act=map]').className = 'iconbtn on';
-    U.$('[data-act=list]').className = 'iconbtn';
+    viewButtons();
   }
 
   /* Mode liste : tous les lieux en cartes (voir list.js). Le ciel animé est mis en pause, comme sur la carte. */
@@ -198,8 +197,7 @@
     el.dots.innerHTML = '';
     el.badge.textContent = tt.badge;
     el.badge.style.display = A.demo.time || A.demo.weather || A.demo.cycle ? '' : 'none';
-    U.$('[data-act=map]').className = 'iconbtn';
-    U.$('[data-act=list]').className = 'iconbtn on';
+    viewButtons();
   }
   // Les lieux arrivent un par un : un seul nouveau rendu de la liste toutes les 1,5 s au plus.
   var listT = 0;
@@ -242,8 +240,7 @@
     if (A.mode === 'list') { renderList(); return; }
     if (el.app.className.indexOf('mapmode') >= 0) { if (SM.map) SM.map.leave(); el.hbar.innerHTML = ''; el.hbar.className = ''; appClass(); SM.sky.pause(false); }
     if (el.app.className.indexOf('listmode') >= 0) { appClass(); SM.sky.pause(false); }
-    U.$('[data-act=map]').className = 'iconbtn';
-    U.$('[data-act=list]').className = 'iconbtn';
+    viewButtons();
     var w = A.data[p.id];
     var now = Math.floor(nowMs() / 1000);
     var oldSide = U.$('.side', el.pages), oldView = U.$('.view', el.pages);
@@ -311,6 +308,7 @@
     U.$('[data-sheet=places]').setAttribute('aria-label', tt.places);
     U.$('[data-sheet=settings]').setAttribute('aria-label', tt.settings);
     U.$('.sheet-close').setAttribute('aria-label', tt.close);
+    U.$('[data-act=place]').setAttribute('aria-label', tt.cityView);
     U.$('[data-act=map]').setAttribute('aria-label', tt.worldMap);
     U.$('[data-act=list]').setAttribute('aria-label', tt.allPlaces);
     el.dots.innerHTML = A.places.length > 1 ? A.places.map(function (q, i) { return '<i' + (i === A.idx ? ' class="on"' : '') + '></i>'; }).join('') : '';
@@ -514,6 +512,14 @@
   function step(d) { if (A.places.length > 1) show(A.idx + d, d); }
 
   /* Carte du monde : ouvre ou referme, et charge les lieux qui n'ont pas de données fraîches. */
+  // Trois boutons, un par vue (ville, liste, carte) : celui de la vue affichée est allumé.
+  function viewButtons() {
+    ['place', 'list', 'map'].forEach(function (m) {
+      var b = U.$('[data-act=' + m + ']');
+      if (b) b.className = 'iconbtn' + (A.mode === m ? ' on' : '');
+    });
+  }
+  A.showView = function (m) { if (A.mode !== m) setMode(m); };
   A.toggleMap = function () { setMode(A.mode === 'map' ? 'place' : 'map'); };
   A.rerender = function () { render(0); };
   A.toggleList = function () { setMode(A.mode === 'list' ? 'place' : 'list'); };
@@ -821,8 +827,9 @@
     }, true);
     el.app.addEventListener('click', function (e) {
       A.lastTouch = Date.now();
-      if (e.target.closest('[data-act=map]')) { A.toggleMap(); return; }
-      if (e.target.closest('[data-act=list]')) { A.toggleList(); return; }
+      if (e.target.closest('[data-act=place]')) { A.showView('place'); return; }
+      if (e.target.closest('[data-act=map]')) { A.showView('map'); return; }
+      if (e.target.closest('[data-act=list]')) { A.showView('list'); return; }
       var mv = e.target.closest('.mview button');
       if (mv) { SM.map.setView(mv.getAttribute('data-view')); return; }
       var ms = e.target.closest('.mstyle button');
@@ -901,6 +908,7 @@
           '<div id="hbar"></div>' +
           '<div class="hside r"><button class="iconbtn mapctl" data-act="mapctl" aria-label="Map options">' + IC.ui('sliders') + '</button>' +
           '<button class="iconbtn mapctl" data-act="mapfull" aria-label="Full screen">' + IC.ui('expand') + '</button>' +
+          '<button class="iconbtn" data-act="place" aria-label="City">' + IC.ui('sunny') + '</button>' +
           '<button class="iconbtn" data-act="list" aria-label="All places">' + IC.ui('list') + '</button>' +
           '<button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button>' +
           '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button></div>' +

@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.23.8 · 17/11/2026
+
+- En-tête : trois boutons, un par vue (ville, liste de tous les lieux, carte du monde). Celui de la vue affichée est allumé ; toucher un bouton ouvre sa vue, sans aller-retour. Avant, la liste et la carte se refermaient en touchant de nouveau leur bouton, et la ville n'avait pas le sien.
+
 ## 1.23.7 · 17/11/2026
 
 Signalé par Matt : en mode carte + météo, certaines cartes avaient une ligne colorée en haut (New York).
