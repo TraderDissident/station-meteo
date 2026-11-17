@@ -194,6 +194,7 @@
     var before = [].slice.call(el.pages.children);
     el.pages.innerHTML = SM.list.html(A.places, nowMs(), p && p.id, isLand());
     before.forEach(release);
+    SM.list.fit(el.pages);
     if (y) U.$('.listview', el.pages).scrollTop = y;
     el.pname.textContent = tt.allPlaces;
     el.pcountry.textContent = '';
@@ -770,6 +771,7 @@
     appClass();
     SM.sky.resize();
     if (A.mode === 'map' && SM.map) SM.map.resize();
+    if (A.mode === 'list') SM.list.fit(el.pages);
     SM.ui.align(el.pages);
   }
 

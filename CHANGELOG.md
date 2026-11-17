@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.25.1 · 17/11/2026
+
+- Mode liste, en paysage : les cartes sont plus hautes et occupent toute la hauteur de l'écran en 5 rangées (4 × 5 pour 20 lieux), sans vide en bas. Jamais plus de 5 cartes par colonne : au-delà de 20 lieux, une colonne de plus.
+
 ## 1.25.0 · 17/11/2026
 
 Demande de Matt : la carte doit s'afficher aussitôt au clic, préparée pendant que l'app est au repos en vue ville ou liste.

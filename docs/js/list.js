@@ -43,8 +43,10 @@
   }
 
   // Nombre de colonnes : assez pour que tous les lieux tiennent à l'écran sans défiler quand c'est possible.
+  // En paysage, jamais plus de 5 cartes par colonne : au-delà de 20 lieux, une colonne de plus.
+  var ROWS = 5;
   function columns(n, land) {
-    if (land) return n <= 8 ? 2 : (n <= 15 ? 3 : 4);
+    if (land) return Math.max(n <= 8 ? 2 : (n <= 15 ? 3 : 4), Math.ceil(n / ROWS));
     return n <= 8 ? 1 : 2;
   }
 
@@ -68,6 +70,20 @@
         var cls = 'lcard' + (ci.sky.brightness > 0.62 ? ' bright' : '') + (n.className.indexOf(' cur') >= 0 ? ' cur' : '');
         if (n.className !== cls) n.className = cls;
       }
+    },
+    /* Paysage : les cartes prennent toute la hauteur libre, 5 rangées (demande de Matt), au lieu d'une hauteur fixe
+       qui laissait un vide en bas. Recalculé à chaque mise en page. */
+    fit: function (root) {
+      var view = root.querySelector('.listview'), grid = view && view.querySelector('.lgrid');
+      if (!grid) return;
+      var cards = grid.children, land = document.getElementById('app').className.indexOf('land') >= 0;
+      var h = '';
+      if (land && cards.length) {
+        var cs = getComputedStyle(grid), m = parseFloat(getComputedStyle(cards[0]).marginTop) || 0;
+        var avail = view.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        h = Math.floor(avail / ROWS - 2 * m) + 'px';
+      }
+      for (var i = 0; i < cards.length; i++) if (cards[i].style.height !== h) cards[i].style.height = h;
     },
     // Chaque seconde : seules les heures qui changent sont réécrites.
     tick: function (root, places, ms) {
