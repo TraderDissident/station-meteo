@@ -454,8 +454,23 @@
     light = q4(light); shd = q4(shd);
     var ca = 0.55 + cover * 0.4;
     var paintKey = U.rgb(light) + U.rgb(shd) + ca.toFixed(2);
+    // Un nuage jamais peint l'est tout de suite ; un simple changement de teinte attend la fin du changement de lieu,
+    // puis se fait un nuage à la fois, pour ne jamais occuper la page d'un bloc.
+    var pending = [];
     for (var i = 0; i < (S.cloudCount || 0) && i < clouds.length; i++) {
-      if (clouds[i].paintKey !== paintKey) { clouds[i].paintKey = paintKey; paintCloud(clouds[i], light, shd, ca); }
+      var cl = clouds[i];
+      if (cl.paintKey === paintKey) continue;
+      if (instant || !cl.paintKey) { cl.paintKey = paintKey; paintCloud(cl, light, shd, ca); } else pending.push(cl);
+    }
+    clearTimeout(S.paintT);
+    if (pending.length) {
+      var paintNext = function () {
+        var c2 = pending.shift();
+        if (!c2) return;
+        c2.paintKey = paintKey; paintCloud(c2, light, shd, ca);
+        S.paintT = setTimeout(paintNext, 60);
+      };
+      S.paintT = setTimeout(paintNext, 1100);
     }
 
     // Brouillard

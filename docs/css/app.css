@@ -1,6 +1,11 @@
 /* Station Météo · feuille de style, compatible Safari 12 (pas de gap en flex, pas d'inset, pas de clamp). */
 
-*, *::before, *::after { box-sizing: border-box; }
+/* Pas de règle universelle sur ::before et ::after : elle obligeait Safari à calculer deux pseudo-éléments pour chacun
+   des 1 700 éléments à chaque construction d'écran (mesuré sur l'iPad : des milliers créés puis détruits). Seuls les
+   pseudo-éléments réellement utilisés reçoivent la règle. */
+* { box-sizing: border-box; }
+#moonEl::before, .hi.midnight::before, .mapbox::after, .msun::after, .mmoon::before, .mk.night::before,
+.mcards::before, .mcards::after, .pslot::before, .pslot::after, .hstrip.vprecip::after, .zones span.me::before { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0b1226; }
 body {
   position: fixed; top: 0; left: 0; right: 0;
@@ -650,3 +655,8 @@ header.top { position: relative; }
 /* Globe : chaque point et son étiquette sur leur couche, déplacés par la carte graphique. */
 .mapbox.globe .mk { will-change: transform; }
 .card.details.lazy { background: none; border-color: transparent; }
+
+/* Changement de lieu : l'écran qui sort ne reçoit plus les touchers ; celui qui arrive attend, presque invisible. */
+.view.leaving { pointer-events: none; }
+.view.pre-r { opacity: .01; -webkit-transform: translate3d(5%, 0, 0); transform: translate3d(5%, 0, 0); }
+.view.pre-l { opacity: .01; -webkit-transform: translate3d(-5%, 0, 0); transform: translate3d(-5%, 0, 0); }

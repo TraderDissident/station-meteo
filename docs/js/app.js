@@ -160,7 +160,7 @@
     U.$('[data-act=map]').className = 'iconbtn on';
   }
 
-  function render(dir) {
+  function render(dir, old, t0) {
     var p = A.places[A.idx];
     if (!p) return;
     // Pas de nouveau rendu pendant qu'un bloc est tenu au doigt.
@@ -185,15 +185,38 @@
       SM.diag.error('render: ' + e.message);
       html = SM.ui.empty(p, I.t().noData, true);
     }
-    el.pages.innerHTML = html;
+    // Le reste des heures et les détails, une fois l'écran posé (et seulement si on n'a pas déjà changé de lieu).
+    clearTimeout(hoursT);
+    var fillLater = function (ms) { if (w && SM.ui.lazy) hoursT = setTimeout(function () { fillHours(p.id); }, ms); };
+    if (dir) {
+      // Changement de lieu : le nouvel écran est posé à côté de l'ancien (qui finit de sortir), presque invisible ;
+      // il n'entre qu'une fois posé et peint, pour que son arrivée soit un simple déplacement de couche.
+      var box = document.createElement('div');
+      box.innerHTML = html;
+      var nv = box.firstChild, side = dir > 0 ? 'r' : 'l';
+      nv.className += ' pre-' + side;
+      U.$$('.view', el.pages).forEach(function (x) { if (x !== old) el.pages.removeChild(x); });
+      el.pages.insertBefore(nv, el.pages.firstChild);
+      var outLeft = old ? Math.max(0, 230 - (Date.now() - (t0 || 0))) : 0;
+      if (old) setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, outLeft);
+      // Tant que l'entrée n'est pas finie, aucun autre rendu ne doit la couper.
+      A.transitionUntil = Date.now() + 4000;
+      afterFrames(function () {
+        setTimeout(function () {
+          if (!nv.parentNode) return;
+          nv.className = nv.className.replace(' pre-' + side, ' enter-' + side);
+          A.transitionUntil = Date.now() + 450;
+          fillLater(560);
+        }, Math.max(0, 230 - (Date.now() - (t0 || 0))));
+      });
+    } else {
+      el.pages.innerHTML = html;
+      fillLater(1000);
+    }
     // Polices et icônes peuvent encore bouger la mise en page : on recale un peu après.
     setTimeout(function () { SM.ui.align(el.pages); }, 400);
-    // Le reste des heures, une fois l'écran posé (et seulement si on n'a pas déjà changé de lieu).
-    clearTimeout(hoursT);
-    if (w && SM.ui.lazy) hoursT = setTimeout(function () { fillHours(p.id); }, 1000);
     var v = U.$('.view', el.pages);
-    if (dir) v.className += dir > 0 ? ' enter-r' : ' enter-l';
-    else {
+    if (!dir) {
       var s = U.$('.side', el.pages);
       if (s) s.scrollTop = keepScroll;
       v.scrollTop = keepView;
@@ -308,7 +331,15 @@
     }).then(function () {
       A.inflight[p.id] = false;
       if (A.mode === 'map') mapRefreshSoon();
-      else if (A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) { render(0); scene(false); }
+      else if (A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) {
+        // Jamais de nouveau rendu au milieu d'un changement de lieu (il coupait l'animation net) : on attend sa fin.
+        var go = function () {
+          var wait = (A.transitionUntil || 0) - Date.now();
+          if (wait > 0) { setTimeout(go, Math.min(wait + 20, 200)); return; }
+          if (A.mode === 'place' && A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) { scene(false); render(0); }
+        };
+        go();
+      }
       else if (A.places[A.idx] && A.places[A.idx].id === p.id) status();
     });
   }
@@ -317,22 +348,51 @@
   A.goTo = function (id) {
     for (var i = 0; i < A.places.length; i++) if (A.places[i].id === id) { show(i, i > A.idx ? 1 : -1); return; }
   };
+  /* Changement de lieu en trois temps, pour que le mouvement ne se fige jamais :
+     1. l'écran actuel s'en va (glissement et fondu de 0,22 s, faits par la carte graphique : fluides même pendant
+        que la page travaille) ;
+     2. le nouvel écran est construit, posé et peint, presque invisible ;
+     3. il entre une fois prêt.
+     Avant, tout était construit au lâcher du doigt : l'ancien écran restait figé à mi-course le temps du calcul
+     (une demi-seconde à une seconde sur l'iPad), puis le nouveau apparaissait d'un coup. */
+  var showSeq = 0;
   function show(i, dir) {
     var n = A.places.length;
     if (A.mode === 'map') { A.mode = 'place'; SM.store.saveMode('place'); dir = 0; }
     A.idx = ((i % n) + n) % n;
     SM.store.saveCurrent(A.places[A.idx].id);
-    // Chronométré dans le journal : le calcul de l'écran, le ciel, puis le temps jusqu'à l'image suivante (affichage réel).
-    var t0 = Date.now(), id = A.places[A.idx].id;
-    render(dir || 0);
-    var t1 = Date.now();
-    scene(false);
-    var t2 = Date.now();
-    U.raf(function () { U.raf(function () {
-      SM.diag.info('show ' + id + ' · screen ' + (t1 - t0) + ' ms · sky ' + (t2 - t1) + ' ms · painted after ' + (Date.now() - t0) + ' ms');
-    }); });
-    load(A.places[A.idx]);
-    loadNear();
+    var seq = ++showSeq, t0 = Date.now(), id = A.places[A.idx].id;
+    var old = dir ? U.$('.view', el.pages) : null;
+    if (old && old.className.indexOf('leaving') >= 0) old = null;
+    var build = function () {
+      if (seq !== showSeq) return;
+      // Le ciel d'abord : il règle la teinte des cartes, qui se calcule ainsi une seule fois avec le nouvel écran.
+      var ta = Date.now();
+      scene(false);
+      var tb = Date.now();
+      render(dir || 0, old, t0);
+      var tc = Date.now();
+      // Chronométré dans le journal : attente avant construction, ciel, écran, puis délai jusqu'à l'affichage réel.
+      U.raf(function () { U.raf(function () {
+        SM.diag.info('show ' + id + ' · wait ' + (ta - t0) + ' ms · sky ' + (tb - ta) + ' ms · screen ' + (tc - tb) + ' ms · painted after ' + (Date.now() - t0) + ' ms');
+      }); });
+      load(A.places[A.idx]);
+      loadNear();
+    };
+    if (!old) { build(); return; }
+    old.className += ' leaving';
+    old.style.webkitTransition = old.style.transition = '-webkit-transform .22s ease-in, transform .22s ease-in, opacity .22s ease-in';
+    old.style.webkitTransform = old.style.transform = 'translate3d(' + (dir > 0 ? -40 : 40) + '%,0,0)';
+    old.style.opacity = '0';
+    A.transitionUntil = t0 + 4000;
+    // Deux images d'attente : la sortie est partie à l'écran avant que la construction n'occupe la page.
+    afterFrames(build);
+  }
+  // Deux images d'attente, ou 150 ms si la page n'est pas à l'écran (les images ne sont alors pas servies).
+  function afterFrames(fn) {
+    var done = false, go = function () { if (!done) { done = true; fn(); } };
+    U.raf(function () { U.raf(go); });
+    setTimeout(go, 150);
   }
   function step(d) { if (A.places.length > 1) show(A.idx + d, d); }
 

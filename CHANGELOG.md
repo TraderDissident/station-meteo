@@ -1,5 +1,17 @@
 # Journal des modifications
 
+## 1.21.0 · 17/11/2026
+
+D'après les mesures prises sur l'iPad (retour de Matt : l'animation de changement de ville commence, se fige une demi-seconde à une seconde, puis l'autre ville apparaît).
+
+- Changement de lieu en trois temps : l'écran actuel s'en va tout de suite (glissement et fondu de 0,22 s faits par la carte graphique, fluides même pendant que la page travaille) ; le nouvel écran est construit, posé et peint, presque invisible ; il n'entre qu'une fois prêt. Avant, tout était construit au lâcher du doigt, l'ancien écran figé à mi-course.
+- Les données météo qui arrivent pendant le changement n'interrompent plus l'animation : le rafraîchissement attend sa fin.
+- La suite de l'écran (heures 13 à 48, détails) est construite après l'entrée, plus pendant.
+- Plus de règle universelle sur ::before et ::after : elle faisait calculer deux pseudo-éléments pour chacun des 1 700 éléments à chaque construction d'écran (plus de 10 000 créés et détruits en quelques changements de ville, mesuré sur l'iPad). Seuls les pseudo-éléments réellement utilisés la reçoivent.
+- Le ciel est réglé avant la construction de l'écran : la teinte des cartes n'est plus calculée deux fois.
+- La teinte des nuages se repeint après le changement de lieu, un nuage à la fois.
+- Journal : la ligne « show » donne l'attente avant construction, le ciel, l'écran et le délai jusqu'à l'affichage.
+
 ## 1.20.2 · 17/11/2026
 
 - Diagnostic à distance : le rapport (état de l'appareil et journal) est aussi rangé dans le cache du site (« sm-diag / diag-report »), 10 s après l'ouverture, toutes les 5 min et quelques secondes après un gel. L'outil de diagnostic branché en USB peut le lire à travers le service worker, sans copie à la main. Rien ne sort de l'appareil.
