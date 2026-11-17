@@ -298,8 +298,12 @@ svg.wx.big { width: 5.6rem; height: 5.6rem; }
 .seg button { margin: 0 .45rem .45rem 0; padding: .5rem .95rem; border-radius: 1.2rem; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); font-size: .92rem; }
 .seg button.on { background: #fff; color: #0b1226; font-weight: 600; border-color: #fff; }
 .twocol { display: -webkit-flex; display: flex; }
-.twocol .field { -webkit-flex: 1; flex: 1; margin-right: 1rem; }
-select { font-size: 1rem; padding: .45rem .7rem; border-radius: .6rem; background: rgba(255, 255, 255, .1); color: #fff; border: 1px solid var(--line); }
+/* Côte à côte, à leur taille : l'écart entre les deux reste celui des autres contrôles. */
+.twocol .field { -webkit-flex: none; flex: none; margin-right: 1.5rem; }
+/* Chevron dessiné par l'app : celui du système colle à la bordure. Marge intérieure égale à gauche et à droite. */
+select { font-size: 1rem; padding: .45rem 2.3rem .45rem .9rem; border-radius: .6rem; color: #fff; border: 1px solid var(--line);
+  -webkit-appearance: none; appearance: none;
+  background: rgba(255, 255, 255, .1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .9rem center / .75rem .5rem; }
 .btn { padding: .55rem 1rem; border-radius: .8rem; background: rgba(255, 255, 255, .12); border: 1px solid var(--line); font-size: .95rem; }
 .btn.sm { padding: .4rem .75rem; font-size: .88rem; }
 .btn .ic { width: 1rem; height: 1rem; vertical-align: -.17rem; margin-right: .3rem; }

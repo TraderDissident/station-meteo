@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.13.6 · 17/11/2026
+
+- Réglages : listes déroulantes avec un chevron dessiné par l'app, à distance du bord (celui du système collait à la bordure) ; « De » et « À » du voile de nuit côte à côte au lieu de se partager toute la largeur.
+
 ## 1.13.5 · 17/11/2026
 
 - Carte du monde, glisser des étiquettes : plus aucun nouveau placement ni reconstruction de la carte tant qu'une étiquette est tenue (données qui arrivent, fenêtre redimensionnée, retour sur l'onglet) ; le trait suit toujours l'étiquette tenue ; position et taille relues au début de chaque geste.
