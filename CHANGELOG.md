@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.23.2 · 17/11/2026
+
+- Carte et globe : les points des lieux font 12 points de diamètre, quelle que soit la taille de l'écran (environ 13 avant sur l'iPad en paysage).
+
 ## 1.23.1 · 17/11/2026
 
 Signalé par Matt : après quelques minutes sur une ville, toucher le globe mettait plusieurs secondes à afficher la carte du monde.
