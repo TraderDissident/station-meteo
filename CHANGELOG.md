@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.22.0 · 17/11/2026
+
+- Nouveau mode liste : un bouton dans l'en-tête (icône de liste) affiche tous les lieux en cartes, comme la liste de Météo sur iPhone. Chaque carte porte le ciel du moment au lieu concerné, le nom, l'heure locale (avec « Demain » ou « Hier » si le jour diffère), le temps qu'il fait, la température, le maximum et le minimum du jour. Toucher une carte ouvre le lieu ; le lieu affiché en dernier est entouré.
+- Le nombre de colonnes suit le nombre de lieux pour que tout tienne à l'écran quand c'est possible (20 lieux en paysage : 4 colonnes de 5). Le mode est retenu d'une ouverture à l'autre, comme la carte du monde.
+
 ## 1.21.7 · 17/11/2026
 
 Signalé par Matt sur l'iPad : la plupart des changements de lieu sont rapides, mais certains mettent jusqu'à une seconde et demie. Le journal montre qu'ils arrivent quand deux glissements s'enchaînent à 1 à 4 secondes d'écart.
