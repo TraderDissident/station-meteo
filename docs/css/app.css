@@ -31,7 +31,7 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   --line: rgba(255, 255, 255, .14);
   --muted: rgba(255, 255, 255, .72);
   position: fixed; top: 0; left: 0; right: 0; overflow: hidden; height: 100%;
-  background: #0b1226;
+  /* Pas de fond ici : html porte la même couleur. #app est en position fixe, un fond à lui = une couche de 10,9 Mo. */
 }
 
 /* ---------- ciel ---------- */
@@ -376,7 +376,9 @@ pre.log { margin-top: 1rem; padding: .7rem; border-radius: .7rem; background: rg
 }
 
 /* ---------- carte du monde ---------- */
-#app.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050a16 60%, #02040a 100%); }
+/* Fonds de la carte et de la liste portés par html, comme le fond de base : #app est en position fixe, et s'il peignait
+   un fond lui-même l'iPad lui donnait une couche plein écran de 10,9 Mo en double de la racine (mesuré en mode liste). */
+html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050a16 60%, #02040a 100%); }
 .mapmode #sky { display: none; }
 .mapview { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
   display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: center; align-items: center; }
@@ -675,7 +677,7 @@ header.top { position: relative; }
 .view.pre-l { opacity: .01; -webkit-transform: translate3d(-5%, 0, 0); transform: translate3d(-5%, 0, 0); }
 
 /* ---------- mode liste : tous les lieux ---------- */
-#app.listmode { background: #262d38; }
+html.listmode { background: #262d38; }
 .listmode #sky { display: none; }
 .listview { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .lgrid { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; padding: .2rem .65rem 1rem; }

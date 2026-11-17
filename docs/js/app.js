@@ -92,6 +92,8 @@
     // Colonne des prévisions trop étroite pour les 7 colonnes du tableau des jours : version resserrée.
     var narrow = (land ? w * 0.55 : w) < 31 * base;
     el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' + (A.mapFull ? ' mapfull' : '') : '') + (A.mode === 'list' ? ' listmode' : '');
+    var hc = A.mode === 'map' ? 'mapmode' : (A.mode === 'list' ? 'listmode' : '');
+    if (document.documentElement.className !== hc) document.documentElement.className = hc;
   }
 
   /* iOS 12 en plein écran garde parfois les dimensions d'avant la rotation : window.orientation fait foi. */
@@ -187,7 +189,7 @@
   var listT = 0;
   function listRefreshSoon() {
     if (listT) return;
-    listT = setTimeout(function () { listT = 0; if (A.mode === 'list' && !A.sheet) renderList(); }, 1500);
+    listT = setTimeout(function () { listT = 0; if (A.mode === 'list' && !A.sheet) SM.list.update(el.pages, A.places, nowMs()); }, 1500);
   }
 
   // Conteneurs d'un écran que le code touche (donc qui retiendraient leur contenu), du plus profond au plus haut.
@@ -482,6 +484,7 @@
 
   /* Carte du monde : ouvre ou referme, et charge les lieux qui n'ont pas de données fraîches. */
   A.toggleMap = function () { setMode(A.mode === 'map' ? 'place' : 'map'); };
+  A.rerender = function () { render(0); };
   A.toggleList = function () { setMode(A.mode === 'list' ? 'place' : 'list'); };
   function setMode(m) {
     A.mode = m;
@@ -658,7 +661,7 @@
     var p = A.places[A.idx];
     if (A.mode === 'map') loadAll();
     // La liste est redessinée chaque minute : le ciel de chaque carte suit l'heure.
-    else if (A.mode === 'list') { loadAll(); if (!A.sheet) renderList(); }
+    else if (A.mode === 'list') { loadAll(); if (!A.sheet) SM.list.update(el.pages, A.places, nowMs()); }
     else if (p) {
       load(p);
       var w = A.data[p.id];

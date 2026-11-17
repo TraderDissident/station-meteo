@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.22.3 · 17/11/2026
+
+D'après les mesures du mode liste sur l'iPad.
+
+- Fond de l'app (et ceux du mode liste et de la carte du monde) : porté par la page elle-même et non plus par le conteneur de l'app, qui recevait sinon une couche plein écran de 10,9 Mo en double (même défaut que celui corrigé en 1.21.1).
+- Mode liste : la mise à jour de chaque minute ne reconstruit plus toute la liste (275 ms de blocage mesurés) ; seuls le ciel des cartes et les valeurs qui ont changé sont réécrits.
+
 ## 1.22.2 · 17/11/2026
 
 Signalé par Matt sur l'iPad : au glissement, l'écran se fige parfois après un demi-centimètre puis repart.
