@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.18.2 · 17/11/2026
+
+- Diagnostic : boîte noire pour les blocages. Toutes les 30 s l'app note qu'elle vit (heure, écran affiché, dernière météo reçue) ; au démarrage suivant, si elle s'était arrêtée sans fermeture propre, le journal donne l'heure de l'arrêt et ce qui était affiché. Un blocage de plus de 6 s à l'écran est noté avec sa durée.
+
 ## 1.18.1 · 17/11/2026
 
 - Globe : toutes les étiquettes restent affichées (avant, celles qui en recouvraient une autre disparaissaient), et elles se placent à la main comme sur la carte : on les glisse, Maj cale le trait à 45°, la place est retenue par ville, en proportion du rayon du globe, et l'étiquette tourne avec son point. Reposée sur son point, elle revient à droite de lui.
