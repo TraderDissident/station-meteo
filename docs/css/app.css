@@ -119,10 +119,10 @@ header.top {
 .view { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 .view.enter-r { -webkit-animation: inR .4s ease-out; animation: inR .4s ease-out; }
 .view.enter-l { -webkit-animation: inL .4s ease-out; animation: inL .4s ease-out; }
-@-webkit-keyframes inR { from { opacity: 0; -webkit-transform: translate3d(5%, 0, 0); } to { opacity: 1; -webkit-transform: none; } }
-@keyframes inR { from { opacity: 0; transform: translate3d(5%, 0, 0); } to { opacity: 1; transform: none; } }
-@-webkit-keyframes inL { from { opacity: 0; -webkit-transform: translate3d(-5%, 0, 0); } to { opacity: 1; -webkit-transform: none; } }
-@keyframes inL { from { opacity: 0; transform: translate3d(-5%, 0, 0); } to { opacity: 1; transform: none; } }
+@-webkit-keyframes inR { from { opacity: 0; -webkit-transform: translate3d(5%, 0, 0); } to { opacity: .999; -webkit-transform: none; } }
+@keyframes inR { from { opacity: 0; transform: translate3d(5%, 0, 0); } to { opacity: .999; transform: none; } }
+@-webkit-keyframes inL { from { opacity: 0; -webkit-transform: translate3d(-5%, 0, 0); } to { opacity: .999; -webkit-transform: none; } }
+@keyframes inL { from { opacity: 0; transform: translate3d(-5%, 0, 0); } to { opacity: .999; transform: none; } }
 
 /* Paysage : deux colonnes. */
 .land .view { display: -webkit-flex; display: flex; }
@@ -660,7 +660,11 @@ header.top { position: relative; }
    gagner 5 Mo. Constaté sur l'iPad : Safari 12 n'affiche plus les deux colonnes dès que l'écran bouge ou devient
    translucide, quand la colonne de gauche a sa couche et que celle de droite défile (défaut de composition :
    deux enfants en couche sous un parent en couche sans contenu). Ne pas remettre de couche sur .hero. */
-.view { -webkit-transform: translateZ(0); transform: translateZ(0); }
+/* Opacité de repos à 0,999 et jamais 1 (invisible à l'œil). Mesuré sur l'iPad : chaque fois que l'opacité de l'écran
+   quittait exactement 1 (début du glissement au doigt, début de la sortie), Safari 12 bloquait la page 170 à 260 ms,
+   d'où l'écran qui se figeait après un demi-centimètre. À 0,999 en permanence, ce coût disparaît. Le glissement, la
+   sortie et l'entrée partent et reviennent donc à 0,999. */
+.view { -webkit-transform: translateZ(0); transform: translateZ(0); opacity: .999; }
 /* Globe : chaque point et son étiquette sur leur couche, déplacés par la carte graphique. */
 .mapbox.globe .mk { will-change: transform; }
 .card.details.lazy { background: none; border-color: transparent; }

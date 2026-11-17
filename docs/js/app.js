@@ -462,7 +462,7 @@
     var from = at ? parseFloat(at[1]) : 0;
     old.className = old.className.replace(/ enter-[rl]/, '') + ' leaving';
     old.style.webkitTransform = old.style.transform = 'translate3d(' + from.toFixed(0) + 'px,0,0)';
-    if (!old.style.opacity) old.style.opacity = '1';
+    if (!old.style.opacity) old.style.opacity = '0.999';
     old.style.webkitTransition = old.style.transition = '-webkit-transform .22s ease-in, transform .22s ease-in, opacity .22s ease-in';
     void old.offsetWidth;
     old.style.webkitTransform = old.style.transform = 'translate3d(' + (from + (dir > 0 ? -0.4 : 0.4) * window.innerWidth).toFixed(0) + 'px,0,0)';
@@ -704,7 +704,8 @@
       var tr = x ? 'translate3d(' + x.toFixed(0) + 'px,0,0)' : '';
       view.style.webkitTransition = view.style.transition = anim ? '-webkit-transform .25s ease-out, transform .25s ease-out, opacity .25s' : 'none';
       view.style.webkitTransform = view.style.transform = tr;
-      view.style.opacity = x ? String(1 - Math.min(Math.abs(x) / innerWidth, 0.5)) : '';
+      // Jamais 1 : voir l'opacité de repos de .view dans app.css (0,999).
+      view.style.opacity = x ? String(0.999 - Math.min(Math.abs(x) / innerWidth, 0.5)) : '';
     }
     el.pages.addEventListener('touchstart', function (e) {
       A.lastTouch = Date.now();

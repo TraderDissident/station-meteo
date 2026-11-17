@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.22.2 · 17/11/2026
+
+Signalé par Matt sur l'iPad : au glissement, l'écran se fige parfois après un demi-centimètre puis repart.
+
+- Cause mesurée sur l'iPad : chaque fois que l'opacité de l'écran d'un lieu quittait exactement la valeur 1 (début du glissement au doigt, début de la sortie), Safari 12 bloquait la page 170 à 260 ms. L'écran est maintenant au repos à une opacité de 0,999, invisible à l'œil, et n'y revient jamais à 1. Mesuré par simulation sur l'iPad : glissement 171 → 23 ms, sortie 254 → 32 ms au pire.
+
 ## 1.22.1 · 17/11/2026
 
 - Blocs de détails : plus de vide à droite de la dernière ligne (la Qualité de l'air laissait une place vide à côté d'elle). Si la dernière ligne n'est pas pleine, son dernier bloc s'élargit jusqu'au bord ; recalculé à chaque mise en page, en paysage, en portrait et en mode édition.
