@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.21.6 · 17/11/2026
+
+Signalé par Matt sur l'iPad après la 1.21.5 : le suivi du doigt est bon, mais au lâcher l'écran repasse un instant au centre avant de sortir.
+
+- Sortie au lâcher : elle part maintenant de la position exacte où le doigt a laissé l'écran. Sa cible était en pourcentage alors que la position du doigt est en pixels ; Safari 12 ne sait pas passer de l'un à l'autre et repartait de zéro, c'est-à-dire du centre. La cible est en pixels, et l'état de départ est fixé avant de la poser.
+- La classe d'animation d'entrée est retirée une fois l'entrée jouée, au lieu de rester sur l'écran au repos.
+
 ## 1.21.5 · 17/11/2026
 
 Signalé par Matt sur l'iPad : au premier mouvement du doigt pour changer de lieu, les deux colonnes disparaissaient (il ne restait que le ciel et l'en-tête), puis réapparaissaient au lâcher.

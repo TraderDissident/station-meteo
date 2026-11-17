@@ -216,6 +216,8 @@
           A.transitionUntil = Date.now() + 450;
           SM.sky.hold(0);
           fillLater(560);
+          // L'animation d'entrée finie, sa classe s'en va : une animation restée attachée n'a rien à faire sur un écran au repos.
+          setTimeout(function () { nv.className = nv.className.replace(' enter-' + side, ''); }, 460);
         }, Math.max(0, 230 - (Date.now() - (t0 || 0))));
       });
     } else {
@@ -406,9 +408,18 @@
       loadNear();
     };
     if (!old) { build(); return; }
-    old.className += ' leaving';
+    /* La sortie part de là où le doigt a laissé l'écran, et sa cible est en pixels comme la position du doigt.
+       Constaté sur l'iPad : avec une cible en pourcentage, Safari 12 ne sait pas aller de « 240 px » à « 40 % » et
+       repart de zéro, donc l'écran revenait au centre un instant avant de sortir. On pose d'abord la transition,
+       on fait prendre acte de l'état de départ (lecture de offsetWidth), puis seulement la cible. */
+    var at = /translate3d\((-?[\d.]+)px/.exec(old.style.transform || old.style.webkitTransform || '');
+    var from = at ? parseFloat(at[1]) : 0;
+    old.className = old.className.replace(/ enter-[rl]/, '') + ' leaving';
+    old.style.webkitTransform = old.style.transform = 'translate3d(' + from.toFixed(0) + 'px,0,0)';
+    if (!old.style.opacity) old.style.opacity = '1';
     old.style.webkitTransition = old.style.transition = '-webkit-transform .22s ease-in, transform .22s ease-in, opacity .22s ease-in';
-    old.style.webkitTransform = old.style.transform = 'translate3d(' + (dir > 0 ? -40 : 40) + '%,0,0)';
+    void old.offsetWidth;
+    old.style.webkitTransform = old.style.transform = 'translate3d(' + (from + (dir > 0 ? -0.4 : 0.4) * window.innerWidth).toFixed(0) + 'px,0,0)';
     old.style.opacity = '0';
     A.transitionUntil = t0 + 4000;
     SM.sky.hold(2500);
