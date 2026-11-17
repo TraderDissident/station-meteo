@@ -443,7 +443,30 @@
     var ps = G.project(sun.lat, sun.lon), pm = G.project(moon.lat, moon.lon);
     st.sunEl.style.display = ps.front ? '' : 'none'; place(st.sunEl, cx + ps.x, cy + ps.y);
     st.moonEl.style.display = pm.front ? '' : 'none'; place(st.moonEl, cx + pm.x, cy + pm.y);
-    if (final || Date.now() - lastLayout > 700) { lastLayout = Date.now(); layoutLabels(!final); }
+    globeLabels();
+  }
+
+  /* Globe : comme la carte des trajets de Travel Hub, chaque étiquette reste collée à droite de son point et tourne
+     avec lui. Aucun replacement : quand deux étiquettes se recouvrent, la seconde s'efface (son point reste). */
+  function globeLabels() {
+    var shown = [];
+    U.$$('.mk', st.box).forEach(function (mk) {
+      var lab = U.$('.mkl', mk);
+      if (mk.style.display === 'none') return;
+      // Tailles lues une fois par étiquette, pas à chaque image.
+      if (!lab._w) { lab.style.display = ''; lab._w = lab.offsetWidth; lab._h = lab.offsetHeight; lab.className = 'mkl'; }
+      if (lab._pos !== 'g') { lab._pos = 'g'; lab.style.left = '12px'; lab.style.top = (-lab._h / 2).toFixed(0) + 'px'; }
+      var x = parseFloat(mk.style.left) + 12, y = parseFloat(mk.style.top) - lab._h / 2, hit = false;
+      for (var i = 0; i < shown.length; i++) {
+        var r = shown[i];
+        if (x < r[0] + r[2] + 4 && x + lab._w + 4 > r[0] && y < r[1] + r[3] + 4 && y + lab._h + 4 > r[1]) { hit = true; break; }
+      }
+      if (!hit) shown.push([x, y, lab._w, lab._h]);
+      var d = hit ? 'none' : '';
+      if (lab.style.display !== d) lab.style.display = d;
+    });
+    var ln = U.$('.mklines', st.box);
+    if (ln.firstChild) ln.innerHTML = '';
   }
 
   /* Étiquettes : placées autour de leur point (à droite, à gauche, au-dessus, au-dessous, puis de plus en plus loin
@@ -461,6 +484,7 @@
     if (!st.autoPos) st.autoPos = {};
     var pts = mks.map(function (mk) {
       var lab = U.$('.mkl', mk), id = mk.getAttribute('data-place');
+      lab.style.display = ''; lab._pos = '';
       var p = { id: id, lab: lab, x: mk.offsetLeft, y: mk.offsetTop, w: lab.offsetWidth, h: lab.offsetHeight, box: null, off: null, fixed: false };
       var m = saved[id], a = autoKey && autoKey === st.autoKey && st.autoPos[id];
       if (m) { p.fixed = true; p.off = [m[0] * W, m[1] * H, 0, 0]; p.box = [p.x + p.off[0], p.y + p.off[1], p.w, p.h]; }

@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.13.3 · 17/11/2026
+
+- Globe : les étiquettes ne sautent plus d'un côté à l'autre. Comme sur la carte des trajets de Travel Hub, chacune reste collée à droite de son point et tourne avec lui ; quand deux se recouvrent, la seconde s'efface (son point reste) au lieu de se déplacer. Plus de traits de rappel sur le globe.
+
 ## 1.13.2 · 17/11/2026
 
 - Carte du monde : aucune étiquette ne bouge plus d'elle-même. Seule celle que l'on glisse change de place, même si elle en chevauche une autre ou si des traits se croisent.
