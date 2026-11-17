@@ -2,7 +2,22 @@
 var SM = window.SM || {};
 window.SM = SM;
 
-SM.VERSION = '1.22.5';
+/* Essai, sans effet par défaut : avec ?passive=1 dans l'adresse, tous les écouteurs tactiles deviennent passifs.
+   Safari n'envoie alors plus aucun toucher à la page en attendant sa réponse (attente qui peut durer une seconde et
+   pendant laquelle l'écran ne se redessine plus). Contreparties pendant l'essai seulement : le glisser des lieux, du
+   mode édition et des étiquettes de la carte ne bloque plus le défilement de la page. */
+SM.PASSIVE_TEST = /[?&]passive=1(&|$)/.test(location.search);
+if (SM.PASSIVE_TEST && window.EventTarget) {
+  (function () {
+    var add = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function (type, fn, opts) {
+      if (/^touch/.test(type)) opts = { passive: true, capture: opts === true || !!(opts && opts.capture) };
+      return add.call(this, type, fn, opts);
+    };
+  })();
+}
+
+SM.VERSION = '1.22.6';
 
 // D'ouest en est, comme sur une carte classique.
 SM.DEFAULT_PLACES = [

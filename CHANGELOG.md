@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.22.6 · 17/11/2026
+
+- Réglage d'essai, sans effet par défaut : avec « ?passive=1 » dans l'adresse, tous les écouteurs tactiles deviennent passifs, pour mesurer sur l'iPad si l'attente de Safari à chaque toucher (jusqu'à une seconde, sans image) explique les changements de lieu encore lents. Le journal note l'essai.
+
 ## 1.22.5 · 17/11/2026
 
 Suite de la 1.22.4, accord de Matt sur le correctif du ciel.
