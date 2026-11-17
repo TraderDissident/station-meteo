@@ -29,6 +29,16 @@
       write('sm.places', p);
       write('sm.defaults', 3);
     }
+    // 1.24.0 : Bordeaux retiré, Anchorage (Alaska) ajouté en tête de liste, sans toucher à l'ordre choisi pour le reste.
+    if (read('sm.defaults', 1) < 4) {
+      p = p.filter(function (q) { return q.id !== 'bordeaux'; });
+      if (!p.some(function (q) { return q.id === 'anchorage'; })) p.unshift(SM.DEFAULT_PLACES[0]);
+      write('sm.places', p);
+      write('sm.defaults', 4);
+      if (read('sm.current', null) === 'bordeaux') write('sm.current', 'anchorage');
+      if (read('sm.start', null) === 'bordeaux') write('sm.start', null);
+      try { localStorage.removeItem('sm.w.bordeaux'); } catch (e) { /* rien */ }
+    }
     return p;
   };
   S.savePlaces = function (list) { write('sm.places', list); };

@@ -7,10 +7,12 @@ window.SM = SM;
    arrivées d'un lieu figées une seconde pile). Les seuls non passifs sont posés sur l'élément qui en a besoin, et
    seulement pendant qu'il sert : poignées de la feuille des lieux, blocs en mode édition, carte du monde. */
 
-SM.VERSION = '1.23.11';
+SM.VERSION = '1.24.0';
 
 // D'ouest en est, comme sur une carte classique.
 SM.DEFAULT_PLACES = [
+  { id: 'anchorage', name: 'Anchorage', region: 'Alaska', country: 'United States', lat: 61.21806, lon: -149.90028, tz: 'America/Anchorage',
+    names: { en: ['Anchorage', 'Alaska', 'United States'], fr: ['Anchorage', 'Alaska', 'États-Unis'] } },
   { id: 'tahiti', name: 'Tahiti', region: 'Îles du Vent', country: 'French Polynesia', lat: -17.5347, lon: -149.56844, tz: 'Pacific/Tahiti',
     names: { en: ['Tahiti', 'Windward Islands', 'French Polynesia'], fr: ['Tahiti', 'Îles du Vent', 'Polynésie française'] } },
   { id: 'bogota', name: 'Bogota', region: 'Bogota D.C.', country: 'Colombia', lat: 4.60971, lon: -74.08175, tz: 'America/Bogota',
@@ -23,8 +25,6 @@ SM.DEFAULT_PLACES = [
     names: { en: ['Marrakesh', 'Marrakesh-Safi', 'Morocco'], fr: ['Marrakech', 'Marrakech-Safi', 'Maroc'] } },
   { id: 'dublin', name: 'Dublin', region: 'Leinster', country: 'Ireland', lat: 53.33306, lon: -6.24889, tz: 'Europe/Dublin',
     names: { en: ['Dublin', 'Leinster', 'Ireland'], fr: ['Dublin', 'Leinster', 'Irlande'] } },
-  { id: 'bordeaux', name: 'Bordeaux', region: 'Nouvelle-Aquitaine', country: 'France', lat: 44.84124, lon: -0.58046, tz: 'Europe/Paris',
-    names: { en: ['Bordeaux', 'Nouvelle-Aquitaine', 'France'], fr: ['Bordeaux', 'Nouvelle-Aquitaine', 'France'] } },
   { id: 'aigre', name: 'Aigre', region: 'Charente', country: 'France', lat: 45.89151, lon: 0.00824, tz: 'Europe/Paris',
     names: { en: ['Aigre', 'Charente', 'France'], fr: ['Aigre', 'Charente', 'France'] } },
   { id: 'barcelone', name: 'Barcelona', region: 'Catalonia', country: 'Spain', lat: 41.38879, lon: 2.15899, tz: 'Europe/Madrid',

@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.24.0 · 17/11/2026
+
+- Lieux : Bordeaux retiré, Anchorage (Alaska) ajouté en première position (le plus à l'ouest). Appliqué une fois aux listes déjà enregistrées, sans changer l'ordre des autres lieux.
+
 ## 1.23.11 · 17/11/2026
 
 - Carte et globe : la taille des points des lieux suit la largeur de la carte (1,2 %, soit 12 points sur l'iPad en paysage), entre 6 et 14 points, au lieu d'une taille fixe.
