@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.18.1 · 17/11/2026
+
+- Globe : toutes les étiquettes restent affichées (avant, celles qui en recouvraient une autre disparaissaient), et elles se placent à la main comme sur la carte : on les glisse, Maj cale le trait à 45°, la place est retenue par ville, en proportion du rayon du globe, et l'étiquette tourne avec son point. Reposée sur son point, elle revient à droite de lui.
+
 ## 1.18.0 · 17/11/2026
 
 - Globe : lecture / pause de la rotation, comme sur la carte de Travel Hub. Pastille en bas à gauche du globe, avec les boutons lecture et pause (celui actif en blanc) ; à la souris, la vitesse 0,5×, 1×, 1,5× ou 2× se déplie au survol. Choix retenus d'une ouverture à l'autre.

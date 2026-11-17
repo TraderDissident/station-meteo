@@ -449,24 +449,28 @@
   /* Globe : comme la carte des trajets de Travel Hub, chaque étiquette reste collée à droite de son point et tourne
      avec lui. Aucun replacement : quand deux étiquettes se recouvrent, la seconde s'efface (son point reste). */
   function globeLabels() {
-    var shown = [];
+    // Toutes les étiquettes restent affichées ; chacune garde la place qu'on lui a donnée par rapport à son point
+    // (à droite par défaut), et tourne avec lui. Position retenue en proportion du rayon du globe.
+    var saved = globePos(), R = Math.max(SM.globe.radius(), 1), pts = [];
     U.$$('.mk', st.box).forEach(function (mk) {
-      var lab = U.$('.mkl', mk);
+      var lab = U.$('.mkl', mk), id = mk.getAttribute('data-place');
       if (mk.style.display === 'none') return;
-      // Tailles lues une fois par étiquette, pas à chaque image.
-      if (!lab._w) { lab.style.display = ''; lab._w = lab.offsetWidth; lab._h = lab.offsetHeight; lab.className = 'mkl'; }
-      if (lab._pos !== 'g') { lab._pos = 'g'; lab.style.left = '12px'; lab.style.top = (-lab._h / 2).toFixed(0) + 'px'; }
-      var x = parseFloat(mk.style.left) + 12, y = parseFloat(mk.style.top) - lab._h / 2, hit = false;
-      for (var i = 0; i < shown.length; i++) {
-        var r = shown[i];
-        if (x < r[0] + r[2] + 4 && x + lab._w + 4 > r[0] && y < r[1] + r[3] + 4 && y + lab._h + 4 > r[1]) { hit = true; break; }
+      if (!lab._w || lab._pos !== 'g') { lab.style.display = ''; lab._w = lab.offsetWidth; lab._h = lab.offsetHeight; lab._pos = 'g'; }
+      var held = drag && drag.p.lab === lab, m = saved[id];
+      var off = held ? drag.p.off : (m ? [m[0] * R, m[1] * R] : [12, -lab._h / 2]);
+      var x = parseFloat(mk.style.left), y = parseFloat(mk.style.top);
+      // Étiquette tenue : son point continue de tourner, le trait le suit.
+      if (held) { drag.p.x = x; drag.p.y = y; drag.p.box = [x + drag.p.off[0], y + drag.p.off[1], drag.p.w, drag.p.h]; }
+      if (!held) {
+        var l = off[0].toFixed(0) + 'px', t = off[1].toFixed(0) + 'px';
+        if (lab.style.left !== l) lab.style.left = l;
+        if (lab.style.top !== t) lab.style.top = t;
+        if (lab.style.display) lab.style.display = '';
       }
-      if (!hit) shown.push([x, y, lab._w, lab._h]);
-      var d = hit ? 'none' : '';
-      if (lab.style.display !== d) lab.style.display = d;
+      pts.push(held ? drag.p : { id: id, lab: lab, x: x, y: y, w: lab._w, h: lab._h, off: [off[0], off[1], 0, 0], box: [x + off[0], y + off[1], lab._w, lab._h], globe: true });
     });
-    var ln = U.$('.mklines', st.box);
-    if (ln.firstChild) ln.innerHTML = '';
+    st.labels = pts;
+    drawLines();
   }
 
   /* Étiquettes : placées autour de leur point (à droite, à gauche, au-dessus, au-dessous, puis de plus en plus loin
@@ -628,7 +632,13 @@
   /* ---------- étiquettes placées à la main ----------
      On glisse une étiquette (doigt ou souris) ; Maj enfoncée, le trait se cale à 0°, 45°, 90°… ; reposée sur son
      point, elle repasse au placement automatique. Position gardée par lieu et par orientation, en proportion de la carte. */
-  var MKEY = 'sm.labelPos';
+  var MKEY = 'sm.labelPos', GKEY = 'sm.labelPosGlobe';
+  function globePos() { try { return JSON.parse(localStorage.getItem(GKEY)) || {}; } catch (e) { return {}; } }
+  function saveGlobe(id, v) {
+    var all = globePos();
+    if (v) all[id] = v; else delete all[id];
+    try { localStorage.setItem(GKEY, JSON.stringify(all)); } catch (e) { /* plein */ }
+  }
   function orient() { return document.getElementById('app').className.indexOf('land') >= 0 ? 'land' : 'port'; }
   function manualAll() { try { return JSON.parse(localStorage.getItem(MKEY)) || {}; } catch (e) { return {}; } }
   function manualPos() { return manualAll()[orient()] || {}; }
@@ -641,7 +651,7 @@
 
   var drag = null;
   function labelAt(t) {
-    if (!st.root || st.view !== 'map' || !t.closest) return null;
+    if (!st.root || !t.closest) return null;
     var lab = t.closest('.mkl'), mk = lab && lab.parentNode;
     if (!lab || !st.labels) return null;
     for (var i = 0; i < st.labels.length; i++) if (st.labels[i].lab === lab) return st.labels[i];
@@ -692,8 +702,14 @@
     // Ramenée tout contre son point : l'étiquette repasse au placement automatique.
     var b = d.p.box, ax = U.clamp(d.p.x, b[0], b[0] + b[2]), ay = U.clamp(d.p.y, b[1], b[1] + b[3]);
     var near = Math.abs(ax - d.p.x) + Math.abs(ay - d.p.y) < 6;
-    saveManual(d.p.id, near ? null : [d.p.off[0] / st.w, d.p.off[1] / st.h]);
-    layoutLabels();
+    if (st.view === 'globe') {
+      var R = Math.max(SM.globe.radius(), 1);
+      saveGlobe(d.p.id, near ? null : [d.p.off[0] / R, d.p.off[1] / R]);
+      globeLabels();
+    } else {
+      saveManual(d.p.id, near ? null : [d.p.off[0] / st.w, d.p.off[1] / st.h]);
+      layoutLabels();
+    }
     // Données arrivées pendant le glisser : la carte se met à jour maintenant.
     if (pendingRefresh) { pendingRefresh = false; M.refresh(); }
   }
