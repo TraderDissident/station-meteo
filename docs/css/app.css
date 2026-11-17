@@ -330,7 +330,9 @@ select { font-size: 1rem; padding: .45rem 2.3rem .45rem .9rem; border-radius: .6
 .searchbox { position: relative; margin-top: 1rem; }
 .searchbox .ic { position: absolute; left: .85rem; top: 50%; margin-top: -.6rem; color: var(--muted); }
 input.search {
-  width: 100%; font-size: 16px; padding: .75rem 1rem .75rem 2.6rem; border-radius: .9rem;
+  /* Même échelle que le reste de l'app (1rem = 16 points sur l'iPad, taille sous laquelle iOS zoome sur le champ).
+     En points fixes, il paraissait énorme sur un écran plus petit, où tout le reste rétrécit. */
+  width: 100%; font-size: 1rem; padding: .75rem 1rem .75rem 2.6rem; border-radius: .9rem;
   border: 1px solid var(--line); background: rgba(255, 255, 255, .08); color: #fff; outline: none; -webkit-appearance: none;
   -webkit-user-select: text; user-select: text;
 }

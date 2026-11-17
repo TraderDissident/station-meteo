@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.23.10 · 17/11/2026
+
+- Feuille des lieux : le champ « Rechercher une ville » suit la même échelle que le reste de l'app. Il était en taille fixe et paraissait énorme sur un écran plus petit que l'iPad. Sur l'iPad, il ne change pas.
+
 ## 1.23.9 · 17/11/2026
 
 - Feuille des lieux : le nombre de lieux est affiché à côté du titre, et suit les ajouts et les retraits.
