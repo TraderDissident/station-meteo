@@ -325,6 +325,7 @@
       var box = document.createElement('div');
       box.innerHTML = SM.ui.detailsCard(p, A.data[id], now);
       if (box.firstChild) lazy.parentNode.replaceChild(box.firstChild, lazy);
+      SM.ui.align(el.pages);
     }
   }
   var hoursBusy = false;

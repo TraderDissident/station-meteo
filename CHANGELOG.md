@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.22.1 · 17/11/2026
+
+- Blocs de détails : plus de vide à droite de la dernière ligne (la Qualité de l'air laissait une place vide à côté d'elle). Si la dernière ligne n'est pas pleine, son dernier bloc s'élargit jusqu'au bord ; recalculé à chaque mise en page, en paysage, en portrait et en mode édition.
+
 ## 1.22.0 · 17/11/2026
 
 - Nouveau mode liste : un bouton dans l'en-tête (icône de liste) affiche tous les lieux en cartes, comme la liste de Météo sur iPhone. Chaque carte porte le ciel du moment au lieu concerné, le nom, l'heure locale (avec « Demain » ou « Hier » si le jour diffère), le temps qu'il fait, la température, le maximum et le minimum du jour. Toucher une carte ouvre le lieu ; le lieu affiché en dernier est entouré.

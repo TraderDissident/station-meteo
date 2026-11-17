@@ -463,7 +463,43 @@
   };
 
   // La courbe et les points doivent partager la même bande : la courbe se cale sur la zone des valeurs de la première heure.
+  /* Blocs de détails sans trou : la grille compte autant de colonnes que la place le permet, et la dernière ligne
+     pouvait rester à moitié vide (Lune et Qualité de l'air, puis un vide à droite). On simule le placement (les
+     blocs larges prennent deux colonnes, les petits comblent les trous) ; si la dernière ligne n'est pas pleine,
+     son dernier bloc s'élargit jusqu'au bord. Recalculé à chaque mise en page, donc valable en paysage comme en portrait. */
+  function fillTiles(root) {
+    [].forEach.call((root || document).querySelectorAll('.tiles'), function (grid) {
+      var kids = [].slice.call(grid.children);
+      kids.forEach(function (k) { if (k.getAttribute('data-fill')) { k.style.gridColumn = ''; k.removeAttribute('data-fill'); } });
+      var cols = (getComputedStyle(grid).gridTemplateColumns || '').split(' ').filter(function (x) { return x; }).length;
+      if (cols < 2 || !kids.length) return;
+      var wideOk = window.innerWidth > 600, rows = [], placed = [];
+      kids.forEach(function (k) {
+        var span = k.classList.contains('wide') && wideOk ? Math.min(2, cols) : 1, r = 0, c, found = false;
+        while (!found) {
+          rows[r] = rows[r] || [];
+          for (c = 0; c + span <= cols && !found; c++) {
+            var free = true;
+            for (var j = 0; j < span; j++) if (rows[r][c + j]) free = false;
+            if (free) { for (j = 0; j < span; j++) rows[r][c + j] = true; found = true; placed.push({ el: k, r: r, c: c, span: span }); }
+          }
+          if (!found) r++;
+        }
+      });
+      var last = rows.length - 1, used = 0;
+      for (var i = 0; i < cols; i++) if (rows[last][i]) used = i + 1;
+      var count = rows[last].filter(function (x) { return x; }).length;
+      // Dernière ligne continue depuis la gauche et incomplète : son dernier bloc prend le reste.
+      if (count === used && used < cols) {
+        var tail = placed.filter(function (p) { return p.r === last && p.c + p.span === used; })[0];
+        if (tail) { tail.el.style.gridColumn = 'span ' + (tail.span + cols - used); tail.el.setAttribute('data-fill', '1'); }
+      }
+    });
+  }
+  R.fillTiles = fillTiles;
+
   R.align = function (root) {
+    fillTiles(root);
     [].forEach.call((root || document).querySelectorAll('.hstrip'), function (st) {
       var svg = st.querySelector('.tcurve'), hv = st.querySelector('.hv');
       if (!svg || !hv) return;
