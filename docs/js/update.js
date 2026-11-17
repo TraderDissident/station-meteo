@@ -27,7 +27,7 @@
       }));
     }
     if (window.caches) {
-      jobs.push(caches.keys().then(function (keys) { return Promise.all(keys.map(function (k) { return caches.delete(k); })); }));
+      jobs.push(caches.keys().then(function (keys) { return Promise.all(keys.filter(function (k) { return k !== 'sm-diag'; }).map(function (k) { return caches.delete(k); })); }));
     }
     var go = function () { location.replace(location.pathname + '?r=' + Date.now()); };
     Promise.all(jobs).then(go, go);

@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.20.2 · 17/11/2026
+
+- Diagnostic à distance : le rapport (état de l'appareil et journal) est aussi rangé dans le cache du site (« sm-diag / diag-report »), 10 s après l'ouverture, toutes les 5 min et quelques secondes après un gel. L'outil de diagnostic branché en USB peut le lire à travers le service worker, sans copie à la main. Rien ne sort de l'appareil.
+- Journal : chaque point de situation donne aussi le nombre de canevas et leur surface totale, et le nombre de couches du ciel et de nuages montrés.
+
 ## 1.20.1 · 17/11/2026
 
 - Journal : la ligne « FROZEN » dit maintenant si l'iPad lui-même dormait ou si seule la page était arrêtée (comparaison de l'heure murale et de l'horloge monotone, qui s'arrête quand l'appareil dort), et note si la page avait le focus et le réseau.

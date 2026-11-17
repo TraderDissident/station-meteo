@@ -53,8 +53,9 @@
         navigator.userAgent,
         'screen ' + screen.width + '×' + screen.height + ' · window ' + innerWidth + '×' + innerHeight + ' · ×' + (window.devicePixelRatio || 1) +
           ' · standalone ' + (navigator.standalone ? 'yes' : 'no') + ' · ' + (navigator.onLine ? 'online' : 'offline'),
-        'up ' + Math.round((Date.now() - SM.diag.started) / 60000) + ' min · fps ' + SM.diag.fps + ' · dom ' + document.getElementsByTagName('*').length +
-          ' · canvas ' + document.getElementsByTagName('canvas').length + ' · last request ' + (SM.diag.lastFetch || '–'),
+        'up ' + Math.round((Date.now() - SM.diag.started) / 60000) + ' min · fps ' + SM.diag.fps +
+          ' · last request ' + (SM.diag.lastFetch || '–'),
+        paintStats(),
         a ? 'mode ' + a.mode + ' · place ' + ((a.places[a.idx] || {}).id || '') + ' · places ' + a.places.length + ' · settings ' + JSON.stringify(a.settings) : '',
         rows.length + ' lines · ' + SM.diag.days + ' days kept',
         ''
@@ -87,7 +88,16 @@
         ctx += app.sheet ? ' · sheet ' + app.sheet : '';
       }
     } catch (e) { /* rien */ }
-    return ctx + ' · fps ' + SM.diag.fps + ' · dom ' + document.getElementsByTagName('*').length + ' · canvas ' + document.getElementsByTagName('canvas').length;
+    return ctx + ' · fps ' + SM.diag.fps + ' · ' + paintStats();
+  }
+  // Ce qui pèse à l'écran : éléments, canevas et leur surface totale, couches du ciel et nuages montrés.
+  function paintStats() {
+    var cvs = document.getElementsByTagName('canvas'), px = 0, i, shown = 0, clouds = 0;
+    for (i = 0; i < cvs.length; i++) px += cvs[i].width * cvs[i].height;
+    var sky = document.getElementById('sky'), box = document.getElementById('cloudBox');
+    if (sky) for (i = 0; i < sky.children.length; i++) if (sky.children[i].style.display !== 'none') shown++;
+    if (box) for (i = 0; i < box.children.length; i++) if (box.children[i].style.display !== 'none') clouds++;
+    return 'dom ' + document.getElementsByTagName('*').length + ' · canvas ' + cvs.length + ' (' + (px / 1e6).toFixed(2) + ' Mpx) · sky layers ' + shown + ' · clouds ' + clouds;
   }
   try {
     var prev = JSON.parse(localStorage.getItem(AKEY) || 'null');
@@ -115,6 +125,8 @@
         ' · focus ' + (document.hasFocus ? document.hasFocus() : '?') + ' · ' + (navigator.onLine ? 'online' : 'offline') + ' · ' + context());
       // L'app se remet à jour tout de suite (heure, voile, météo) au lieu d'attendre ses minuteries.
       if (SM.diag.onResume) { try { SM.diag.onResume(gap); } catch (e) { SM.diag.error('resume: ' + e.message); } }
+      // Rapport mis à disposition quelques secondes après, avec les lignes de la reprise.
+      setTimeout(function () { if (SM.diag.publish) SM.diag.publish(); }, 8000);
     }
     tick = now; monoTick = m;
   }, 1000);
@@ -141,6 +153,21 @@
       lastTouch = Date.now();
     }, { capture: true, passive: true });
   });
+  /* Le rapport (état et journal) est aussi rangé dans le cache du site, sous « sm-diag / diag-report ». L'outil de
+     diagnostic branché en USB ne voit pas la page d'une web app sous iOS 12, mais il voit son service worker, qui
+     partage ce cache : il peut donc lire le journal sans qu'on le copie à la main. Rien ne sort de l'appareil. */
+  function publish() {
+    if (!window.caches) return;
+    try {
+      caches.open('sm-diag').then(function (c) {
+        return c.put('diag-report', new Response(SM.diag.report(), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } }));
+      }).catch(function () { /* cache indisponible */ });
+    } catch (e) { /* rien */ }
+  }
+  SM.diag.publish = publish;
+  setTimeout(publish, 10000);
+  setInterval(function () { if (!document.hidden) publish(); }, 5 * 60000);
+
   // Point de situation toutes les heures.
   setInterval(function () { if (!document.hidden) SM.diag.info('hourly · up ' + Math.round((Date.now() - SM.diag.started) / 60000) + ' min · ' + context()); }, 3600000);
 })();
