@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.22.4 · 17/11/2026
+
+Trouvé par mesure sur l'iPad : les changements de lieu lents l'étaient quand le ciel change beaucoup (Lisbonne la nuit vers New York le jour : 0,8 à 1,8 s à chaque fois, le retour restant rapide).
+
+- Le nouvel écran est construit d'abord, le ciel du lieu d'arrivée change ensuite, une fois l'entrée de l'écran jouée. Les deux tombaient dans la même image : 300 ms pour l'écran plus 500 ms pour passer d'un ciel de nuit à un ciel de jour (étoiles, soleil, nuages).
+- La teinte des cartes du lieu d'arrivée est posée avant la construction de son écran ; l'écran qui s'en va garde la sienne pendant sa sortie. Ni l'un ni l'autre n'est repeint en cours de route.
+
 ## 1.22.3 · 17/11/2026
 
 D'après les mesures du mode liste sur l'iPad.

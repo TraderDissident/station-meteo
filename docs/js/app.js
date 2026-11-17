@@ -60,9 +60,7 @@
   }
 
   /* ---------- ciel ---------- */
-  function scene(instant) {
-    var p = A.places[A.idx];
-    if (!p || A.mode !== 'place') return;
+  function sceneOf(p) {
     var w = A.data[p.id], c = w ? w.current : {};
     var m0 = w && w.minutely && w.minutely.length ? w.minutely[0].p : 0;
     var sc = {
@@ -73,17 +71,35 @@
     };
     var dw = A.demo.weather && DEMO_WX[A.demo.weather];
     if (dw) { sc.code = dw.code; sc.cover = dw.cover; sc.rate = dw.rate || 0; sc.cold = dw.code >= 71 && dw.code <= 86; }
-    var r = SM.sky.apply(sc, instant);
-    // Panneaux plus opaques quand le ciel est clair, pour garder le texte lisible.
-    var b = r.brightness;
-    // Changer cette variable fait recalculer et repeindre toutes les cartes : par pas de 0,01, et seulement si elle bouge.
-    var pv = (0.22 + b * 0.45).toFixed(2), dv = (0.18 + b * 0.42).toFixed(2);
-    if (pv + dv !== A.panelKey) {
-      A.panelKey = pv + dv;
-      el.app.style.setProperty('--panel', 'rgba(8,14,30,' + pv + ')');
-      el.app.style.setProperty('--dial', 'rgba(8,14,30,' + dv + ')');
-    }
+    return sc;
+  }
+  function scene(instant) {
+    var p = A.places[A.idx];
+    if (!p || A.mode !== 'place') return;
+    var r = SM.sky.apply(sceneOf(p), instant);
+    setPanel(r.brightness);
     A.sunAlt = r.sunAlt;
+  }
+  // Panneaux plus opaques quand le ciel est clair, pour garder le texte lisible.
+  // Changer cette variable fait recalculer et repeindre toutes les cartes : par pas de 0,01, et seulement si elle bouge.
+  function setPanel(b) {
+    var pv = (0.22 + b * 0.45).toFixed(2), dv = (0.18 + b * 0.42).toFixed(2);
+    if (pv + dv === A.panelKey) return;
+    A.panelKey = pv + dv;
+    el.app.style.setProperty('--panel', 'rgba(8,14,30,' + pv + ')');
+    el.app.style.setProperty('--dial', 'rgba(8,14,30,' + dv + ')');
+  }
+  /* Changement de lieu : la teinte des cartes du lieu d'arrivée est calculée sans toucher au ciel (même formule que
+     le ciel lui-même), et posée avant de construire le nouvel écran, qui est ainsi peint une seule fois avec la bonne
+     teinte. L'écran qui s'en va garde la sienne, figée sur lui, pour ne pas être repeint pendant sa sortie. */
+  function panelFor(p, old) {
+    if (old) {
+      var cs = getComputedStyle(el.app);
+      old.style.setProperty('--panel', cs.getPropertyValue('--panel'));
+      old.style.setProperty('--dial', cs.getPropertyValue('--dial'));
+    }
+    var sc = sceneOf(p);
+    setPanel(SM.sky.colorsFor(sc.lat, sc.lon, sc.ms, sc.code, sc.cover).brightness);
   }
 
   /* ---------- rendu ---------- */
@@ -204,6 +220,17 @@
      l'ancien écran) attend alors son tour. Constaté sur l'iPad : en enchaînant deux glissements à 1 à 4 s d'écart,
      ce travail tombait pendant le second et le retardait jusqu'à 1,5 s. */
   function busy() { return !!A.gesture || Date.now() < (A.transitionUntil || 0); }
+  // Le ciel du lieu d'arrivée, une fois l'entrée de son écran jouée (et jamais pendant un geste).
+  var skyT = 0;
+  function skyLater(id) {
+    clearTimeout(skyT);
+    skyT = setTimeout(function go() {
+      var p = A.places[A.idx];
+      if (!p || p.id !== id || A.mode !== 'place') return;
+      if (busy()) { skyT = setTimeout(go, 150); return; }
+      scene(false);
+    }, 460);
+  }
   SM.sky.busy = busy;
 
   function render(dir, old, t0) {
@@ -256,7 +283,8 @@
           nv.className = nv.className.replace(' pre-' + side, ' enter-' + side);
           A.transitionUntil = Date.now() + 450;
           SM.sky.hold(0);
-          fillLater(560);
+          skyLater(p.id);
+          fillLater(700);
           // L'animation d'entrée finie, sa classe s'en va : une animation restée attachée n'a rien à faire sur un écran au repos.
           setTimeout(function () { nv.className = nv.className.replace(' enter-' + side, ''); }, 460);
         }, Math.max(0, 230 - (Date.now() - (t0 || 0))));
@@ -442,9 +470,12 @@
     if (old && old.className.indexOf('leaving') >= 0) old = null;
     var build = function () {
       if (seq !== showSeq) return;
-      // Le ciel d'abord : il règle la teinte des cartes, qui se calcule ainsi une seule fois avec le nouvel écran.
+      /* L'écran d'abord, le ciel ensuite. Mesuré sur l'iPad : passer d'un ciel de nuit à un ciel de jour (étoiles,
+         soleil, 13 nuages) coûtait 500 ms, ajoutés aux 300 ms de construction de l'écran dans la même image :
+         800 à 900 ms de blocage à l'arrivée (Lisbonne la nuit vers New York le jour, à chaque fois). Le ciel change
+         maintenant une fois l'entrée de l'écran jouée (voir skyLater). La teinte des cartes, elle, est posée tout de suite. */
       var ta = Date.now();
-      scene(false);
+      if (dir) panelFor(A.places[A.idx], old); else scene(false);
       var tb = Date.now();
       render(dir || 0, old, t0);
       var tc = Date.now();
