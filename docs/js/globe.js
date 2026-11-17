@@ -36,7 +36,7 @@
   var G = { lon: 0, lat: 20, spin: 2, dragging: false, pausedUntil: 0 };
   var cv = null, gl = null, prog = null, loc = {}, tex = {}, size = 0, R = 0.86, raf = 0, last = 0, onFrame = null;
   var params = { soft: 1, tw: [1, 0.55, 0.3, 0.36], term: [1, 1, 1, 0], atm: [0.35, 0.6, 1] };
-  var sun = [0, 0, 1], F9 = new Float32Array(9);
+  var sun = [0, 0, 1], F9 = new Float32Array(9), res = 1, fpsT = 0, fpsN = 0, fpsPrev = 0;
 
   G.supported = function () {
     if (G._sup !== undefined) return G._sup;
@@ -60,7 +60,8 @@
     G.detach();
     cv = document.createElement('canvas');
     cv.className = 'gcv';
-    var opts = { alpha: true, premultipliedAlpha: true, antialias: true, preserveDrawingBuffer: false };
+    // Pas d'anticrénelage : le globe est dessiné pixel par pixel dans un seul rectangle, il n'y a aucun bord à lisser.
+    var opts = { alpha: true, premultipliedAlpha: true, antialias: false, preserveDrawingBuffer: false };
     gl = cv.getContext('webgl', opts) || cv.getContext('experimental-webgl', opts);
     if (!gl) { cv = null; return false; }
     var hp = gl.getShaderPrecisionFormat && gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
@@ -121,7 +122,7 @@
   /* Taille du canevas : carré de côté s (px CSS), sphère un peu plus petite pour laisser le halo. */
   G.resize = function (s) {
     if (!cv) return;
-    var pr = Math.min(window.devicePixelRatio || 1, 2);
+    var pr = Math.min(window.devicePixelRatio || 1, 2) * res;
     size = s;
     cv.width = Math.round(s * pr); cv.height = Math.round(s * pr);
     cv.style.width = s + 'px'; cv.style.height = s + 'px';
@@ -189,7 +190,21 @@
       if (last && ts - last < 32) return;
       var dt = last ? Math.min(ts - last, 100) / 1000 : 0;
       last = ts;
-      if (!G.dragging && Date.now() > G.pausedUntil && G.spin) { G.lon = ((G.lon + G.spin * dt + 540) % 360) - 180; G.draw(); }
+      if (!G.dragging && Date.now() > G.pausedUntil && G.spin) {
+        G.lon = ((G.lon + G.spin * dt + 540) % 360) - 180; G.draw();
+        // Trop lent pour l'appareil (moins de 18 images par seconde sur 3 s) : le globe est dessiné moins fin, il reste fluide.
+        if (!fpsT || ts - fpsPrev > 400) { fpsT = ts; fpsN = 0; }
+        fpsPrev = ts; fpsN++;
+        if (ts - fpsT > 3000) {
+          var fps = fpsN * 1000 / (ts - fpsT);
+          fpsT = ts; fpsN = 0;
+          if (fps < 18 && res > 0.5) {
+            res -= 0.25;
+            SM.diag.warn('globe slow (' + Math.round(fps) + ' fps), resolution x' + res);
+            G.resize(size);
+          }
+        }
+      }
     }
     raf = requestAnimationFrame(frame);
   };

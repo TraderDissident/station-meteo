@@ -436,8 +436,13 @@
       var ci = st.infos && st.infos[i];
       if (!ci) return;
       var p = G.project(ci.p.lat, ci.p.lon);
-      mk.style.display = p.front ? '' : 'none';
-      mk.style.left = (cx + p.x).toFixed(1) + 'px'; mk.style.top = (cy + p.y).toFixed(1) + 'px';
+      var disp = p.front ? '' : 'none';
+      if (mk.style.display !== disp) mk.style.display = disp;
+      // Position par transformation : la carte graphique déplace le point et son étiquette, sans mise en page ni
+      // repeinte à chaque image (avant : left et top, donc 30 mises en page par seconde).
+      if (!mk._g) { mk._g = true; mk.style.left = '0'; mk.style.top = '0'; }
+      mk._x = cx + p.x; mk._y = cy + p.y;
+      if (p.front) place(mk, mk._x, mk._y);
     });
     var ms = SM.app.nowMs(), sun = SM.astro.subSolar(ms), moon = SM.astro.subLunar(ms);
     var ps = G.project(sun.lat, sun.lon), pm = G.project(moon.lat, moon.lon);
@@ -458,7 +463,7 @@
       if (!lab._w || lab._pos !== 'g') { lab.style.display = ''; lab._w = lab.offsetWidth; lab._h = lab.offsetHeight; lab._pos = 'g'; }
       var held = drag && drag.p.lab === lab, m = saved[id];
       var off = held ? drag.p.off : (m ? [m[0] * R, m[1] * R] : [12, -lab._h / 2]);
-      var x = parseFloat(mk.style.left), y = parseFloat(mk.style.top);
+      var x = mk._x, y = mk._y;
       // Étiquette tenue : son point continue de tourner, le trait le suit.
       if (held) { drag.p.x = x; drag.p.y = y; drag.p.box = [x + drag.p.off[0], y + drag.p.off[1], drag.p.w, drag.p.h]; }
       if (!held) {
@@ -593,7 +598,7 @@
     var rnd = U.seeded('etiquettes' + pts.length), cands = pts.map(candidates);
     var total = function () { var t = 0; pts.forEach(function (q, k) { t += score(q, q.off, k); }); return t; };
     var cur = total(), bestT = cur, keep = pts.map(function (q) { return q.off; });
-    for (var it = 0, N = light ? 0 : 5000; it < N; it++) {
+    for (var it = 0, N = light ? 0 : 2000; it < N; it++) {
       var k = Math.floor(rnd() * pts.length), q = pts[k], c = cands[k][Math.floor(rnd() * cands[k].length)];
       if (q.fixed || q.kept) continue;
       var before = score(q, q.off, k), oldOff = q.off, oldBox = q.box;
@@ -664,7 +669,8 @@
     var pt = pointOf(e);
     // Position et taille relues à l'instant du geste : le trait et l'étiquette partent du même état.
     var mk = p.lab.parentNode;
-    p.x = mk.offsetLeft; p.y = mk.offsetTop; p.w = p.lab.offsetWidth; p.h = p.lab.offsetHeight;
+    if (st.view === 'globe' && mk._g) { p.x = mk._x; p.y = mk._y; } else { p.x = mk.offsetLeft; p.y = mk.offsetTop; }
+    p.w = p.lab.offsetWidth; p.h = p.lab.offsetHeight;
     p.off = [p.lab.offsetLeft, p.lab.offsetTop, 0, 0]; p.box = [p.x + p.off[0], p.y + p.off[1], p.w, p.h];
     drag = { p: p, sx: pt[0], sy: pt[1], ox: p.off[0], oy: p.off[1], moved: false };
     if (e.type === 'mousedown') e.preventDefault();
@@ -791,7 +797,7 @@
     st.infos = infos;
     st.minuteKey = '';
     M.tick(true);
-    if (st.w) layoutLabels();
+    if (st.w && st.view !== 'globe') layoutLabels();
   };
 
   M.setCards = function (mode) {
@@ -871,11 +877,15 @@
     if (!st.root || !st.infos) return;
     var ms = SM.app.nowMs(), nowS = Math.floor(ms / 1000);
     var minute = Math.floor(ms / 60000);
+    // Entre deux minutes, seules les aiguilles des horloges bougent : sans horloges à l'écran (cartes météo, ou plein
+    // écran qui les masque), rien à calculer. Avant : l'heure de chaque lieu recalculée chaque seconde, pour rien.
+    var hands = st.cards === 'clocks' && !SM.app.mapFull;
+    if (!force && st.minuteKey === minute && !hands) return;
     var cards = U.$$('.mcard', st.root), mks = U.$$('.mk', st.box);
     st.infos.forEach(function (ci, i) {
       var wl = I.wall(nowS, ci.tz, ci.w ? ci.w.offset : 0);
       var card = cards[i];
-      if (card && st.cards === 'clocks') {
+      if (card && hands) {
         var sec = wl.s, mn = wl.mi + sec / 60, hr = (wl.h % 12) + mn / 60;
         var hs = U.$$('line.hh, line.mh, line.sh', card);
         if (hs.length === 3) {

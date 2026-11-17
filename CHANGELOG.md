@@ -1,5 +1,17 @@
 # Journal des modifications
 
+## 1.20.0 · 17/11/2026
+
+Passe complète sur la rapidité, sans toucher à l'apparence ni aux animations.
+
+- Changement de lieu : les nuages ne sont plus recréés (13 canevas et leurs règles d'animation créés une fois par taille d'écran, puis seulement réglés : nombre, hauteur, vitesse, sens) ; la feuille de style n'est plus réécrite (cela faisait recalculer le style de toute la page) ; l'écran d'un lieu garde sa propre couche (plus de repeinte entière au début du glissement ni à la fin de l'animation d'arrivée) ; les détails sont construits au second temps, avec les heures 13 à 48 ; une seule mise en page forcée au lieu de deux.
+- Ciel : les couches invisibles sortent de l'affichage après leur fondu (brouillard et ses deux animations permanentes, étoiles et leur scintillement, voile nuageux, soleil, lune, canevas de pluie) ; le dégradé du ciel et le voile nuageux sont peints au quart de la taille puis agrandis par la carte graphique (seize fois moins à peindre, environ 25 Mo de moins) ; même ciel qu'au dernier passage (la nuit, pendant des heures) : ni repeinte ni fondu toutes les 30 s ; teinte des nuages repeinte par pas, plus à chaque changement infime du crépuscule.
+- Cartes et cadran : leur teinte ne change plus que par pas de 0,01 (chaque changement faisait repeindre toutes les cartes) ; la ligne « Mis à jour à » n'est réécrite que si elle change ; sans les secondes, l'horloge ne travaille qu'une fois par minute.
+- Démarrage et réseau : seuls les deux lieux voisins se chargent en arrière-plan (avant : les 20 lieux, soit 40 requêtes pendant qu'on se servait de l'app) ; les autres se chargent en les approchant, ou tous à l'ouverture de la carte du monde.
+- Carte du monde : un rafraîchissement au plus toutes les 1,5 s pendant le chargement des lieux (avant : un par lieu) ; entre deux minutes, plus aucun calcul si aucune horloge n'est à l'écran (avant : l'heure des 20 lieux recalculée chaque seconde) ; premier placement des étiquettes 2,5 fois plus court.
+- Globe : les points et leurs étiquettes sont déplacés par la carte graphique (avant : 30 mises en page par seconde) ; anticrénelage inutile retiré ; si l'appareil ne tient pas 18 images par seconde, le globe est dessiné moins fin pour rester fluide.
+- Les données d'un lieu rendu sur l'écran ne déclenchent plus de second remplissage inutile de la carte horaire.
+
 ## 1.19.1 · 17/11/2026
 
 - Changement de lieu allégé : la carte horaire ne construit d'abord que 12 heures au lieu de 48 (840 éléments à l'écran au lieu de 1 900), le reste arrive une seconde plus tard, sans toucher au défilement en cours.

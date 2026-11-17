@@ -76,8 +76,13 @@
     var r = SM.sky.apply(sc, instant);
     // Panneaux plus opaques quand le ciel est clair, pour garder le texte lisible.
     var b = r.brightness;
-    el.app.style.setProperty('--panel', 'rgba(8,14,30,' + (0.22 + b * 0.45).toFixed(3) + ')');
-    el.app.style.setProperty('--dial', 'rgba(8,14,30,' + (0.18 + b * 0.42).toFixed(3) + ')');
+    // Changer cette variable fait recalculer et repeindre toutes les cartes : par pas de 0,01, et seulement si elle bouge.
+    var pv = (0.22 + b * 0.45).toFixed(2), dv = (0.18 + b * 0.42).toFixed(2);
+    if (pv + dv !== A.panelKey) {
+      A.panelKey = pv + dv;
+      el.app.style.setProperty('--panel', 'rgba(8,14,30,' + pv + ')');
+      el.app.style.setProperty('--dial', 'rgba(8,14,30,' + dv + ')');
+    }
     A.sunAlt = r.sunAlt;
   }
 
@@ -170,18 +175,22 @@
     var keepView = !dir && oldView ? oldView.scrollTop : 0;
     var html;
     try {
+      // Changement de lieu, ou écran en haut de page : construction en deux temps (le haut tout de suite, la suite
+      // une seconde après). Si l'on est en train de lire plus bas, tout est construit d'un coup, sans clignotement.
+      SM.ui.lazy = !!dir || (!keepScroll && !keepView);
+      var oldDetails = U.$('.card.details', el.pages);
+      if (oldDetails && oldDetails.offsetHeight > 60) SM.ui.detailsH = oldDetails.offsetHeight;
       html = w ? SM.ui.view(p, w, now) : SM.ui.empty(p, A.failures[p.id] ? I.t().offline : I.t().loading, !!A.failures[p.id]);
     } catch (e) {
       SM.diag.error('render: ' + e.message);
       html = SM.ui.empty(p, I.t().noData, true);
     }
     el.pages.innerHTML = html;
-    SM.ui.align(el.pages);
     // Polices et icônes peuvent encore bouger la mise en page : on recale un peu après.
     setTimeout(function () { SM.ui.align(el.pages); }, 400);
     // Le reste des heures, une fois l'écran posé (et seulement si on n'a pas déjà changé de lieu).
     clearTimeout(hoursT);
-    if (w) hoursT = setTimeout(function () { fillHours(p.id); }, 1000);
+    if (w && SM.ui.lazy) hoursT = setTimeout(function () { fillHours(p.id); }, 1000);
     var v = U.$('.view', el.pages);
     if (dir) v.className += dir > 0 ? ' enter-r' : ' enter-l';
     else {
@@ -201,6 +210,8 @@
     A.hourKey = w ? hourKey(w) : '';
     clock();
     status();
+    // En dernier : une seule mise en page pour tout l'écran, au lieu d'une ici et d'une autre après les écritures.
+    SM.ui.align(el.pages);
   }
 
   var hoursT = 0;
@@ -216,6 +227,12 @@
     old.parentNode.replaceChild(strip, old);
     strip.scrollLeft = x;
     SM.ui.align(strip.parentNode);
+    // Les détails, laissés vides au premier temps.
+    var lazy = U.$('.card.details.lazy', el.pages);
+    if (lazy) {
+      box.innerHTML = SM.ui.detailsCard(p, A.data[id], Math.floor(nowMs() / 1000));
+      if (box.firstChild) lazy.parentNode.replaceChild(box.firstChild, lazy);
+    }
   }
   var hoursBusy = false;
   document.addEventListener('touchstart', function (e) { if (e.target.closest && e.target.closest('.card.hours .hscroll')) hoursBusy = true; }, { passive: true });
@@ -251,8 +268,9 @@
     var txt = tt.updated + ' ' + U.pad(d.getHours()) + ':' + U.pad(d.getMinutes());
     // « Hors connexion » seulement quand l'appareil l'est vraiment ; une requête ratée s'annonce comme telle.
     var noNet = !navigator.onLine, failed = !noNet && A.failures[p.id], off = noNet || failed;
-    st.className = 'status' + (age > SM.STALE_BADGE_MS || off ? ' stale' : '');
-    st.innerHTML = (off ? IC.ui('offline') + (noNet ? tt.offline : tt.retrying) + ' · ' : '') + U.esc(txt) + (age > SM.STALE_DATA_MS ? ' · ' + tt.stale : '');
+    var cls = 'status' + (age > SM.STALE_BADGE_MS || off ? ' stale' : '');
+    var sh = (off ? IC.ui('offline') + (noNet ? tt.offline : tt.retrying) + ' · ' : '') + U.esc(txt) + (age > SM.STALE_DATA_MS ? ' · ' + tt.stale : '');
+    if (st._k !== cls + sh) { st._k = cls + sh; st.className = cls; st.innerHTML = sh; }
     var demo = A.demo.time || A.demo.weather || A.demo.cycle;
     el.badge.style.display = demo ? '' : 'none';
   }
@@ -285,7 +303,7 @@
       SM.diag.warn('forecast ' + p.name + ': ' + e.message);
     }).then(function () {
       A.inflight[p.id] = false;
-      if (A.mode === 'map') { if (!A.sheet && SM.map) SM.map.refresh(); }
+      if (A.mode === 'map') mapRefreshSoon();
       else if (A.places[A.idx] && A.places[A.idx].id === p.id && !A.sheet) { render(0); scene(false); }
       else if (A.places[A.idx] && A.places[A.idx].id === p.id) status();
     });
@@ -310,6 +328,7 @@
       SM.diag.info('show ' + id + ' · screen ' + (t1 - t0) + ' ms · sky ' + (t2 - t1) + ' ms · painted after ' + (Date.now() - t0) + ' ms');
     }); });
     load(A.places[A.idx]);
+    loadNear();
   }
   function step(d) { if (A.places.length > 1) show(A.idx + d, d); }
 
@@ -429,9 +448,43 @@
     }, A.demo.cycle ? 200 : 30000);
   }
 
+  var minuteKey = -1;
   function everySecond() {
     if (document.hidden) return;
+    // Sans les secondes à l'écran, l'heure d'un lieu ne change qu'une fois par minute : rien à faire entre-temps.
+    if (A.mode === 'place' && !A.settings.seconds && !A.demo.cycle && !A.demo.time) {
+      var m = Math.floor(Date.now() / 60000);
+      if (m === minuteKey) return;
+      minuteKey = m;
+    }
     clock();
+  }
+
+  /* Carte du monde : les lieux arrivent un par un (20 lieux, 20 réponses). Un seul rafraîchissement de la carte
+     toutes les 1,5 s au plus, le premier tout de suite. */
+  var mapT = 0, mapLast = 0;
+  function mapRefreshSoon() {
+    if (mapT) return;
+    var wait = Math.max(0, 1500 - (Date.now() - mapLast));
+    mapT = setTimeout(function () {
+      mapT = 0; mapLast = Date.now();
+      if (A.mode === 'map' && !A.sheet && SM.map) SM.map.refresh();
+    }, wait);
+  }
+
+  /* Seuls les lieux voisins (celui d'avant, celui d'après) se chargent en arrière-plan, pour que le glissement
+     suivant montre des données prêtes. Avec 20 lieux, tout charger au démarrage faisait 40 requêtes, autant de
+     lectures et d'écritures, pendant qu'on essayait de se servir de l'app. Les autres se chargent en les approchant,
+     ou tous ensemble à l'ouverture de la carte du monde. */
+  var nearT = 0;
+  function loadNear() {
+    clearTimeout(nearT);
+    nearT = setTimeout(function () {
+      var n = A.places.length;
+      if (n < 2 || A.mode !== 'place' || document.hidden) return;
+      var a = A.places[(A.idx + 1) % n], b = A.places[(A.idx - 1 + n) % n];
+      load(a).then(function () { if (b !== a) return load(b); });
+    }, 2500);
   }
 
   function everyMinute() {
@@ -659,10 +712,7 @@
     render(0);
     scene(true);
     load(A.places[A.idx]);
-    // Les autres lieux se chargent en arrière-plan, l'un après l'autre.
-    setTimeout(function () {
-      A.places.reduce(function (pr, p, i) { return i === A.idx ? pr : pr.then(function () { return load(p); }); }, Promise.resolve());
-    }, 4000);
+    loadNear();
 
     bindGestures();
     var relayout = function () { setTimeout(function () { layout(); render(0); scene(true); }, 300); };

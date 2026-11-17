@@ -29,7 +29,10 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 /* ---------- ciel ---------- */
 #sky { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
 #sky > * { position: absolute; pointer-events: none; }
-.sky-l { top: 0; left: 0; right: 0; bottom: 0; opacity: 0; -webkit-transition: opacity 3s linear; transition: opacity 3s linear; }
+/* Le dégradé du ciel est peint au quart de la taille puis agrandi quatre fois par la carte graphique : un dégradé
+   n'a aucun détail à perdre, et il coûte seize fois moins à peindre et à garder en mémoire (25 Mo de moins). */
+.sky-l { top: 0; left: 0; width: 25.2%; height: 25.2%; opacity: 0; -webkit-transition: opacity 3s linear; transition: opacity 3s linear;
+  -webkit-transform: scale3d(4, 4, 1); transform: scale3d(4, 4, 1); -webkit-transform-origin: 0 0; transform-origin: 0 0; }
 #starsBox { top: 0; left: 0; width: 100%; height: 80%; }
 #starsBox canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 #twinkle { -webkit-animation: twinkle 3.2s ease-in-out infinite alternate; animation: twinkle 3.2s ease-in-out infinite alternate; }
@@ -48,7 +51,8 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 #moonEl::before { content: ""; position: absolute; width: 30vmin; height: 30vmin; margin: -15vmin 0 0 -15vmin; border-radius: 50%;
   background: radial-gradient(circle, rgba(220, 230, 255, .22) 0%, rgba(200, 215, 255, 0) 65%); }
 
-#deck { top: 0; left: 0; right: 0; height: 65%; -webkit-transition: opacity 3s; transition: opacity 3s; }
+#deck { top: 0; left: 0; width: 25.2%; height: 16.25%; -webkit-transition: opacity 3s; transition: opacity 3s;
+  -webkit-transform: scale3d(4, 4, 1); transform: scale3d(4, 4, 1); -webkit-transform-origin: 0 0; transform-origin: 0 0; }
 #cloudBox { top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
 .cloud { position: absolute; will-change: transform; }
 .cloud canvas { display: block; width: 100%; height: 100%; }
@@ -639,3 +643,10 @@ header.top { position: relative; }
 .lgl { white-space: pre-wrap; word-break: break-word; padding: .05rem 0; }
 .lgl.w { color: #ffd479; }
 .lgl.e { color: #ff9d8f; font-weight: 600; }
+
+/* Rapidité : l'écran d'un lieu garde sa propre couche. Sans cela, l'iPad le repeint en entier au début du glissement
+   (pour le faire suivre le doigt) et encore à la fin de l'animation d'arrivée. */
+.view { -webkit-transform: translateZ(0); transform: translateZ(0); }
+/* Globe : chaque point et son étiquette sur leur couche, déplacés par la carte graphique. */
+.mapbox.globe .mk { will-change: transform; }
+.card.details.lazy { background: none; border-color: transparent; }

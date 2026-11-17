@@ -127,44 +127,81 @@
     }
   }
 
+  /* Les 13 nuages possibles sont créés une seule fois par taille d'écran : canevas, largeur, trajet (une règle
+     d'animation chacun). Changer de lieu ou de vent ne recrée plus rien : ni canevas, ni feuille de style (dont la
+     réécriture faisait recalculer le style de toute la page). */
+  var MAX_CLOUDS = 13;
+  function ensurePool() {
+    var key = S.w + '|' + S.h;
+    if (key === S.poolKey) return;
+    S.poolKey = key;
+    // Safari d'iOS 12 ne rend la mémoire d'un canevas qu'au ramasse-miettes, et plafonne leur total : on la rend tout de suite.
+    clouds.forEach(function (c) { c.cv.width = 0; c.cv.height = 0; });
+    cloudBox.innerHTML = '';
+    clouds = [];
+    var rnd = U.seeded('nuages'), css = '';
+    for (var i = 0; i < MAX_CLOUDS; i++) {
+      var c = makeCloud(rnd, i);
+      c.cw = Math.round(S.w * (0.32 + rnd() * 0.3)); c.ch = Math.round(c.cw / 2);
+      c.dist = S.w + c.cw;
+      c.durK = 0.8 + rnd() * 0.5;
+      c.wrap.style.width = c.cw + 'px'; c.wrap.style.height = c.ch + 'px'; c.wrap.style.left = (-c.cw) + 'px';
+      c.wrap.style.opacity = (0.75 + rnd() * 0.25).toFixed(2);
+      c.wrap.style.display = 'none';
+      css += '@-webkit-keyframes cd' + i + '{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(' + c.dist + 'px,0,0)}}' +
+        '@keyframes cd' + i + '{from{transform:translate3d(0,0,0)}to{transform:translate3d(' + c.dist + 'px,0,0)}}';
+      cloudBox.appendChild(c.wrap);
+      clouds.push(c);
+    }
+    styleEl.textContent = css;
+  }
+
+  /* Combien de nuages, à quelle hauteur, à quelle vitesse et dans quel sens : réglé sur les nuages existants. */
   function buildClouds(force) {
     var sc = S.scene;
     if (!sc) return;
     var cover = sc.cover / 100;
-    var want = Math.round(U.clamp(cover * 12 + (cover > 0.05 ? 1 : 0), 0, 13) * (quality < 1 ? 0.6 : 1));
+    var want = Math.round(U.clamp(cover * 12 + (cover > 0.05 ? 1 : 0), 0, MAX_CLOUDS) * (quality < 1 ? 0.6 : 1));
     if (S.motion === 'off') want = Math.min(want, 5);
     var dirSign = sc.driftSign;
     var speed = 6 + Math.min(sc.wind || 0, 80) * 0.45;
     var key = want + '|' + dirSign + '|' + Math.round(speed) + '|' + S.w + '|' + S.h + '|' + S.motion;
     if (!force && key === S.cloudKey) return;
     S.cloudKey = key;
-    // Safari d'iOS 12 ne rend la mémoire d'un canevas qu'au ramasse-miettes, et plafonne leur total : on la rend tout de suite.
-    clouds.forEach(function (c) { c.cv.width = 0; c.cv.height = 0; });
-    cloudBox.innerHTML = '';
-    clouds = [];
+    ensurePool();
+    // Hauteur et décalage propres à chaque lieu, pour que le ciel ne soit pas le même partout.
     var rnd = U.seeded('nuages' + (sc.placeName || ''));
-    var css = '';
-    for (var i = 0; i < want; i++) {
-      var c = makeCloud(rnd, i);
-      var cw = Math.round(S.w * (0.32 + rnd() * 0.3)), ch = Math.round(cw / 2);
-      var top = Math.round(S.h * (0.02 + rnd() * 0.42) - ch * 0.3);
-      var dist = S.w + cw;
-      var dur = Math.round(dist / speed * (0.8 + rnd() * 0.5));
-      c.wrap.style.width = cw + 'px'; c.wrap.style.height = ch + 'px';
-      c.wrap.style.top = top + 'px'; c.wrap.style.left = (-cw) + 'px';
-      c.wrap.style.opacity = (0.75 + rnd() * 0.25).toFixed(2);
-      var name = 'cd' + i;
-      css += '@-webkit-keyframes ' + name + '{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(' + dist + 'px,0,0)}}' +
-        '@keyframes ' + name + '{from{transform:translate3d(0,0,0)}to{transform:translate3d(' + dist + 'px,0,0)}}';
-      var anim = name + ' ' + dur + 's linear ' + (-rnd() * dur).toFixed(1) + 's infinite' + (dirSign < 0 ? ' reverse' : '');
-      c.wrap.style.webkitAnimation = anim; c.wrap.style.animation = anim;
-      if (S.motion === 'off') { c.wrap.style.webkitAnimationPlayState = 'paused'; c.wrap.style.animationPlayState = 'paused'; }
-      cloudBox.appendChild(c.wrap);
-      clouds.push(c);
+    for (var i = 0; i < clouds.length; i++) {
+      var c = clouds[i], top = Math.round(S.h * (0.02 + rnd() * 0.42) - c.ch * 0.3), delay = rnd();
+      if (i >= want) { if (c.wrap.style.display !== 'none') c.wrap.style.display = 'none'; continue; }
+      var dur = Math.round(c.dist / speed * c.durK);
+      var anim = 'cd' + i + ' ' + dur + 's linear ' + (-delay * dur).toFixed(1) + 's infinite' + (dirSign < 0 ? ' reverse' : '');
+      c.wrap.style.top = top + 'px';
+      if (c.anim !== anim) { c.anim = anim; c.wrap.style.webkitAnimation = anim; c.wrap.style.animation = anim; }
+      var play = S.motion === 'off' ? 'paused' : 'running';
+      if (c.play !== play) { c.play = play; c.wrap.style.webkitAnimationPlayState = play; c.wrap.style.animationPlayState = play; }
+      if (c.wrap.style.display) c.wrap.style.display = '';
     }
-    styleEl.textContent = css;
-    S.cloudPaintKey = '';
+    S.cloudCount = want;
   }
+
+  /* Une couche invisible reste une couche que l'iPad compose à chaque image (et qu'il anime, pour le brouillard et
+     les étoiles) : dès que son fondu de sortie est fini, on la retire de l'affichage. Elle revient avant de reparaître. */
+  function layer(el, opacity, instant) {
+    var on = opacity > 0.004;
+    clearTimeout(el._hideT);
+    if (on) {
+      if (el.style.display === 'none') { el.style.display = ''; void el.offsetWidth; }
+      el.style.opacity = opacity.toFixed(3);
+      return;
+    }
+    el.style.opacity = '0';
+    if (el.style.display === 'none') return;
+    if (instant) el.style.display = 'none';
+    else el._hideT = setTimeout(function () { el.style.display = 'none'; }, 3300);
+  }
+  // Couleur arrondie par pas de 4 : au crépuscule, la teinte des nuages ne se repeint plus à chaque changement infime.
+  function q4(c) { return [Math.round(c[0] / 4) * 4, Math.round(c[1] / 4) * 4, Math.round(c[2] / 4) * 4]; }
 
   /* ---------- relief ---------- */
   function hillPath(rnd, base, amp, rough) {
@@ -209,6 +246,9 @@
     var arr = S.particles;
     while (arr.length < n) arr.push({ x: Math.random() * S.w, y: Math.random() * S.h, z: 0.4 + Math.random() * 0.6, p: Math.random() * 6.28 });
     arr.length = n;
+    // Sans pluie ni neige, le canevas plein écran sort de l'affichage : une couche de moins à composer.
+    var need = (n || S.storm) ? '' : 'none';
+    if (fxCv.style.display !== need) fxCv.style.display = need;
     if ((n || S.storm) && !loopOn && !S.paused) { loopOn = true; lastFrame = 0; fpsStart = 0; frameCount = 0; U.raf(frame); }
     if (!n && !S.storm) fxCtx.clearRect(0, 0, S.w, S.h);
   }
@@ -356,19 +396,23 @@
     var gx = U.clamp(sp.x / S.w * 100, -20, 120).toFixed(1);
     var bg = 'radial-gradient(70% 55% at ' + gx + '% 78%, ' + U.rgb(glowC, glowA.toFixed(3)) + ' 0%, ' + U.rgb(glowC, 0) + ' 100%), ' +
       'linear-gradient(to bottom, ' + U.rgb(cols[0]) + ' 0%, ' + U.rgb(cols[1]) + ' 52%, ' + U.rgb(cols[2]) + ' 80%)';
-    var showLayer = S.layerFlip ? skyA : skyB, hideLayer = S.layerFlip ? skyB : skyA;
-    var dur = instant ? '0s' : '3s';
-    showLayer.style.webkitTransitionDuration = showLayer.style.transitionDuration = dur;
-    hideLayer.style.webkitTransitionDuration = hideLayer.style.transitionDuration = dur;
-    showLayer.style.backgroundImage = bg;
-    showLayer.style.opacity = '1';
-    hideLayer.style.opacity = '0';
-    S.layerFlip = !S.layerFlip;
+    // Même ciel qu'à la dernière fois (la nuit, pendant des heures) : ni repeinte ni fondu de 3 s pour rien.
+    if (bg !== S.bgKey) {
+      S.bgKey = bg;
+      var showLayer = S.layerFlip ? skyA : skyB, hideLayer = S.layerFlip ? skyB : skyA;
+      var dur = instant ? '0s' : '3s';
+      showLayer.style.webkitTransitionDuration = showLayer.style.transitionDuration = dur;
+      hideLayer.style.webkitTransitionDuration = hideLayer.style.transitionDuration = dur;
+      showLayer.style.backgroundImage = bg;
+      showLayer.style.opacity = '1';
+      hideLayer.style.opacity = '0';
+      S.layerFlip = !S.layerFlip;
+    }
 
     // Soleil
     var sunVis = alt > -3 ? U.clamp((alt + 3) / 4, 0, 1) * (1 - cover * 0.85) * (kind === 'fog' ? 0.3 : 1) : 0;
     var warm = U.clamp(1 - alt / 12, 0, 1);
-    sunEl.style.opacity = sunVis.toFixed(3);
+    layer(sunEl, sunVis, instant);
     sunEl.style.webkitTransform = sunEl.style.transform = 'translate3d(' + sp.x.toFixed(0) + 'px,' + sp.y.toFixed(0) + 'px,0)';
     sunEl.className = warm > 0.5 ? 'warm' : '';
 
@@ -378,17 +422,18 @@
     if (alt > 5) moonVis *= 0.5;
     var phKey = Math.round(phase.phase * 100) + (sc.lat < 0 ? 's' : 'n');
     if (S.moonKey !== phKey) { S.moonKey = phKey; moonEl.innerHTML = SM.icons.moonPhase(phase, sc.lat < 0, 64, true); }
-    moonEl.style.opacity = moonVis.toFixed(3);
+    layer(moonEl, moonVis, instant);
     moonEl.style.webkitTransform = moonEl.style.transform = 'translate3d(' + mp.x.toFixed(0) + 'px,' + mp.y.toFixed(0) + 'px,0)';
 
     // Étoiles
     var starA = night * (1 - cover * 0.9) * (kind === 'fog' ? 0.2 : 1);
-    starsBox.style.opacity = starA.toFixed(3);
+    layer(starsBox, starA, true);
 
     // Voile nuageux en haut de l'écran quand le ciel est couvert.
     var deckC = mix3(gray, cols, 0.25)[0];
-    deck.style.backgroundImage = 'linear-gradient(to bottom, ' + U.rgb(deckC, 0.95) + ' 0%, ' + U.rgb(deckC, 0.6) + ' 35%, ' + U.rgb(deckC, 0) + ' 75%)';
-    deck.style.opacity = U.clamp((cover - 0.55) / 0.45, 0, 1).toFixed(3);
+    var deckBg = 'linear-gradient(to bottom, ' + U.rgb(deckC, 0.95) + ' 0%, ' + U.rgb(deckC, 0.6) + ' 35%, ' + U.rgb(deckC, 0) + ' 75%)';
+    if (deckBg !== S.deckKey) { S.deckKey = deckBg; deck.style.backgroundImage = deckBg; }
+    layer(deck, U.clamp((cover - 0.55) / 0.45, 0, 1), instant);
 
     // Nuages : nombre, sens et teinte.
     var toward = ((sc.windDir || 270) + 180) % 360;
@@ -405,19 +450,25 @@
     if (kind === 'rain' || kind === 'drizzle') { light = shade(light, 0.82); shd = shade(shd, 0.7); }
     if (kind === 'snow') { light = shade(light, 0.95); shd = shade(shd, 0.85); }
     if (kind === 'storm' || kind === 'hail') { light = shade(light, 0.55); shd = shade(shd, 0.4); }
-    var paintKey = U.rgb(light) + U.rgb(shd) + clouds.length;
-    if (paintKey !== S.cloudPaintKey) {
-      S.cloudPaintKey = paintKey;
-      var ca = 0.55 + cover * 0.4;
-      for (var i = 0; i < clouds.length; i++) paintCloud(clouds[i], light, shd, ca);
+    // Seuls les nuages montrés sont peints, et seulement quand leur teinte change.
+    light = q4(light); shd = q4(shd);
+    var ca = 0.55 + cover * 0.4;
+    var paintKey = U.rgb(light) + U.rgb(shd) + ca.toFixed(2);
+    for (var i = 0; i < (S.cloudCount || 0) && i < clouds.length; i++) {
+      if (clouds[i].paintKey !== paintKey) { clouds[i].paintKey = paintKey; paintCloud(clouds[i], light, shd, ca); }
     }
 
     // Brouillard
     var fogA = kind === 'fog' ? 0.55 + lvl * 0.15 : (kind === 'drizzle' ? 0.15 : 0);
-    fogEl.style.opacity = fogA.toFixed(2);
-    var fc = U.mix(H('#3a404c'), H('#e8ecf0'), daylight);
-    fog1.style.backgroundImage = 'radial-gradient(50% 50% at 50% 60%, ' + U.rgb(fc, 0.85) + ' 0%, ' + U.rgb(fc, 0) + ' 100%)';
-    fog2.style.backgroundImage = 'radial-gradient(45% 50% at 50% 55%, ' + U.rgb(fc, 0.7) + ' 0%, ' + U.rgb(fc, 0) + ' 100%)';
+    if (fogA > 0) {
+      var fc = q4(U.mix(H('#3a404c'), H('#e8ecf0'), daylight)), fogKey = U.rgb(fc);
+      if (fogKey !== S.fogKey) {
+        S.fogKey = fogKey;
+        fog1.style.backgroundImage = 'radial-gradient(50% 50% at 50% 60%, ' + U.rgb(fc, 0.85) + ' 0%, ' + U.rgb(fc, 0) + ' 100%)';
+        fog2.style.backgroundImage = 'radial-gradient(45% 50% at 50% 55%, ' + U.rgb(fc, 0.7) + ' 0%, ' + U.rgb(fc, 0) + ' 100%)';
+      }
+    }
+    layer(fogEl, fogA, instant);
 
     // Relief
     sc.snowGround = kind === 'snow';
