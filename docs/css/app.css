@@ -597,6 +597,8 @@ header.top { position: relative; }
 /* Carte en plein écran : plus d'en-tête ni de cartes de villes ; la carte entière, à la taille de l'écran, centrée. */
 .mapexit { display: none; }
 .mapmode.mapfull .mapexit { display: -webkit-flex; display: flex; position: absolute; z-index: 36; top: 2.2rem; right: 1rem; background: rgba(8, 14, 30, .75); }
-.mapfull header.top, .mapfull .mbottom { display: none; }
+.mapfull .mbottom { display: none; }
+.mapmode.mapfull .mapexit { display: none; }
+.mapfull [data-act=mapfull].mapctl { background: #fff; color: #0b1226; border-color: #fff; }
 .mapfull .mapview { -webkit-justify-content: center; justify-content: center; overflow: hidden; }
 .mapfull .mapwrap { padding: 0; margin: auto 0; }

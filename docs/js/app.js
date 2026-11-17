@@ -492,6 +492,7 @@
       // Plein écran de la carte : en-tête et cartes de villes masqués, il reste les fuseaux, la carte et un bouton de sortie.
       if (e.target.closest('[data-act=mapfull]')) {
         A.mapFull = !A.mapFull;
+        try { localStorage.setItem('sm.mapFull', A.mapFull ? '1' : ''); } catch (err) { /* rien */ }
         el.hbar.className = '';
         appClass();
         if (SM.map) {
@@ -619,6 +620,8 @@
     A.idx = 0;
     A.places.forEach(function (p, i) { if (p.id === want) A.idx = i; });
     A.mode = SM.store.mode() === 'map' ? 'map' : 'place';
+    // Plein écran de la carte retenu d'une ouverture à l'autre.
+    try { A.mapFull = localStorage.getItem('sm.mapFull') === '1'; } catch (err) { A.mapFull = false; }
     if (A.demo.cycle) A.demo.cycleStart = demoMs(A.places[A.idx], 'nuit');
 
     render(0);

@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.16.3 · 17/11/2026
+
+- Carte en plein écran : les boutons de l'en-tête restent (lieux, réglages de la carte, plein écran en blanc quand il est actif, globe, réglages) ; seules les cartes de villes disparaissent. Le bouton de sortie posé sur la carte est retiré, le bouton de l'en-tête suffit.
+- Le plein écran est retenu d'une ouverture de l'app à l'autre.
+
 ## 1.16.1 · 17/11/2026
 
 - Carte en plein écran : plus de débord ni de glisser de côté. La carte entière s'adapte à l'écran, bord à bord en largeur, centrée en hauteur ; le reste reste vide.
