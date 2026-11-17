@@ -602,3 +602,5 @@ header.top { position: relative; }
 .mapfull [data-act=mapfull].mapctl { background: #fff; color: #0b1226; border-color: #fff; }
 .mapfull .mapview { -webkit-justify-content: center; justify-content: center; overflow: hidden; }
 .mapfull .mapwrap { padding: 0; margin: auto 0; }
+/* Centrée sur l'écran entier, pas seulement sous l'en-tête (qui n'a plus de titre et paraît vide) : remonte de la moitié de sa hauteur. */
+.mapfull .mapwrap { position: relative; top: -2.4rem; }

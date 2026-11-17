@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.16.4 · 17/11/2026
+
+- Carte en plein écran : centrée sur l'écran entier (145 px au-dessus, 144 px au-dessous sur l'iPad en paysage) au lieu de l'espace sous l'en-tête, qui la faisait paraître trop basse.
+
 ## 1.16.3 · 17/11/2026
 
 - Carte en plein écran : les boutons de l'en-tête restent (lieux, réglages de la carte, plein écran en blanc quand il est actif, globe, réglages) ; seules les cartes de villes disparaissent. Le bouton de sortie posé sur la carte est retiré, le bouton de l'en-tête suffit.
