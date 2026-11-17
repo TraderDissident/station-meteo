@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.23.7 · 17/11/2026
+
+Signalé par Matt : en mode carte + météo, certaines cartes avaient une ligne colorée en haut (New York).
+
+- Cartes météo sous la carte du monde : le dégradé du ciel ne se répète plus sous la bordure. La bordure haute laissait voir le bas du dégradé (l'orange d'un coucher de soleil), comme une ligne colorée.
+
 ## 1.23.6 · 17/11/2026
 
 Signalé par Matt : coins de la carte mal faits, liseré manquant ou invisible.

@@ -480,7 +480,11 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .srow { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; font-size: .72rem; color: rgba(255, 255, 255, .8); font-variant-numeric: tabular-nums; }
 .srow span { -webkit-flex: 1; flex: 1; }
 .srow .ic { width: .85rem; height: .85rem; color: #ffd479; margin-right: .2rem; }
-.mcard.sky { text-shadow: 0 1px 6px rgba(0, 0, 0, .35); border-color: rgba(255, 255, 255, .24); }
+/* Le dégradé du ciel commence au bord intérieur de la bordure et se répète dessous : la bordure haute, translucide,
+   laissait voir le BAS du dégradé (orange d'un coucher de soleil à New York, par exemple), d'où une ligne colorée en
+   haut de la carte. Il part maintenant du bord extérieur, sans répétition. */
+.mcard.sky { text-shadow: 0 1px 6px rgba(0, 0, 0, .35); border-color: rgba(255, 255, 255, .24);
+  background-origin: border-box; background-repeat: no-repeat; }
 .mcard.sky.bright { text-shadow: 0 1px 6px rgba(0, 0, 0, .55); }
 .mch { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: flex-start; align-items: flex-start; }
 .mch b { display: block; font-size: 1.05rem; font-weight: 600; line-height: 1.3; }

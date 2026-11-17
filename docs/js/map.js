@@ -426,7 +426,7 @@
 
   function cardHTML(ci) {
     var tt = I.t(), cols = ci.sky.cols, isClock = st.cards === 'clocks';
-    var bg = isClock ? '' : ' style="background:linear-gradient(to bottom,' + U.rgb(cols[0]) + ' 0%,' + U.rgb(cols[1]) + ' 60%,' + U.rgb(cols[2]) + ' 100%)"';
+    var bg = isClock ? '' : ' style="background-image:linear-gradient(to bottom,' + U.rgb(cols[0]) + ' 0%,' + U.rgb(cols[1]) + ' 60%,' + U.rgb(cols[2]) + ' 100%)"';
     var wx = ci.c ? IC.weather(CO.icon(ci.c.code, ci.sky.alt > -1), 'mci') : '';
     var hl = ci.d ? '<span class="hl">' + tt.max + ' ' + I.temp(ci.d.max) + ' · ' + tt.min + ' ' + I.temp(ci.d.min) + '</span>' : '';
     if (isClock) {
