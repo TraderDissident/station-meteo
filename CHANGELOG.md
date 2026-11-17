@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.22.7 · 17/11/2026
+
+D'après l'essai « ?passive=1 » de la 1.22.6, validé par Matt sur l'iPad (« le scroll est beaucoup plus responsif, il lag beaucoup moins »).
+
+- Touchers : tous les écouteurs tactiles sont passifs, sauf là où il faut empêcher la page de défiler, et seulement là : les poignées de la feuille des lieux, les blocs en mode édition (pendant l'édition seulement), la carte du monde. Avant, plusieurs écouteurs posés sur toute la page obligeaient Safari à attendre la page à chaque toucher, jusqu'à une seconde sans redessiner l'écran.
+- Le réglage d'essai « ?passive=1 » est retiré.
+
 ## 1.22.6 · 17/11/2026
 
 - Réglage d'essai, sans effet par défaut : avec « ?passive=1 » dans l'adresse, tous les écouteurs tactiles deviennent passifs, pour mesurer sur l'iPad si l'attente de Safari à chaque toucher (jusqu'à une seconde, sans image) explique les changements de lieu encore lents. Le journal note l'essai.

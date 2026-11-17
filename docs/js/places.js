@@ -60,10 +60,15 @@
     var same = list.length === SM.app.places.length && list.every(function (p, k) { return p === SM.app.places[k]; });
     if (!same) SM.app.setPlaces(list);
   }
-  document.addEventListener('touchstart', pStart, { passive: false });
-  document.addEventListener('touchmove', pMove, { passive: false });
-  document.addEventListener('touchend', pEnd);
-  document.addEventListener('touchcancel', pEnd);
+  // Non passifs sur le corps de la feuille seulement (voir config.js) : ailleurs, aucun toucher n'attend la page.
+  function bindTouch(el) {
+    if (!el || el._pTouch) return;
+    el._pTouch = true;
+    el.addEventListener('touchstart', pStart, { passive: false });
+    el.addEventListener('touchmove', pMove, { passive: false });
+    el.addEventListener('touchend', pEnd, { passive: true });
+    el.addEventListener('touchcancel', pEnd, { passive: true });
+  }
   document.addEventListener('mousedown', pStart);
   document.addEventListener('mousemove', pMove);
   document.addEventListener('mouseup', pEnd);
@@ -165,6 +170,7 @@
       results = []; lastQuery = '';
       render();
       body.onclick = onClick;
+      bindTouch(body);
     }
   };
 })();

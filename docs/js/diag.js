@@ -7,7 +7,6 @@
   var rows = [];   // [temps en ms, niveau, message]
   try { rows = JSON.parse(localStorage.getItem(KEY) || '[]') || []; } catch (e) { rows = []; }
   try { localStorage.removeItem('sm.log'); } catch (e) { /* ancien journal */ }
-  if (SM.PASSIVE_TEST) rows.push([Date.now(), '·', 'passive touch test on (?passive=1)']);
 
   function p2(n) { return (n < 10 ? '0' : '') + n; }
   function stamp(t) {

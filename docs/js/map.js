@@ -724,9 +724,8 @@
   document.addEventListener('mousemove', dragMove);
   document.addEventListener('mouseup', dragEnd);
   document.addEventListener('touchstart', dragStart, { passive: true });
-  document.addEventListener('touchmove', dragMove, { passive: false });
-  document.addEventListener('touchend', dragEnd);
-  document.addEventListener('touchcancel', dragEnd);
+  document.addEventListener('touchend', dragEnd, { passive: true });
+  document.addEventListener('touchcancel', dragEnd, { passive: true });
 
   /* ---------- règle des fuseaux ---------- */
   function rulerHTML() {
@@ -775,6 +774,8 @@
         '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div></div>' +
         '<div class="mcards"></div></div></div>';
     st.root = U.$('.mapview', container);
+    // Glisser d'étiquette : seul écouteur non passif de la carte, posé sur elle (voir config.js).
+    st.root.addEventListener('touchmove', dragMove, { passive: false });
     st.box = U.$('.mapbox', st.root);
     st.cv = U.$('canvas', st.box);
     st.ctx = st.cv.getContext('2d');

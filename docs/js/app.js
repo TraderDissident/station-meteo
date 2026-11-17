@@ -754,11 +754,10 @@
       var tch = e.touches[0], mx = tch.clientX - sx, my = tch.clientY - sy;
       if (!mode && (Math.abs(mx) > 10 || Math.abs(my) > 10)) mode = Math.abs(mx) > Math.abs(my) * 1.2 ? 'h' : 'v';
       if (mode !== 'h') return;
-      e.preventDefault();
       A.gesture = true;
       dx = mx;
       setShift(dx * 0.6, false);
-    }, { passive: false });
+    }, { passive: true });
     function endSwipe() {
       A.gesture = false;
       if (!ok || mode !== 'h') return;

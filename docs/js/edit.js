@@ -8,6 +8,7 @@
 
   function setEditing(on) {
     SM.ui.editing = on;
+    holdMoves(on);
     SM.app.render();
   }
 
@@ -116,10 +117,19 @@
     if (was) saveOrder();
   }
 
+  /* Hors édition, le déplacement du doigt ne sert qu'à annuler l'appui long : écouteur passif. En édition, il fait
+     glisser un bloc et doit empêcher la page de défiler : non passif, le temps de l'édition seulement (voir config.js). */
+  var movesHeld = false;
+  function holdMoves(on) {
+    if (on === movesHeld) return;
+    document.removeEventListener('touchmove', move);
+    document.addEventListener('touchmove', move, { passive: !on });
+    movesHeld = on;
+  }
   document.addEventListener('touchstart', start, { passive: true });
-  document.addEventListener('touchmove', move, { passive: false });
-  document.addEventListener('touchend', end);
-  document.addEventListener('touchcancel', end);
+  document.addEventListener('touchmove', move, { passive: true });
+  document.addEventListener('touchend', end, { passive: true });
+  document.addEventListener('touchcancel', end, { passive: true });
   document.addEventListener('mousedown', start);
   document.addEventListener('mousemove', move);
   document.addEventListener('mouseup', end);
