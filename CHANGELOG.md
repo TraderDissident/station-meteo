@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.23.6 · 17/11/2026
+
+Signalé par Matt : coins de la carte mal faits, liseré manquant ou invisible.
+
+- Carte du monde : le contenu (carte, points) est découpé aux coins arrondis, et le liseré est dessiné à l'intérieur, par-dessus, sur tout le tour. Avant, le liseré était à l'extérieur et le canevas débordait en angles droits aux coins sur l'iPad.
+
 ## 1.23.5 · 17/11/2026
 
 Signalé par Matt : les lieux étaient décalés selon que la carte s'affichait en normal ou en plein écran.
