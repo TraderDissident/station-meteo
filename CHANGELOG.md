@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.24.5 · 17/11/2026
+
+Signalé par Matt : passer de la ville à la carte reste lent, même deux fois de suite. Le journal de l'iPad montrait 4,6 à 4,8 s de construction à chaque ouverture, sans requête en cours.
+
+- Carte du monde : les fonds de jour et de nuit (images satellite ou tracé des terres) sont gardés d'une ouverture à l'autre et ne sont redessinés que si le style, la taille ou la projection changent. Coût : deux jeux de fonds gardés (la carte est dimensionnée deux fois à chaque ouverture), environ 14 Mo sur l'iPad.
+- Journal : la ligne d'ouverture de la carte dit si les fonds ont été redessinés (avec leur durée) ou réutilisés.
+
 ## 1.24.4 · 17/11/2026
 
 - Icône de sortie du plein écran : exactement le dessin de l'icône d'entrée (mêmes traits, même taille), pointes retournées vers le centre. Elle était dessinée autrement.

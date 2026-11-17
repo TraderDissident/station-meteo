@@ -542,7 +542,8 @@
     // Deux images après la construction = affichée. Page cachée (pas d'images) : la ligne le dit au bout de 5 s.
     var logged = false, note = function (seen) {
       if (logged) return; logged = true;
-      SM.diag.info('view ' + A.mode + ' · render ' + tr + ' ms · ' + (seen ? 'painted after ' + (Date.now() - t0) + ' ms' : 'no frame in 5 s') + ' · ' + stale + ' stale' + (A.mode === 'map' && !coded ? ' · map code loading' : ''));
+      SM.diag.info('view ' + A.mode + ' · render ' + tr + ' ms · ' + (seen ? 'painted after ' + (Date.now() - t0) + ' ms' : 'no frame in 5 s') + ' · ' + stale + ' stale' + (A.mode === 'map' && !coded ? ' · map code loading' : '') +
+        (A.mode === 'map' && SM.map && SM.map.lastBuild ? ' · backgrounds ' + SM.map.lastBuild + ' · labels ' + SM.map.lastLabels : ''));
     };
     U.raf(function () { U.raf(function () { note(true); }); });
     setTimeout(function () { note(false); }, 5000);

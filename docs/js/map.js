@@ -57,7 +57,17 @@
   function canvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
   // Safari ne rend la mémoire d'un canevas qu'au passage du ramasse-miettes ; le ramener à 0 × 0 la libère tout de suite.
   function free(c) { if (c && c.getContext && c.width) { c.width = 0; c.height = 0; } }
-  function freeLayers() { free(st.day); free(st.night); free(st.tmp); free(st.mask); free(st.tw); st.day = st.night = st.tmp = st.mask = st.tw = null; }
+  /* Fonds de jour et de nuit gardés d'une ouverture à l'autre. Mesuré sur l'iPad : les redessiner (images satellite
+     reprojetées ligne par ligne, ou tracé des terres et des frontières) prenait 4,6 à 4,8 s à CHAQUE ouverture de la
+     carte. Ils ne dépendent que du style, de la taille et de la projection : on ne les refait que si l'un change.
+     Coût : deux canevas de la taille de la carte gardés en mémoire (environ 4 Mo chacun sur l'iPad). */
+  /* Deux entrées : à chaque ouverture, la carte est d'abord dimensionnée avant que ses réglages ne montent dans
+     l'en-tête, puis redimensionnée à sa vraie taille ; avec une seule entrée, chacune chassait l'autre. */
+  var layerCache = [];
+  function freeLayers() {
+    free(st.tmp); free(st.mask); free(st.tw);
+    st.day = st.night = st.tmp = st.mask = st.tw = null;
+  }
 
   /* Dessine chaque tracé à chaque copie de la carte (−360°, 0, +360°) qui touche le cadre. */
   function trace(g, list, w, h, pr, closed) {
@@ -241,9 +251,17 @@
     }
     var cw = Math.round(st.w * st.pr), ch = Math.round(st.h * st.pr);
     freeLayers();
-    st.day = canvas(cw, ch); st.night = canvas(cw, ch); st.tmp = canvas(cw, ch);
-    paintLayer(st.day.getContext('2d'), S, false, cw, ch);
-    paintLayer(st.night.getContext('2d'), S, true, cw, ch);
+    var t0 = Date.now(), key = [st.style, cw, ch, LAT_N, LON0, S.imagery ? EARTH.ready : 0].join('|');
+    var hit = layerCache.filter(function (e) { return e.key === key; })[0];
+    if (!hit) {
+      hit = { key: key, day: canvas(cw, ch), night: canvas(cw, ch) };
+      paintLayer(hit.day.getContext('2d'), S, false, cw, ch);
+      paintLayer(hit.night.getContext('2d'), S, true, cw, ch);
+      layerCache.unshift(hit);
+      while (layerCache.length > 2) { var old = layerCache.pop(); free(old.day); free(old.night); }
+      M.lastBuild = (Date.now() - t0) + ' ms painted';
+    } else M.lastBuild = 'reused';
+    st.day = hit.day; st.night = hit.night; st.tmp = canvas(cw, ch);
     if (st.box) st.box.style.background = S.bg;
     // Masque jour/nuit et bande de crépuscule, calculés sur une grille fine puis lissés à l'agrandissement.
     var mw = 240, mh = Math.round(240 * ASPECT);
@@ -497,7 +515,13 @@
      entourées passent d'abord, puis trois passes reprennent chaque étiquette en tenant compte de toutes les autres. */
   var GAP = 10;
   // light : globe en rotation, placement rapide (une passe, sans recuit) ; la version complète à l'arrêt.
+  // Durée du placement des étiquettes, pour le journal (ligne d'ouverture de la carte).
   function layoutLabels(light) {
+    var t0 = Date.now();
+    layoutLabelsRun(light);
+    M.lastLabels = (Date.now() - t0) + ' ms';
+  }
+  function layoutLabelsRun(light) {
     // Jamais de nouveau placement pendant qu'une étiquette est tenue : elle se détacherait de son trait.
     if (drag) { pendingRefresh = true; return; }
     var W = st.w, H = st.h;
