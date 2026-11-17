@@ -815,6 +815,7 @@
     st.infos = infos;
     if (st.view === 'globe') placeOnGlobe(true);
     U.$('.mcards', st.root).innerHTML = infos.map(cardHTML).join('');
+    alignCards();
     oldMk.concat(oldCards).forEach(function (n) { n.textContent = ''; });
     st.infos = infos;
     st.minuteKey = '';
@@ -909,7 +910,19 @@
     buildLayers();
     M.tick(true);
     if (st.view === 'globe') placeOnGlobe(true); else layoutLabels();
+    alignCards();
   };
+  /* Bande des cartes sous la carte : la première carte commence exactement au bord gauche de la carte du monde
+     (et la dernière finit à son bord droit), au lieu d'une marge fixe qui la décalait de quelques points. */
+  function alignCards() {
+    var row = st.root && U.$('.mcards', st.root), card = row && U.$('.mcard', row);
+    if (!row || !card) return;
+    var m = parseFloat(getComputedStyle(card).marginLeft) || 0;
+    var b = st.box.getBoundingClientRect(), r = row.getBoundingClientRect();
+    row.style.paddingLeft = Math.max(0, b.left - r.left - m).toFixed(1) + 'px';
+    row.style.paddingRight = Math.max(0, r.right - b.right - m).toFixed(1) + 'px';
+  }
+  M.alignCards = alignCards;
 
   /* Chaque seconde : aiguilles. Chaque minute (ou si forcé) : ciel de la carte, heures, règle. */
   M.tick = function (force) {

@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.24.1 · 17/11/2026
+
+- Carte du monde : la première carte sous la carte est alignée au bord gauche de la carte (elle était décalée de quelques points vers la droite), la dernière au bord droit.
+
 ## 1.24.0 · 17/11/2026
 
 - Lieux : Bordeaux retiré, Anchorage (Alaska) ajouté en première position (le plus à l'ouest). Appliqué une fois aux listes déjà enregistrées, sans changer l'ordre des autres lieux.
