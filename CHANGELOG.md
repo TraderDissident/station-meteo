@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.17.0 · 17/11/2026
+
+- Lieux : ordre réglé par glisser-déposer. Chaque lieu a une poignée ≡ à droite ; on l'attrape au doigt ou à la souris, la ligne suit, les autres s'écartent, et la liste défile quand on approche du haut ou du bas. Les boutons monter et descendre sont retirés.
+
 ## 1.16.4 · 17/11/2026
 
 - Carte en plein écran : centrée sur l'écran entier (145 px au-dessus, 144 px au-dessous sur l'iPad en paysage) au lieu de l'espace sous l'en-tête, qui la faisait paraître trop basse.

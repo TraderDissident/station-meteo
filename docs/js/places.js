@@ -5,15 +5,77 @@
 
   function t() { return I.t(); }
 
+  /* Glisser-déposer : on attrape la poignée ≡ d'un lieu (doigt ou souris), la ligne suit, les autres s'écartent ;
+     près du haut ou du bas de la liste, elle défile. L'ordre est enregistré au lâcher. */
+  var pd = null;
+  function pPoint(e) { var q = e.touches ? e.touches[0] || e.changedTouches[0] : e; return [q.clientX, q.clientY]; }
+  function pStart(e) {
+    var g = e.target.closest && e.target.closest('.prow .grip');
+    if (!g) return;
+    var row = g.closest('.prow'), r = row.getBoundingClientRect(), pt = pPoint(e);
+    pd = { row: row, list: row.parentNode, scroller: row.closest('.sheet-body'), grabY: pt[1] - r.top, y: pt[1], timer: 0 };
+    row.className = 'prow dragging';
+    if (e.cancelable) e.preventDefault();
+    pd.timer = setInterval(pScroll, 30);
+  }
+  function pPlace() {
+    var row = pd.row;
+    row.style.webkitTransform = row.style.transform = 'none';
+    var r = row.getBoundingClientRect(), dy = pd.y - pd.grabY - r.top;
+    row.style.webkitTransform = row.style.transform = 'translate3d(0,' + dy.toFixed(0) + 'px,0)';
+  }
+  function pMove(e) {
+    if (!pd) return;
+    if (e.type === 'mousemove' && e.buttons === 0) { pEnd(); return; }
+    if (e.cancelable) e.preventDefault();
+    pd.y = pPoint(e)[1];
+    pSwap();
+    pPlace();
+  }
+  // La ligne tenue prend la place de celle qu'elle survole, de moitié au moins.
+  function pSwap() {
+    var rows = [].slice.call(pd.list.children), k = rows.indexOf(pd.row);
+    var mid = pd.y - pd.grabY + pd.row.offsetHeight / 2;
+    var prev = rows[k - 1], next = rows[k + 1];
+    if (prev && mid < prev.getBoundingClientRect().top + prev.offsetHeight / 2) pd.list.insertBefore(pd.row, prev);
+    else if (next && mid > next.getBoundingClientRect().top + next.offsetHeight / 2) pd.list.insertBefore(pd.row, next.nextSibling);
+  }
+  function pScroll() {
+    if (!pd || !pd.scroller) return;
+    var s = pd.scroller.getBoundingClientRect(), v = 0;
+    if (pd.y < s.top + 50) v = -8; else if (pd.y > s.bottom - 50) v = 8;
+    if (v) { pd.scroller.scrollTop += v; pSwap(); pPlace(); }
+  }
+  function pEnd() {
+    if (!pd) return;
+    var d = pd;
+    pd = null;
+    clearInterval(d.timer);
+    d.row.style.webkitTransform = d.row.style.transform = '';
+    d.row.className = 'prow';
+    var ids = [].map.call(d.list.querySelectorAll('.prow'), function (r) { return r.getAttribute('data-id'); });
+    var by = {};
+    SM.app.places.forEach(function (p) { by[p.id] = p; });
+    var list = ids.map(function (id) { return by[id]; }).filter(Boolean);
+    var same = list.length === SM.app.places.length && list.every(function (p, k) { return p === SM.app.places[k]; });
+    if (!same) SM.app.setPlaces(list);
+  }
+  document.addEventListener('touchstart', pStart, { passive: false });
+  document.addEventListener('touchmove', pMove, { passive: false });
+  document.addEventListener('touchend', pEnd);
+  document.addEventListener('touchcancel', pEnd);
+  document.addEventListener('mousedown', pStart);
+  document.addEventListener('mousemove', pMove);
+  document.addEventListener('mouseup', pEnd);
+
   function listHTML() {
     var tt = t(), places = SM.app.places, start = SM.store.startPlace() || places[0].id;
     return places.map(function (p, i) {
       return '<div class="prow" data-id="' + U.esc(p.id) + '">' +
         '<button class="mini star' + (p.id === start ? ' on' : '') + '" data-act="start" title="' + U.esc(tt.startHere) + '">' + IC.ui('star') + '</button>' +
         '<div class="pn" data-act="go"><b>' + U.esc(I.place(p).name) + '</b><small>' + U.esc([I.place(p).region, I.place(p).country].filter(Boolean).join(', ')) + '</small></div>' +
-        '<button class="mini" data-act="up"' + (i === 0 ? ' disabled' : '') + '>' + IC.ui('up') + '</button>' +
-        '<button class="mini" data-act="down"' + (i === places.length - 1 ? ' disabled' : '') + '>' + IC.ui('down') + '</button>' +
         '<button class="mini danger" data-act="del" title="' + U.esc(tt.remove) + '">' + IC.ui('trash') + '</button>' +
+        '<span class="grip" aria-label="' + U.esc(tt.reorder) + '">' + IC.ui('grip') + '</span>' +
       '</div>';
     }).join('');
   }
@@ -87,8 +149,6 @@
     if (i < 0) return;
     if (act === 'go') { SM.app.close(); SM.app.goTo(id); return; }
     if (act === 'start') { SM.store.saveStartPlace(id); refreshList(); return; }
-    if (act === 'up' && i > 0) { list.splice(i - 1, 0, list.splice(i, 1)[0]); }
-    if (act === 'down' && i < list.length - 1) { list.splice(i + 1, 0, list.splice(i, 1)[0]); }
     if (act === 'del') {
       if (list.length === 1) { SM.app.toast(t().lastPlace); return; }
       list.splice(i, 1);

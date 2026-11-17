@@ -604,3 +604,10 @@ header.top { position: relative; }
 .mapfull .mapwrap { padding: 0; margin: auto 0; }
 /* Centrée sur l'écran entier, pas seulement sous l'en-tête (qui n'a plus de titre et paraît vide) : remonte de la moitié de sa hauteur. */
 .mapfull .mapwrap { position: relative; top: -2.4rem; }
+
+/* Lieux : poignée de glisser-déposer */
+.prow .grip { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center;
+  width: 2.6rem; height: 2.6rem; margin-left: .3rem; color: var(--muted); cursor: grab; touch-action: none; }
+.prow .grip .ic { width: 1.25rem; height: 1.25rem; }
+.prow.dragging { position: relative; z-index: 5; background: #1c2846; border-radius: .7rem; box-shadow: 0 .8rem 2rem rgba(0, 0, 0, .5); cursor: grabbing; }
+.prow.dragging .grip { cursor: grabbing; color: #fff; }
