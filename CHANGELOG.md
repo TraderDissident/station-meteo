@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.23.4 · 17/11/2026
+
+- Options de la carte : bouton « Halo » pour afficher ou non la lueur orangée autour des lieux où il fait nuit (carte et globe). Affiché par défaut, comme avant.
+
 ## 1.23.3 · 17/11/2026
 
 - Options de la carte : les pastilles de couleur des points sont rondes (elles étaient étirées en ovales dans le panneau d'options).

@@ -789,6 +789,7 @@
         '<div class="mcards"></div></div></div>';
     st.root = U.$('.mapview', container);
     if (!dotBlink()) st.root.className += ' noblink';
+    if (!dotHalo()) st.root.className += ' nohalo';
     // Glisser d'étiquette : seul écouteur non passif de la carte, posé sur elle (voir config.js).
     st.root.addEventListener('touchmove', dragMove, { passive: false });
     st.box = U.$('.mapbox', st.root);
@@ -974,23 +975,29 @@
   var DOT_COLORS = ['temp', '#ffffff', '#ffd23f', '#ff8a3d', '#ff4d6d', '#c77dff', '#4dd2ff', '#5cf28c'];
   function dotColor() { var v = spinPref('sm.dotColor', 'temp'); return DOT_COLORS.indexOf(v) >= 0 ? v : 'temp'; }
   function dotBlink() { return spinPref('sm.dotBlink', '1') === '1'; }
+  // Halo : la lueur orangée autour des lieux où il fait nuit.
+  function dotHalo() { return spinPref('sm.dotHalo', '1') === '1'; }
   function dotsHTML() {
-    var tt = I.t(), cur = dotColor(), on = dotBlink();
+    var tt = I.t(), cur = dotColor(), on = dotBlink(), halo = dotHalo();
     return '<div class="seg mdots"><button data-dblink="' + (on ? '0' : '1') + '"' + (on ? ' class="on"' : '') + '>' + tt.dotBlink + '</button>' +
+      '<button data-dhalo="' + (halo ? '0' : '1') + '"' + (halo ? ' class="on"' : '') + '>' + tt.dotHalo + '</button>' +
       '<span class="dsw">' + DOT_COLORS.map(function (c) {
         var bg = c === 'temp' ? 'linear-gradient(135deg,#4dd2ff,#5cf28c 35%,#ffd23f 65%,#ff4d6d)' : c;
         return '<button data-dcolor="' + c + '"' + (c === cur ? ' class="on"' : '') + ' aria-label="' + U.esc(c === 'temp' ? tt.dotTemp : c) + '" style="background:' + bg + '"></button>';
       }).join('') + '</span></div>';
   }
   document.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('[data-dcolor], [data-dblink]');
+    var b = e.target.closest && e.target.closest('[data-dcolor], [data-dblink], [data-dhalo]');
     if (!b || !st.root) return;
     try {
       if (b.hasAttribute('data-dcolor')) localStorage.setItem('sm.dotColor', b.getAttribute('data-dcolor'));
+      else if (b.hasAttribute('data-dhalo')) localStorage.setItem('sm.dotHalo', b.getAttribute('data-dhalo'));
       else localStorage.setItem('sm.dotBlink', b.getAttribute('data-dblink'));
     } catch (err) { /* rien */ }
     var on = dotBlink(), cur = dotColor();
-    st.root.className = st.root.className.replace(' noblink', '') + (on ? '' : ' noblink');
+    var halo = dotHalo();
+    st.root.className = st.root.className.replace(' noblink', '').replace(' nohalo', '') + (on ? '' : ' noblink') + (halo ? '' : ' nohalo');
+    U.$$('[data-dhalo]').forEach(function (x) { x.setAttribute('data-dhalo', halo ? '0' : '1'); x.className = halo ? 'on' : ''; });
     U.$$('[data-dblink]').forEach(function (x) { x.setAttribute('data-dblink', on ? '0' : '1'); x.className = on ? 'on' : ''; });
     U.$$('[data-dcolor]').forEach(function (x) { x.className = x.getAttribute('data-dcolor') === cur ? 'on' : ''; });
     // Couleur des points : les marqueurs sont redessinés avec la nouvelle couleur.
