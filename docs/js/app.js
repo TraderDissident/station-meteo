@@ -227,9 +227,10 @@
     if (!w) { st.textContent = ''; return; }
     var age = Date.now() - w.fetchedAt, d = new Date(w.fetchedAt);
     var txt = tt.updated + ' ' + U.pad(d.getHours()) + ':' + U.pad(d.getMinutes());
-    var off = !navigator.onLine || A.failures[p.id];
+    // « Hors connexion » seulement quand l'appareil l'est vraiment ; une requête ratée s'annonce comme telle.
+    var noNet = !navigator.onLine, failed = !noNet && A.failures[p.id], off = noNet || failed;
     st.className = 'status' + (age > SM.STALE_BADGE_MS || off ? ' stale' : '');
-    st.innerHTML = (off ? IC.ui('offline') + tt.offline + ' · ' : '') + U.esc(txt) + (age > SM.STALE_DATA_MS ? ' · ' + tt.stale : '');
+    st.innerHTML = (off ? IC.ui('offline') + (noNet ? tt.offline : tt.retrying) + ' · ' : '') + U.esc(txt) + (age > SM.STALE_DATA_MS ? ' · ' + tt.stale : '');
     var demo = A.demo.time || A.demo.weather || A.demo.cycle;
     el.badge.style.display = demo ? '' : 'none';
   }

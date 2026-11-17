@@ -138,6 +138,8 @@
     var key = want + '|' + dirSign + '|' + Math.round(speed) + '|' + S.w + '|' + S.h + '|' + S.motion;
     if (!force && key === S.cloudKey) return;
     S.cloudKey = key;
+    // Safari d'iOS 12 ne rend la mémoire d'un canevas qu'au ramasse-miettes, et plafonne leur total : on la rend tout de suite.
+    clouds.forEach(function (c) { c.cv.width = 0; c.cv.height = 0; });
     cloudBox.innerHTML = '';
     clouds = [];
     var rnd = U.seeded('nuages' + (sc.placeName || ''));

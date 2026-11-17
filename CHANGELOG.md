@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.18.3 · 17/11/2026
+
+- Mémoire : les images des nuages sont rendues tout de suite quand le ciel les recrée (à chaque changement de vent, donc à peu près à chaque rafraîchissement). Piste du blocage nocturne de l'iPad, pas encore prouvée.
+- « Hors connexion » ne s'affiche plus que si l'appareil est vraiment hors ligne ; une requête météo ratée affiche « Météo injoignable, nouvel essai ».
+
 ## 1.18.2 · 17/11/2026
 
 - Diagnostic : boîte noire pour les blocages. Toutes les 30 s l'app note qu'elle vit (heure, écran affiché, dernière météo reçue) ; au démarrage suivant, si elle s'était arrêtée sans fermeture propre, le journal donne l'heure de l'arrêt et ce qui était affiché. Un blocage de plus de 6 s à l'écran est noté avec sa durée.
