@@ -656,10 +656,11 @@ header.top { position: relative; }
 
 /* Rapidité : l'écran d'un lieu garde sa propre couche. Sans cela, l'iPad le repeint en entier au début du glissement
    (pour le faire suivre le doigt) et encore à la fin de l'animation d'arrivée. */
-/* En paysage, la couche permanente est celle de la colonne de gauche seule (la colonne de droite défile, elle a déjà
-   la sienne). L'écran entier n'a alors rien à peindre lui-même : le déplacer ne coûte rien, et sa couche de
-   10 Mo à moitié vide disparaît. En portrait, l'écran défile en entier et garde sa propre couche. */
-.land .hero { -webkit-transform: translateZ(0); transform: translateZ(0); }
+/* La couche est portée par l'écran entier, et par lui seul. Essayé en 1.21.4 : la donner à la colonne de gauche pour
+   gagner 5 Mo. Constaté sur l'iPad : Safari 12 n'affiche plus les deux colonnes dès que l'écran bouge ou devient
+   translucide, quand la colonne de gauche a sa couche et que celle de droite défile (défaut de composition :
+   deux enfants en couche sous un parent en couche sans contenu). Ne pas remettre de couche sur .hero. */
+.view { -webkit-transform: translateZ(0); transform: translateZ(0); }
 /* Globe : chaque point et son étiquette sur leur couche, déplacés par la carte graphique. */
 .mapbox.globe .mk { will-change: transform; }
 .card.details.lazy { background: none; border-color: transparent; }

@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.21.5 · 17/11/2026
+
+Signalé par Matt sur l'iPad : au premier mouvement du doigt pour changer de lieu, les deux colonnes disparaissaient (il ne restait que le ciel et l'en-tête), puis réapparaissaient au lâcher.
+
+- Cause, isolée par essais sur l'iPad : depuis la 1.21.4, la colonne de gauche avait sa propre couche. Safari 12 n'affiche plus les deux colonnes quand leur écran bouge ou devient translucide alors que l'une a une couche et que l'autre défile. La couche revient sur l'écran entier, comme en 1.21.3 (5 Mo de plus, essai validé à l'écran).
+
 ## 1.21.4 · 17/11/2026
 
 D'après les mesures en paysage de la 1.21.2 (sous la pluie : 264 Mo ramenés à 163 Mo, 99,5 Mo de couches ramenés à 45,5 Mo).
