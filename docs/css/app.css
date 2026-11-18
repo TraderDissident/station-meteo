@@ -668,13 +668,16 @@ header.top { position: relative; }
 @media (hover: hover) { .gctl:hover .gspeed { max-width: 12rem; opacity: 1; } }
 
 /* Journal en plein écran */
-#logview { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; background: #0a101f; color: #dfe6f5;
+#logview, #bkview { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; background: #0a101f; color: #dfe6f5;
   display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
   padding-top: 20px; padding-top: max(20px, env(safe-area-inset-top)); }
-#logview header { -webkit-flex: none; flex: none; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: .6rem 1rem; border-bottom: 1px solid var(--line, rgba(255,255,255,.14)); }
-#logview h2 { margin: 0 .8rem 0 0; font-size: 1.15rem; }
-#logview .lgn { -webkit-flex: 1; flex: 1; font-size: .8rem; color: rgba(255, 255, 255, .6); }
-#logview .btn { margin-left: .5rem; }
+#logview header, #bkview header { -webkit-flex: none; flex: none; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: .6rem 1rem; border-bottom: 1px solid var(--line, rgba(255,255,255,.14)); }
+#logview h2, #bkview h2 { margin: 0 .8rem 0 0; font-size: 1.15rem; }
+#logview .lgn, #bkview .lgn { -webkit-flex: 1; flex: 1; font-size: .8rem; color: rgba(255, 255, 255, .6); }
+#logview .btn, #bkview .btn { margin-left: .5rem; }
+.bktext { -webkit-flex: 1; flex: 1; min-height: 0; margin: .8rem 1rem 1.2rem; padding: .8rem; border-radius: .7rem; border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .05); color: #dfe6f5; font-family: Menlo, Consolas, monospace; font-size: 16px; line-height: 1.4; resize: none;
+  -webkit-user-select: text; user-select: text; outline: none; }
 .lgbody { -webkit-flex: 1; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .6rem 1rem 2rem;
   font-family: Menlo, Consolas, monospace; font-size: .78rem; line-height: 1.5; -webkit-user-select: text; user-select: text; }
 .lgl { white-space: pre-wrap; word-break: break-word; padding: .05rem 0; }

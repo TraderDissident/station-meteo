@@ -47,6 +47,8 @@
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
       field(tt.language, seg('lang', [['en', 'English'], ['fr', 'Français'], ['auto', tt.auto]], s.lang)) +
+      field(tt.backup, '<p class="about">' + U.esc(tt.backupHint) + '</p>' +
+        '<div class="btnrow"><button class="btn" data-bk="export">' + tt.exportData + '</button><button class="btn" data-bk="import">' + tt.importData + '</button></div>') +
       field(tt.about, '<p class="about">' + tt.version + ' ' + SM.VERSION + '<br>' + U.esc(tt.source) + '<br>' + U.esc(tt.mapCredit) + '</p>' +
         '<p class="about" id="latestVer">' + U.esc(SM.update.latest ? tt.latest + ' ' + SM.update.latest : tt.checking) + '</p>' +
         '<div class="btnrow"><button class="btn" data-update="1">' + tt.forceUpdate + '</button>' +
@@ -211,7 +213,76 @@
   // Bouton « Forcer la mise à jour » et version en ligne, lue à l'ouverture des réglages.
   document.addEventListener('click', function (e) {
     if (e.target.closest && e.target.closest('[data-update]')) SM.update.force();
+    var bk = e.target.closest && e.target.closest('[data-bk]');
+    if (bk) openBackup(bk.getAttribute('data-bk'));
   });
+
+  /* ---------- sauvegarde : export et import ---------- */
+  /* Tout ce qui est propre à Matt : lieux et leur ordre, lieu de démarrage, réglages, blocs de détails, vue, réglages
+     de la carte et du globe (style, vue, cartes du bas, plein écran, rotation, points), étiquettes placées à la main.
+     Laissé de côté : la météo en mémoire, le journal et ce qui dépend de l'appareil (taille de la carte). */
+  function backupKeys() {
+    var out = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf('sm.') === 0 && !/^sm\.(w\.|log|alive|mapSize)/.test(k)) out.push(k);
+    }
+    return out.sort();
+  }
+  function exportText() {
+    var data = {};
+    backupKeys().forEach(function (k) { data[k] = localStorage.getItem(k); });
+    return JSON.stringify({ app: 'station-meteo', version: SM.VERSION, date: new Date().toISOString(), data: data }, null, 1);
+  }
+  // Plein écran, sur le modèle du journal : le texte de la sauvegarde, à copier (ou télécharger sur un ordinateur),
+  // ou une zone où coller une sauvegarde pour l'appliquer.
+  function openBackup(mode) {
+    var tt = t(), old = document.getElementById('bkview');
+    if (old) old.parentNode.removeChild(old);
+    var v = document.createElement('div');
+    v.id = 'bkview';
+    var txt = mode === 'export' ? exportText() : '';
+    v.innerHTML = '<header><h2>' + U.esc(mode === 'export' ? tt.exportData : tt.importData) + '</h2><span class="lgn">' +
+      U.esc(mode === 'export' ? tt.exportHint : tt.importHint) + '</span>' +
+      (mode === 'export' ? '<button class="btn" data-b="copy">' + U.esc(tt.copy) + '</button><button class="btn" data-b="file">' + U.esc(tt.download) + '</button>'
+        : '<button class="btn" data-b="apply">' + U.esc(tt.importApply) + '</button>') +
+      '<button class="btn" data-b="close">' + U.esc(tt.close) + '</button></header>' +
+      '<textarea class="bktext" spellcheck="false" autocorrect="off" autocapitalize="off"' + (mode === 'export' ? ' readonly' : '') + '></textarea>';
+    document.body.appendChild(v);
+    var area = v.querySelector('.bktext');
+    area.value = txt;
+    v.onclick = function (e) {
+      var b = e.target.closest('[data-b]');
+      if (!b) return;
+      var act = b.getAttribute('data-b');
+      if (act === 'close') v.parentNode.removeChild(v);
+      if (act === 'copy') copyText(txt, function (ok) { b.textContent = ok ? tt.copied : tt.copyFailed; setTimeout(function () { b.textContent = tt.copy; }, 2000); });
+      if (act === 'file') {
+        var a = document.createElement('a'), d = new Date();
+        a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(txt);
+        a.download = 'station-meteo-' + d.getFullYear() + '-' + U.pad(d.getMonth() + 1) + '-' + U.pad(d.getDate()) + '.json';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      }
+      if (act === 'apply') applyBackup(area.value, b);
+    };
+  }
+  function applyBackup(text, btn) {
+    var tt = t(), obj = null;
+    try { obj = JSON.parse(text); } catch (e) { obj = null; }
+    var data = obj && obj.app === 'station-meteo' && obj.data;
+    var keys = data ? Object.keys(data).filter(function (k) { return k.indexOf('sm.') === 0 && !/^sm\.(w\.|log|alive|mapSize)/.test(k) && typeof data[k] === 'string'; }) : [];
+    if (!keys.length) { btn.textContent = tt.importBad; setTimeout(function () { btn.textContent = tt.importApply; }, 2500); return; }
+    var places = null;
+    try { places = JSON.parse(data['sm.places'] || 'null'); } catch (e) { places = null; }
+    if (data['sm.places'] && !(places && places.length)) { btn.textContent = tt.importBad; setTimeout(function () { btn.textContent = tt.importApply; }, 2500); return; }
+    if (!window.confirm(tt.importConfirm)) return;
+    // Les réglages de la sauvegarde remplacent ceux de l'appareil ; la météo en mémoire et le journal restent.
+    backupKeys().forEach(function (k) { localStorage.removeItem(k); });
+    keys.forEach(function (k) { localStorage.setItem(k, data[k]); });
+    SM.diag.info('backup imported · ' + keys.length + ' keys · from v' + (obj.version || '?'));
+    SM.diag.flush();
+    location.reload();
+  }
   function showLatest() {
     var tt = t();
     SM.update.latestVersion().then(function (v) {

@@ -1,5 +1,12 @@
 # Journal des modifications
 
+## 1.26.0 · 18/11/2026
+
+Demande de Matt.
+
+- Réglages, nouvelle rubrique « Sauvegarde » : Exporter montre en plein écran le texte de la sauvegarde, à copier (ou à télécharger en fichier sur un ordinateur) ; Importer offre une zone où le coller, puis Appliquer remplace, après confirmation, les lieux et réglages de l'appareil et recharge l'app.
+- Contenu : lieux et leur ordre, lieu de démarrage, réglages, blocs de détails, dernière vue, réglages de la carte et du globe (style, vue, cartes du bas, plein écran, rotation, points), étiquettes placées à la main. Laissé de côté : la météo en mémoire, le journal et la taille de la carte propre à l'appareil.
+
 ## 1.25.2 · 18/11/2026
 
 Demande de Matt.
