@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.27.1 · 18/11/2026
+
+- Écran d'un lieu : nouveau bloc « Pourquoi cette note », à côté du bloc « Bien-être », comme sur la maquette : chaque critère noté sur 10 avec sa jauge (température, humidité, pluie et neige, ciel, vent, UV, air ; vert bon, orange moyen, rouge mauvais). Le bloc « Bien-être » prend une seule colonne et garde la note, le libellé, la jauge, la base thermique et les retraits.
+
 ## 1.27.0 · 18/11/2026
 
 Indice de bien-être, d'après le document de conception validé par Matt (`docs-conception/indice-bien-etre.md`).
