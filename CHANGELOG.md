@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.30.4 · 18/11/2026
+
+- Téléphone, Détails : les blocs Bien-être et « Pourquoi cette note » prennent vraiment toute la largeur (la règle ne visait que le mode édition) ; la pastille du libellé ne déborde plus sur le bloc voisin. La boussole du vent tient dans son bloc à toutes les largeurs, lettres à 13 px à l'écran. Bloc Lune : plus de débordement sur un iPhone de 375 px.
+
 ## 1.30.3 · 18/11/2026
 
 - Téléphone, écran d'un lieu : en faisant défiler, le contenu n'est plus coupé net contre les points des lieux. Un espace sous les points, puis un fondu en haut de la zone qui défile.

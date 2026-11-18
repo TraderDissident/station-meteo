@@ -904,9 +904,10 @@ html.phone .tedit { min-height: 44px; padding: 0 16px; }
 /* Blocs des détails : deux colonnes (les blocs larges en prennent deux). Boussole agrandie : ses lettres
    à 13 px à l'écran, l'unité (mention dans le dessin) à 11 px. */
 html.phone .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-gap: 10px; }
-html.phone .compass { width: 9rem; height: 9rem; }
+html.phone .compass { width: 100%; max-width: 9rem; height: auto; }
+html.phone .compass .cl { font-size: 11.2px; }
 html.phone .compass .cv { font-size: 13px; }
-html.phone .compass .cu { font-size: 7.7px; }
+html.phone .compass .cu { font-size: 9.6px; }
 html.phone .hview button { width: 48px; height: 44px; border-radius: 22px; }
 html.phone .hview { border-radius: 24px; }
 html.phone .hview button .ic { width: 22px; height: 22px; }
@@ -918,7 +919,7 @@ html.phone .drow .dp .mm { display: none; }
 html.phone .drow.vprecip { grid-template-columns: 5.6rem 1fr 3.8rem 4.4rem; }
 html.phone .drow.vwind { grid-template-columns: 5.6rem 1fr 7.6rem; }
 /* Bien-être et « Pourquoi cette note » sur toute la largeur : leurs jauges et leurs listes ne tiennent pas en demi-largeur. */
-html.phone .tslot[data-tile="comfort"], html.phone .tslot[data-tile="comfortWhy"] { grid-column: span 2; }
+html.phone .tiles > [data-tile="comfort"], html.phone .tiles > [data-tile="comfortWhy"] { grid-column: span 2; }
 html.phone .cwr { font-size: 15px; margin-top: 6px; }
 html.phone .cwr span { width: 7.5rem; }
 html.phone .cwr b { width: 2.2rem; }
@@ -991,3 +992,6 @@ html.phone .dsw { -webkit-flex-wrap: wrap; flex-wrap: wrap; }
 html.phone header.top { padding-bottom: 12px; }
 html.phone .port .view { -webkit-mask-image: -webkit-linear-gradient(top, transparent 0, #000 18px); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px); }
 html.phone .port .hero { padding-top: 18px; }
+/* Lune : pictogramme plus petit en demi-largeur, le texte prend la place qui reste et passe à la ligne. */
+html.phone .moonrow svg { width: 2.8rem; height: 2.8rem; margin-right: 10px; }
+html.phone .moonrow > div { min-width: 0; }
