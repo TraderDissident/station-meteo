@@ -33,6 +33,13 @@
     Promise.all(jobs).then(go, go);
   };
 
+  /* Bouton « Forcer la mise à jour » : seulement si une autre version est en ligne. Une app à jour n'efface plus
+     ses fichiers en réserve (demande de Matt, 18/11, après un gel de l'iPad qui a suivi un forçage inutile). */
+  U.forceIfNewer = function () {
+    if (!U.latest || U.latest === SM.VERSION) { SM.diag.info('update: button ignored, running ' + SM.VERSION + ', online ' + (U.latest || '?')); return; }
+    U.force();
+  };
+
   // Au démarrage et au retour sur l'app (au plus toutes les 30 min) : version plus récente en ligne ⇒ mise à jour seule.
   U.check = function () {
     if (location.protocol !== 'https:' || !navigator.onLine) return Promise.resolve(null);

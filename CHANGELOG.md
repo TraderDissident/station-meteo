@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.30.5 · 18/11/2026
+
+- Réglages, « Forcer la mise à jour » : le bouton n'est actif que si une autre version est en ligne. Il est grisé pendant la vérification, hors connexion et quand l'app est à jour ; le texte au-dessus dit l'état (« Recherche de la version en ligne… », « C'est la dernière version. », « Version x disponible. »). Le code refuse aussi le forçage dans ces cas, même sans passer par le bouton. La mise à jour automatique au démarrage ne change pas.
+- Limite voulue : le bouton ne peut plus « réparer » une app à jour dont les fichiers en réserve seraient abîmés.
+
 ## 1.30.4 · 18/11/2026
 
 - Téléphone, Détails : les blocs Bien-être et « Pourquoi cette note » prennent vraiment toute la largeur (la règle ne visait que le mode édition) ; la pastille du libellé ne déborde plus sur le bloc voisin. La boussole du vent tient dans son bloc à toutes les largeurs, lettres à 13 px à l'écran. Bloc Lune : plus de débordement sur un iPhone de 375 px.

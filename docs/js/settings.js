@@ -52,8 +52,9 @@
       field(tt.backup, '<p class="about">' + U.esc(tt.backupHint) + '</p>' +
         '<div class="btnrow"><button class="btn" data-bk="export">' + tt.exportData + '</button><button class="btn" data-bk="import">' + tt.importData + '</button></div>') +
       field(tt.about, '<p class="about">' + tt.version + ' ' + SM.VERSION + '<br>' + U.esc(tt.source) + '<br>' + U.esc(tt.mapCredit) + '</p>' +
-        '<p class="about" id="latestVer">' + U.esc(SM.update.latest ? tt.latest + ' ' + SM.update.latest : tt.checking) + '</p>' +
-        '<div class="btnrow"><button class="btn" data-update="1">' + tt.forceUpdate + '</button>' +
+        '<p class="about" id="latestVer">' + U.esc(tt.checking) + '</p>' +
+        // Actif seulement si une autre version est en ligne (showLatest) : grisé pendant la vérification, hors ligne, à jour.
+        '<div class="btnrow"><button class="btn" data-update="1" disabled>' + tt.forceUpdate + '</button>' +
         '<button class="btn" data-open="diag">' + tt.diagnostic + '</button></div>');
     return html;
   }
@@ -216,7 +217,8 @@
 
   // Bouton « Forcer la mise à jour » et version en ligne, lue à l'ouverture des réglages.
   document.addEventListener('click', function (e) {
-    if (e.target.closest && e.target.closest('[data-update]')) SM.update.force();
+    var ub = e.target.closest && e.target.closest('[data-update]');
+    if (ub && !ub.disabled) SM.update.forceIfNewer();
     var bk = e.target.closest && e.target.closest('[data-bk]');
     if (bk) openBackup(bk.getAttribute('data-bk'));
   });
@@ -290,8 +292,10 @@
   function showLatest() {
     var tt = t();
     SM.update.latestVersion().then(function (v) {
-      var p = document.getElementById('latestVer');
-      if (p) p.textContent = v === SM.VERSION ? tt.upToDate : tt.latest + ' ' + v;
+      var p = document.getElementById('latestVer'), b = document.querySelector('[data-update]');
+      var newer = !!v && v !== SM.VERSION;
+      if (p) p.textContent = !v ? tt.onlineUnknown : (newer ? tt.updateAvail.replace('%1', v) : tt.upToDate);
+      if (b) b.disabled = !newer;
     }).catch(function () {
       var p = document.getElementById('latestVer');
       if (p) p.textContent = tt.onlineUnknown;

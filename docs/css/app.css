@@ -772,6 +772,9 @@ html.listmode { background: #262d38; }
 .icp { display: none; }
 @media (orientation: portrait) { .icl { display: none; } .icp { display: inline; } }
 
+/* Bouton inactif (mise à jour quand l'app est déjà à jour) : visible, mais grisé et sans effet. */
+.btn:disabled { opacity: .4; cursor: default; }
+
 /* ========== Téléphone (html.phone, plus petit côté sous 500 px ; jamais sur l’iPad) ==========
    1 rem = 16 px (app.js, layout). Échelle de texte d’iOS : courant 17 px, secondaire 15 px, légende 13 px ; rien de
    lisible sous 13 px, sauf les unités dans un dessin. Zones tactiles de 44 px au moins. */
