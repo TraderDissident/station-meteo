@@ -162,6 +162,7 @@ header.top {
 .tdeg { position: absolute; left: 100%; top: 0; font-style: normal; }
 .tneg { position: absolute; right: 100%; top: 0; font-style: normal; }
 .dial .feels { font-size: 1.1rem; color: var(--muted); margin-top: .1rem; }
+.dcmf { display: inline-block; margin-left: .55rem; padding: .08rem .5rem; border-radius: .7rem; font-size: .8rem; font-weight: 700; vertical-align: .1rem; text-shadow: none; }
 .dial-mid { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; margin: .5rem 0 .2rem; }
 .dcol { width: 34%; text-align: right; font-size: .95rem; }
 .dcol.r { text-align: left; }

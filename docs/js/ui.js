@@ -116,6 +116,14 @@
     return i;
   }
 
+  // Note de bien-être en pastille, sur la ligne du ressenti (sans agrandir le cadran).
+  function dialComfort(w, now) {
+    var r = SM.comfort.now(w, now);
+    if (!r) return '';
+    var lv = SM.comfort.level(r.note);
+    return '<span class="dcmf cmf-' + lv + '">' + t().comfort + ' ' + R.comfortNum(r.note) + '</span>';
+  }
+
   /* ---------- blocs ---------- */
   function hero(place, w, now) {
     var tt = t(), c = w.current, di = dayIndex(w, now), d = w.daily[di] || {};
@@ -129,7 +137,7 @@
       '<div class="dial">' +
         '<div class="dial-in">' +
           '<div class="temp">' + hang(c.temp) + '</div>' +
-          '<div class="feels">' + tt.feels + ' ' + I.temp(c.feels) + '</div>' +
+          '<div class="feels">' + tt.feels + ' ' + I.temp(c.feels) + dialComfort(w, now) + '</div>' +
           '<div class="dial-mid">' +
             '<div class="dcol"><div><small>' + tt.max + '</small><b>' + I.temp(d.max) + '</b></div><div><small>' + tt.precip + '</small><b>' + I.mm(d.precip) + '</b></div></div>' +
             '<div class="dicon">' + IC.weather(CO.icon(c.code, isDay), 'big') + '</div>' +

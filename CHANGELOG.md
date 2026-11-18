@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.27.2 · 18/11/2026
+
+- Cadran d'un lieu : la note de bien-être en pastille colorée sur la ligne du ressenti (« Feels like 19° · Comfort 6,9 »), sans icône et sans agrandir le cadran.
+
 ## 1.27.1 · 18/11/2026
 
 - Écran d'un lieu : nouveau bloc « Pourquoi cette note », à côté du bloc « Bien-être », comme sur la maquette : chaque critère noté sur 10 avec sa jauge (température, humidité, pluie et neige, ciel, vent, UV, air ; vert bon, orange moyen, rouge mauvais). Le bloc « Bien-être » prend une seule colonne et garde la note, le libellé, la jauge, la base thermique et les retraits.
