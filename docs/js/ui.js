@@ -373,9 +373,14 @@
   /* Indice de bien-être (voir comfort.js) : la note sur 10, son libellé, une jauge, puis d'où elle vient (la base
      thermique et ce que chaque gêne retire), et le plafond s'il en a un. */
   function comfortTiles(w, now) {
-    var tt = t(), r = SM.comfort.now(w, now);
+    var tt = t(), s = SM.comfort.situation(w, now), r = s ? SM.comfort.calc(s) : null;
     if (!r) return [];
     var lv = SM.comfort.level(r.note), parts = [];
+    // La note affichée est celle au soleil. De jour, si l'ombre fait gagner un demi-point ou plus, on le dit.
+    var ombre = s.jour ? SM.comfort.calc(s, undefined, 0) : null, shade = '';
+    if (ombre && Math.round((ombre.note - r.note) * 10) >= 5) {
+      shade = '<p class="sub">' + tt.comfortShade + ' : ' + R.comfortNum(ombre.note) + ' · ' + tt.comfortLevels[SM.comfort.level(ombre.note)] + '</p>';
+    }
     SM.comfort.ORDRE.forEach(function (k) {
       var e = Math.round(r.eff[k]);
       if (e >= 1) parts.push(tt.comfortParts[k] + ' −' + e + ' %');
@@ -383,7 +388,7 @@
     var body = '<div class="cmfh"><span class="big">' + R.comfortNum(r.note) + '<small>/10</small></span><span class="cmfl cmf-' + lv + '">' + tt.comfortLevels[lv] + '</span></div>' +
       '<div class="cmfbar"><i class="cmf-' + lv + '" style="width:' + (r.note * 10).toFixed(0) + '%"></i></div>' +
       '<p class="sub">' + tt.comfortBase + ' ' + R.comfortNum(r.n.thermique) + ' · ' + tt.comfortFeels + ' ' + I.temp(r.fl) + '<br>' + (parts.length ? parts.join(' · ') : tt.comfortNone) + '</p>' +
-      (r.lim ? '<p class="sub cmfcap">' + tt.comfortCap + ' : ' + tt.comfortCaps[r.lim] + '</p>' : '');
+      (r.lim ? '<p class="sub cmfcap">' + tt.comfortCap + ' : ' + tt.comfortCaps[r.lim] + '</p>' : '') + shade;
     // Pourquoi cette note : chaque critère noté sur 10, avec sa jauge (vert bon, orange moyen, rouge mauvais).
     var rows = ['thermique', 'moiteur', 'pluie', 'ciel', 'vent', 'uv', 'air'].map(function (k) {
       var v = Math.round(r.n[k] * 10) / 10, c = v >= 7 ? 'good' : (v >= 4 ? 'mid' : 'bad');

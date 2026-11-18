@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.29.1 · 18/11/2026
+
+- Bien-être : la note affichée est celle au soleil. De jour, quand l'ombre fait gagner un demi-point ou plus, une ligne « À l'ombre » donne la note à l'ombre et son libellé. C'est rare : il faut un soleil fort (UV élevé) ou une forte chaleur.
+
 ## 1.29.0 · 18/11/2026
 
 - Indice de bien-être : nouvelle formule, sans palier. Chaque critère est noté de façon continue, une petite variation de la météo ne fait plus sauter la note. Froid humide moins bien noté que froid sec, chaleur sèche limitée au-dessus de 28 °C d'air, une gêne forte limite la note à elle seule (air mauvais, pluie fine), quatre plafonds de danger (orage, grêle, verglas, brouillard dense). Pluie ou bruine annoncée par le code météo sans quantité mesurée : note de pluie de 7 au plus.
