@@ -1,5 +1,14 @@
 # Journal des modifications
 
+## 1.27.0 · 18/11/2026
+
+Indice de bien-être, d'après le document de conception validé par Matt (`docs-conception/indice-bien-etre.md`).
+
+- Note de bien-être sur 10 pour chaque lieu, calculée pour l'instant présent avec les données déjà reçues (aucune requête de plus). Base : le confort thermique d'après la température ressentie, 10 de 22 à 27 °C. Chaque gêne retire ensuite une part : pluie et neige jusqu'à 60 %, vent 40 %, qualité de l'air 40 %, ciel 20 %, moiteur 10 %, UV 10 %. Un danger (orage, grêle, tempête, canicule, air très pollué, brouillard dense…) plafonne la note. Six libellés, d'Idéal à Extrême.
+- Écran d'un lieu : nouveau bloc « Bien-être » en tête des détails, avec la note, son libellé, une jauge, la base thermique et ce que chaque gêne retire, et le plafond s'il y en a un. Il se déplace ou se masque en mode édition comme les autres blocs.
+- Mode liste : la note de chaque lieu en pastille colorée devant le temps qu'il fait.
+- Calcul vérifié sur les 20 cas du document : mêmes notes.
+
 ## 1.26.0 · 18/11/2026
 
 Demande de Matt.

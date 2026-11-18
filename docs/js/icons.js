@@ -101,6 +101,7 @@
     play: '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>',
     pause: '<path d="M8.5 5.5v13M15.5 5.5v13" stroke-width="3"/>',
     grip: '<path d="M5 8h14M5 12h14M5 16h14"/>',
+    smile: '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.2a4.2 4.2 0 0 0 7 0"/><path d="M9 9.8h.01M15 9.8h.01" stroke-width="2.4"/>',
     list: '<path d="M9 6.5h11M9 12h11M9 17.5h11" stroke-width="2"/><circle cx="4.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="17.5" r="1.2" fill="currentColor" stroke="none"/>',
     arrowUp: '<path d="M12 20V5M6 10.5L12 4.5l6 6" stroke-width="2.2"/>',
     arrowDown: '<path d="M12 4v15M6 13.5l6 6 6-6" stroke-width="2.2"/>',

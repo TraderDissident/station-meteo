@@ -11,7 +11,7 @@
       for (var i = 0; i < w.daily.length; i++) if (I.wall(w.daily[i].t + 43200, tz, w.offset).key === wl.key) { d = w.daily[i]; break; }
     }
     var sky = SM.sky.colorsFor(p.lat, p.lon, ms, c ? c.code : null, c ? c.cloud : null);
-    return { p: p, pl: I.place(p), c: c, d: d, wl: wl, sky: sky };
+    return { p: p, pl: I.place(p), c: c, d: d, wl: wl, sky: sky, cmf: w ? SM.comfort.now(w, nowS) : null };
   }
 
   // Heure locale, suivie du jour quand il n'est pas celui d'ici (Sydney déjà demain, Tahiti encore hier).
@@ -31,11 +31,17 @@
     var hl = ci.d ? IC.ui('arrowUp') + I.temp(ci.d.max) + IC.ui('arrowDown') + I.temp(ci.d.min) : '';
     return '<div class="lrow"><div class="lname"><b>' + U.esc(ci.pl.name) + '</b><small class="ltime">' + timeText(ci.wl) + '</small></div>' +
       '<div class="ltemp">' + (ci.c && U.has(ci.c.temp) ? I.temp(ci.c.temp) : '–') + '</div></div>' +
-      '<div class="lrow low"><span class="lcond">' + (ci.c ? U.esc(CO.label(ci.c.code)) : '') + '</span><span class="lhl">' + hl + '</span></div>';
+      '<div class="lrow low"><span class="lcond">' + comfortPill(ci) + (ci.c ? U.esc(CO.label(ci.c.code)) : '') + '</span><span class="lhl">' + hl + '</span></div>';
+  }
+  // Note de bien-être du lieu, en pastille colorée devant le temps qu'il fait.
+  function comfortPill(ci) {
+    if (!ci.cmf) return '';
+    var lv = SM.comfort.level(ci.cmf.note);
+    return '<span class="lcmf cmf-' + lv + '">' + SM.ui.comfortNum(ci.cmf.note) + '</span>';
   }
   // Clé du contenu sans l'heure (qui change chaque minute et a son propre chemin).
   function contentKey(ci) {
-    return (ci.c ? ci.c.temp + '|' + ci.c.code : '') + '|' + (ci.d ? ci.d.max + '|' + ci.d.min : '') + '|' + ci.pl.name;
+    return (ci.cmf ? ci.cmf.note + '|' : '') + (ci.c ? ci.c.temp + '|' + ci.c.code : '') + '|' + (ci.d ? ci.d.max + '|' + ci.d.min : '') + '|' + ci.pl.name;
   }
   function card(ci, current) {
     return '<div class="lcard' + (ci.sky.brightness > 0.62 ? ' bright' : '') + (current ? ' cur' : '') + '" data-place="' + U.esc(ci.p.id) + '"' +

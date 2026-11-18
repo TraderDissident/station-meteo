@@ -260,6 +260,20 @@ header.top {
 .tiles { display: grid; grid-auto-flow: row dense; grid-template-columns: repeat(auto-fill, minmax(10.6rem, 1fr)); grid-gap: .7rem; }
 .tile { background: rgba(255, 255, 255, .07); border-radius: .95rem; padding: .8rem .85rem; min-height: 8.2rem; }
 .tile.wide, .tslot.wide { grid-column: span 2; }
+/* Bien-être : couleurs par niveau, partagées par le bloc des détails et la pastille du mode liste. */
+.cmf-ideal, .cmf-pleasant { background: #5DCAA5; color: #04342C; }
+.cmf-fair { background: #ffd23f; color: #412402; }
+.cmf-poor { background: #EF9F27; color: #412402; }
+.cmf-tough, .cmf-extreme { background: #E24B4A; color: #fff; }
+.cmfh { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
+.cmfh .big small { margin-left: .15rem; }
+.cmfl { margin-left: .7rem; padding: .15rem .6rem; border-radius: .8rem; font-size: .8rem; font-weight: 600; }
+.cmfbar { position: relative; height: .4rem; border-radius: .2rem; background: rgba(255, 255, 255, .12); margin: .55rem 0 .1rem; overflow: hidden; }
+.cmfbar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: .2rem; }
+.cmfd span { display: inline-block; margin-right: .8rem; white-space: nowrap; }
+.cmfd b { font-weight: 600; color: #fff; }
+.cmfcap { color: #ffd479; }
+.lcmf { display: inline-block; margin-right: .4rem; padding: .05rem .4rem; border-radius: .6rem; font-size: .78rem; font-weight: 700; text-shadow: none; vertical-align: .05rem; }
 .tile .big { font-size: 2.2rem; font-weight: 300; line-height: 1.1; }
 .tile .big small { font-size: .9rem; font-weight: 400; color: var(--muted); }
 .tile .sub { margin: .35rem 0 0; font-size: .8rem; color: var(--muted); line-height: 1.35; }

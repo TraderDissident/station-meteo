@@ -361,9 +361,31 @@
   // Décalage du tremblement d'un bloc à l'autre, celui du Socle (pastille-retirer).
   var DELAYS = [0, -0.1, -0.2, -0.05, -0.15];
 
+  /* Indice de bien-être (voir comfort.js) : la note sur 10, son libellé, une jauge, puis d'où elle vient (la base
+     thermique et ce que chaque gêne retire), et le plafond s'il en a un. */
+  function comfortTile(w, now) {
+    var tt = t(), r = SM.comfort.now(w, now);
+    if (!r) return null;
+    var lv = SM.comfort.level(r.note), parts = [];
+    SM.comfort.ORDRE.forEach(function (k) {
+      var e = Math.round(r.eff[k]);
+      if (e >= 1) parts.push('<span>' + tt.comfortParts[k] + ' <b>−' + e + ' %</b></span>');
+    });
+    var body = '<div class="cmfh"><span class="big">' + R.comfortNum(r.note) + '<small>/10</small></span><span class="cmfl cmf-' + lv + '">' + tt.comfortLevels[lv] + '</span></div>' +
+      '<div class="cmfbar"><i class="cmf-' + lv + '" style="width:' + (r.note * 10).toFixed(0) + '%"></i></div>' +
+      '<p class="sub cmfd"><span>' + tt.comfortBase + ' <b>' + r.n.thermique + '</b> · ' + tt.comfortFeels + ' ' + I.temp(r.fl) + '</span>' +
+      (parts.length ? parts.join('') : '<span>' + tt.comfortNone + '</span>') + '</p>' +
+      (r.lim ? '<p class="sub cmfcap">' + tt.comfortCap + ' : ' + tt.comfortCaps[r.lim] + '</p>' : '');
+    return tile('comfort', 'smile', tt.comfort, body, 'wide');
+  }
+  // Note affichée : une décimale, sans « ,0 » quand elle tombe juste.
+  R.comfortNum = function (x) { return I.num(x, Math.round(x * 10) % 10 ? 1 : 0); };
+
   function details(place, w, now) {
     var tt = t(), c = w.current, hi = hourIndex(w, now), h = w.hourly[hi] || {}, di = dayIndex(w, now), d = w.daily[di] || {}, dn = w.daily[di + 1];
     var out = [];
+    var cmf = comfortTile(w, now);
+    if (cmf) out.push(cmf);
     out.push(tile('wind', 'wind', tt.wind, compass(c.dir, c.wind) + '<p class="sub">' + I.dir(c.dir) + ' · ' + tt.gusts + ' ' + Math.round(c.gust) + ' km/h</p>', 'wide-sm'));
     // Pression et tendance sur 3 h.
     var p3 = w.hourly[Math.max(0, hi - 3)], trend = U.has(p3 && p3.pres) && U.has(c.pres) ? c.pres - p3.pres : 0;
@@ -410,7 +432,8 @@
     }
     // Ordre et blocs retirés choisis en mode édition (réglages tiles et hiddenTiles).
     var st = SM.app.settings, order = (st.tiles || []).slice(), hidden = st.hiddenTiles || [], editing = !!R.editing;
-    out.forEach(function (x) { if (order.indexOf(x.id) < 0) order.push(x.id); });
+    // Un bloc nouveau rejoint l'ordre choisi : le bien-être en tête, les autres à la fin.
+    out.forEach(function (x) { if (order.indexOf(x.id) < 0) { if (x.id === 'comfort') order.unshift(x.id); else order.push(x.id); } });
     var byId = {};
     out.forEach(function (x) { byId[x.id] = x; });
     var shown = order.filter(function (id) { return byId[id] && hidden.indexOf(id) < 0; });

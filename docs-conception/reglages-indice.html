@@ -1,0 +1,438 @@
+<title>Réglages de l'indice de bien-être</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Mise en page : à gauche la situation météo et les réglages (curseurs), à droite la note qui reste visible ; en bas les 20 cas types recalculés en direct. */
+:root {
+  --bg: #f2f4f9; --surface: #ffffff; --fg: #18202f; --muted: #5a667b; --line: #d8deea; --track: #e6eaf2;
+  --accent: #2c6bd8; --accent-fg: #ffffff;
+  --n-ideal: #178f61; --n-agreable: #5b9d1f; --n-correct: #b98a00; --n-mediocre: #d06f14; --n-penible: #cf4433; --n-extreme: #8b3fae;
+  --font: -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1220; --surface: #151d2f; --fg: #dfe6f5; --muted: #93a0b9; --line: #26314a; --track: #222c43;
+    --accent: #6ea6ff; --accent-fg: #0c1220;
+    --n-ideal: #37c48d; --n-agreable: #8fcb4b; --n-correct: #e2b93a; --n-mediocre: #f0934a; --n-penible: #f0705f; --n-extreme: #c07be0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1220; --surface: #151d2f; --fg: #dfe6f5; --muted: #93a0b9; --line: #26314a; --track: #222c43;
+  --accent: #6ea6ff; --accent-fg: #0c1220;
+  --n-ideal: #37c48d; --n-agreable: #8fcb4b; --n-correct: #e2b93a; --n-mediocre: #f0934a; --n-penible: #f0705f; --n-extreme: #c07be0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; }
+body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+h1 { font-size: 1.5rem; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.05rem; margin: 0; font-weight: 700; }
+.lead { color: var(--muted); margin: 4px 0 0; max-width: 65ch; }
+.cols { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.left { flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.right { flex: 1 1 320px; min-width: 0; position: -webkit-sticky; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.panel-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.hint { color: var(--muted); font-size: 0.87rem; margin: 0; }
+.sub { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 700; margin: 6px 0 0; }
+.sliders { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.row label { flex: 1 1 150px; min-width: 0; }
+.row output { flex: 0 0 auto; min-width: 5.5em; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.row input[type=range] { flex: 1 1 100%; width: 100%; margin: 0; accent-color: var(--accent); }
+.row select { flex: 0 1 auto; max-width: 100%; font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+select#cas { width: 100%; font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 7px 8px; }
+button { font: inherit; font-weight: 600; color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+button:focus-visible, select:focus-visible, input:focus-visible, tr[tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 5px 12px; font-weight: 500; }
+.seg button[aria-pressed=true] { background: var(--accent); color: var(--accent-fg); }
+/* Note */
+.score { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.score .n { font-size: 4rem; line-height: 1; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.score .sur { color: var(--muted); font-size: 1.1rem; }
+.chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px 3px 9px; font-weight: 600; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c, var(--muted)); flex: none; }
+.gauge { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+.gauge i { display: block; height: 100%; background: var(--c, var(--accent)); border-radius: 4px; }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 18px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.facts b { color: var(--fg); font-weight: 600; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 700; padding: 4px 8px 6px 0; border-bottom: 1px solid var(--line); }
+td { padding: 6px 8px 6px 0; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; padding-right: 0; white-space: nowrap; }
+td.num + td.num, th.num + th.num { padding-left: 12px; }
+.mini { display: inline-block; width: 54px; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; vertical-align: middle; margin-left: 8px; }
+.mini i { display: block; height: 100%; background: var(--accent); }
+.eff { color: var(--muted); }
+.eff.on { color: var(--fg); font-weight: 600; }
+.plafond { border-top: 1px solid var(--line); padding-top: 12px; margin: 0; }
+.tablewrap { overflow-x: auto; }
+#cases tbody tr { cursor: pointer; }
+#cases tbody tr:hover td { background: var(--track); }
+#cases td.note { font-weight: 700; }
+.delta { color: var(--muted); font-weight: 500; }
+textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 0.8rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.two { display: flex; flex-wrap: wrap; gap: 6px 28px; }
+.two > .sliders { flex: 1 1 260px; min-width: 0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Réglages de l'indice de bien-être</h1>
+    <p class="lead">Bouge les curseurs. La note se recalcule tout de suite. Les 20 cas types en bas montrent l'effet de tes réglages. Page d'essai : rien n'est branché sur l'app.</p>
+  </header>
+
+  <div class="cols">
+    <div class="left">
+      <section class="panel" aria-labelledby="t-sit">
+        <div class="panel-head">
+          <h2 id="t-sit">Situation météo</h2>
+          <div class="seg" role="group" aria-label="Jour ou nuit">
+            <button type="button" id="btn-jour" aria-pressed="true">Jour</button>
+            <button type="button" id="btn-nuit" aria-pressed="false">Nuit</button>
+          </div>
+        </div>
+        <select id="cas" aria-label="Charger un cas type"></select>
+        <div class="sliders" id="sit"></div>
+        <div class="row"><label for="s-type">Type de précipitation</label>
+          <select id="s-type">
+            <option value="auto">Pluie ou bruine (selon l'intensité)</option>
+            <option value="violente">Averse violente</option>
+            <option value="neige1">Neige faible</option>
+            <option value="neige2">Neige modérée</option>
+            <option value="neige3">Neige forte</option>
+            <option value="verglas">Pluie verglaçante</option>
+            <option value="orage">Orage</option>
+            <option value="grele">Orage avec grêle</option>
+          </select></div>
+        <div class="row"><label for="s-vis">Visibilité</label>
+          <select id="s-vis">
+            <option value="20000">Bonne</option>
+            <option value="3000">Brume (1 à 4 km)</option>
+            <option value="500">Brouillard (moins de 1 km)</option>
+            <option value="150">Brouillard dense (moins de 200 m)</option>
+          </select></div>
+      </section>
+
+      <section class="panel" aria-labelledby="t-reg">
+        <div class="panel-head">
+          <h2 id="t-reg">Réglages de la formule</h2>
+          <button type="button" id="reset">Revenir aux valeurs proposées</button>
+        </div>
+        <p class="sub">Confort thermique (base de la note)</p>
+        <div class="sliders" id="reg-therm"></div>
+        <p class="sub">Poids de chaque gêne : retrait maximal</p>
+        <p class="hint">Une gêne à son pire retire ce pourcentage de la base. À 0 %, elle ne compte plus.</p>
+        <div class="sliders" id="reg-poids"></div>
+        <p class="sub">Plafonds : note maximale en cas de danger</p>
+        <p class="hint">À 10, le plafond est désactivé.</p>
+        <div class="two">
+          <div class="sliders" id="reg-caps1"></div>
+          <div class="sliders" id="reg-caps2"></div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="right panel" aria-live="polite" aria-labelledby="t-note">
+      <h2 id="t-note">Note de bien-être</h2>
+      <div class="score"><span class="n" id="note">–</span><span class="sur">sur 10</span><span class="chip"><span class="dot" id="dot"></span><span id="lib"></span></span></div>
+      <div class="gauge"><i id="gauge"></i></div>
+      <div class="facts"><span>Ressenti <b id="f-fl"></b></span><span>Point de rosée <b id="f-td"></b></span></div>
+      <table id="detail">
+        <thead><tr><th>Critère</th><th class="num">Note</th><th class="num">Effet</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="plafond" id="plafond"></p>
+    </aside>
+  </div>
+
+  <section class="panel" aria-labelledby="t-cas">
+    <div class="panel-head">
+      <h2 id="t-cas">Les 20 cas types avec tes réglages</h2>
+    </div>
+    <p class="hint">Touche une ligne pour charger le cas dans les curseurs. « Proposé » est la note avec les valeurs de départ.</p>
+    <div class="tablewrap">
+      <table id="cases">
+        <thead><tr><th>N°</th><th>Situation</th><th class="num">Proposé</th><th class="num">Tes réglages</th><th>Libellé</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="t-exp">
+    <div class="panel-head">
+      <h2 id="t-exp">Tes réglages, à me renvoyer</h2>
+      <div class="actions"><span class="hint" id="copie-etat"></span><button type="button" class="primary" id="copier">Copier</button></div>
+    </div>
+    <textarea id="export" readonly aria-label="Réglages au format texte"></textarea>
+  </section>
+</div>
+
+<script>
+(function () {
+  var INF = Infinity;
+  function $(id) { return document.getElementById(id); }
+  function fr(x, d) {
+    var s = Number(x).toFixed(d === undefined ? 1 : d);
+    if (s.indexOf('.') >= 0) s = s.replace(/\.?0+$/, '');
+    if (s === '-0') s = '0';
+    return s.replace('.', ',').replace('-', '−');
+  }
+  function band(x, t) { for (var i = 0; i < t.length; i++) { if (x < t[i][0]) return t[i][1]; } return t[t.length - 1][1]; }
+
+  // ---------- barèmes fixes (document de conception, § 2)
+  var MOIT = [[-5, 9], [13, 10], [16, 9], [18, 7], [21, 5], [24, 3], [26, 1], [INF, 0]];
+  var PLUIE = [[0.1, 10], [0.5, 7], [1, 6], [2.5, 5], [5, 3], [10, 2], [20, 1], [INF, 0]];
+  var POP = [[30, 10], [70, 9], [INF, 8]];
+  var CIEL = [[20, 10], [50, 9], [80, 7], [95, 5], [INF, 4]];
+  var VENT_T = [[6, 10], [12, 10], [20, 9], [29, 8], [39, 6], [50, 4], [62, 2], [75, 1], [INF, 0]];
+  var VENT_C = [[6, 8], [12, 10], [20, 10], [29, 9], [39, 7], [50, 5], [62, 3], [75, 1], [INF, 0]];
+  var VENT_F = [[6, 10], [12, 9], [20, 8], [29, 6], [39, 4], [50, 3], [62, 1], [75, 0], [INF, 0]];
+  var RAF = [[40, 10], [50, 7], [60, 5], [75, 3], [90, 1], [INF, 0]];
+  var UV = [[6, 10], [8, 7], [11, 5], [INF, 3]];
+  var AIR = [[40, 10], [60, 7], [80, 5], [100, 2], [INF, 0]];
+
+  // ---------- réglages
+  var DEF = { lo: 22, hi: 27, pc: 5, ph: 2,
+    pluie: 60, vent: 40, air: 40, ciel: 20, moiteur: 10, uv: 10,
+    c_grele: 2, c_orage: 3, c_verglas: 3, c_violente: 3, c_forte: 4, c_neige: 4,
+    c_tempete: 1, c_ventfort: 3, c_coupvent: 5, canSeuil: 40, c_canicule: 3, c_extreme: 1, c_airx: 3, c_airtm: 5, c_brouillard: 6 };
+  var CFG = {}, k;
+  for (k in DEF) CFG[k] = DEF[k];
+
+  var REG = {
+    'reg-therm': [
+      ['lo', 'Zone idéale : de', 10, 26, 1, ' °C'],
+      ['hi', 'Zone idéale : à', 20, 34, 1, ' °C'],
+      ['pc', 'Côté froid : 1 point perdu tous les', 2, 10, 0.5, ' °C'],
+      ['ph', 'Côté chaud : 1 point perdu tous les', 1, 6, 0.5, ' °C']],
+    'reg-poids': [
+      ['pluie', 'Pluie et neige', 0, 100, 5, ' %'], ['vent', 'Vent', 0, 100, 5, ' %'], ['air', 'Qualité de l’air', 0, 100, 5, ' %'],
+      ['ciel', 'Ciel (nuages, brouillard)', 0, 100, 5, ' %'], ['moiteur', 'Moiteur', 0, 100, 5, ' %'], ['uv', 'UV', 0, 100, 5, ' %']],
+    'reg-caps1': [
+      ['c_orage', 'Orage', 0, 10, 1, ''], ['c_grele', 'Orage avec grêle', 0, 10, 1, ''], ['c_verglas', 'Pluie verglaçante', 0, 10, 1, ''],
+      ['c_violente', 'Pluie violente (20 mm/h et plus)', 0, 10, 1, ''], ['c_forte', 'Forte pluie (10 à 20 mm/h)', 0, 10, 1, ''],
+      ['c_neige', 'Forte neige', 0, 10, 1, ''], ['c_brouillard', 'Brouillard dense', 0, 10, 1, '']],
+    'reg-caps2': [
+      ['c_tempete', 'Tempête (rafales 90 km/h et plus)', 0, 10, 1, ''], ['c_ventfort', 'Coup de vent fort (rafales 75 à 89)', 0, 10, 1, ''],
+      ['c_coupvent', 'Coup de vent (rafales 60 à 74)', 0, 10, 1, ''],
+      ['canSeuil', 'Canicule : à partir de', 35, 45, 1, ' °C d’air'], ['c_canicule', 'Canicule', 0, 10, 1, ''],
+      ['c_extreme', 'Chaleur extrême (5 °C au-dessus)', 0, 10, 1, ''],
+      ['c_airx', 'Air extrêmement mauvais (100 et plus)', 0, 10, 1, ''], ['c_airtm', 'Air très mauvais (80 à 100)', 0, 10, 1, '']]
+  };
+
+  // ---------- situation
+  var SIT = [
+    ['T', 'Température de l’air', -40, 50, 1, ' °C'], ['rh', 'Humidité', 5, 100, 1, ' %'],
+    ['v', 'Vent moyen', 0, 100, 1, ' km/h'], ['g', 'Rafales', 0, 130, 1, ' km/h'],
+    ['mm', 'Pluie ou neige', 0, 30, 0.1, ' mm/h'], ['pop', 'Probabilité de pluie (s’il ne pleut pas)', 0, 100, 5, ' %'],
+    ['nuages', 'Nuages', 0, 100, 5, ' %'], ['uv', 'Indice UV', 0, 14, 1, ''], ['aqi', 'Indice européen de qualité de l’air', 0, 150, 1, '']
+  ];
+  function cas(n, nom, T, rh, v, g, nuages, uv, aqi, extra) {
+    var c = { n: n, nom: nom, T: T, rh: rh, v: v, g: g, nuages: nuages, uv: uv, aqi: aqi, mm: 0, pop: 0, type: 'auto', vis: 20000, jour: 1 };
+    for (var e in (extra || {})) c[e] = extra[e];
+    return c;
+  }
+  var CAS = [
+    cas(1, '24 °C, soleil, vent léger', 24, 50, 8, 15, 10, 5, 18),
+    cas(2, '35 °C à 20 % d’humidité, soleil', 35, 20, 10, 20, 5, 9, 35),
+    cas(3, '35 °C à 80 % d’humidité', 35, 80, 8, 15, 40, 9, 35),
+    cas(4, '28 °C à 85 % (Pattaya, Singapour), nuageux', 28, 85, 8, 15, 60, 8, 30),
+    cas(5, '30 °C sec et venté (Dubai)', 30, 15, 30, 45, 0, 7, 45),
+    cas(6, '42 °C très sec, vent chaud (Ahvaz en été)', 42, 10, 25, 40, 0, 10, 70),
+    cas(7, '15 °C, couvert, bruine (Dublin)', 15, 85, 15, 28, 100, 1, 15, { mm: 0.3 }),
+    cas(8, '5 °C, pluie et vent', 5, 90, 30, 50, 100, 1, 15, { mm: 3 }),
+    cas(9, '−3 °C, ciel clair, sans vent (Anchorage)', -3, 70, 3, 6, 5, 1, 12),
+    cas(10, '−28 °C, ciel clair (Tiksi)', -28, 75, 8, 12, 5, 0, 10),
+    cas(11, '22 °C, orage', 22, 75, 20, 55, 100, 2, 25, { mm: 6, type: 'orage' }),
+    cas(12, '26 °C, grand soleil, UV 11 (Tahiti)', 26, 55, 10, 18, 5, 11, 25),
+    cas(13, '24 °C, air très pollué (indice 115)', 24, 50, 5, 10, 20, 5, 115),
+    cas(14, 'Nuit claire à 18 °C', 18, 70, 5, 10, 5, 0, 20, { jour: 0 }),
+    cas(15, '12 °C, soleil, vent faible (Paris au printemps)', 12, 60, 10, 18, 15, 4, 30),
+    cas(16, '0 °C, neige faible, couvert', 0, 95, 10, 20, 100, 0, 20, { mm: 0.5, type: 'neige1' }),
+    cas(17, '2 °C, brouillard épais, calme', 2, 100, 3, 6, 100, 0, 45, { vis: 150 }),
+    cas(18, '18 °C, tempête sèche (vent 55, rafales 85)', 18, 65, 55, 85, 70, 3, 15),
+    cas(19, '30 °C, grosse averse tropicale (15 mm/h)', 30, 85, 15, 35, 100, 3, 25, { mm: 15 }),
+    cas(20, '24 °C, couvert, calme, sec', 24, 60, 8, 15, 100, 3, 20)
+  ];
+  var S = {};
+  function charger(c) { for (var e in c) { if (e !== 'n' && e !== 'nom') S[e] = c[e]; } }
+  charger(CAS[0]);
+
+  // ---------- calcul (identique au script du document)
+  function ressenti(T, rh, v) {
+    var w = v / 3.6 * 0.75, e = rh / 100 * 6.105 * Math.exp(17.27 * T / (237.7 + T));
+    return T + 0.348 * e - 0.70 * w - 4.25;
+  }
+  function rosee(T, rh) {
+    var g = Math.log(rh / 100) + 17.625 * T / (243.04 + T);
+    return 243.04 * g / (17.625 - g);
+  }
+  function therm(fl, c) {
+    var n = 10;
+    if (fl < c.lo) n = 10 - Math.ceil((c.lo - fl) / c.pc);
+    else if (fl >= c.hi) n = 10 - (Math.floor((fl - c.hi) / c.ph) + 1);
+    return Math.max(0, n);
+  }
+  var NEIGE = { neige1: 6, neige2: 4, neige3: 2 };
+  var ORDRE = ['pluie', 'vent', 'air', 'ciel', 'moiteur', 'uv'];
+  var NOMS = { thermique: 'Confort thermique', pluie: 'Pluie et neige', vent: 'Vent', air: 'Qualité de l’air', ciel: 'Ciel', moiteur: 'Moiteur', uv: 'UV' };
+
+  function calc(s, c) {
+    var T = s.T, v = s.v, g = Math.max(s.g, s.v), fl = ressenti(T, s.rh, v), td = rosee(T, s.rh);
+    var n = {}, caps = [], p;
+    n.thermique = therm(fl, c);
+    n.moiteur = band(td, MOIT);
+    if (s.type === 'grele') { p = 0; caps.push([c.c_grele, 'orage avec grêle']); }
+    else if (s.type === 'orage') { p = Math.min(band(s.mm, PLUIE), 2); caps.push([c.c_orage, 'orage']); }
+    else if (s.type === 'verglas') { p = 1; caps.push([c.c_verglas, 'pluie verglaçante']); }
+    else if (NEIGE[s.type]) { p = NEIGE[s.type]; }
+    else if (s.mm >= 0.1 || s.type === 'violente') { p = band(s.mm, PLUIE); }
+    else { p = band(s.pop, POP); }
+    if (s.type === 'neige3') caps.push([c.c_neige, 'forte neige']);
+    if (s.mm >= 20 || s.type === 'violente') caps.push([c.c_violente, 'pluie violente']);
+    else if (s.mm >= 10) caps.push([c.c_forte, 'forte pluie']);
+    n.pluie = p;
+    var ci;
+    if (s.vis < 1000) ci = 3;
+    else {
+      ci = band(s.nuages, CIEL);
+      if (s.vis < 4000) ci = Math.min(ci, 6);
+      if (s.jour && fl >= 29) ci = Math.max(ci, 8);
+    }
+    if (!s.jour) ci = 10 - Math.floor((10 - ci) / 2);
+    if (s.vis < 200) caps.push([c.c_brouillard, 'brouillard dense']);
+    n.ciel = ci;
+    var col = T < 15 ? VENT_F : (T >= 27 && T < 37 ? VENT_C : VENT_T);
+    n.vent = Math.min(band(v, col), band(g, RAF));
+    if (g >= 90 || v >= 75) caps.push([c.c_tempete, 'tempête']);
+    else if (g >= 75 || v >= 62) caps.push([c.c_ventfort, 'coup de vent fort']);
+    else if (g >= 60 || v >= 50) caps.push([c.c_coupvent, 'coup de vent']);
+    if (T >= c.canSeuil + 5) caps.push([c.c_extreme, 'chaleur extrême']);
+    else if (T >= c.canSeuil) caps.push([c.c_canicule, 'canicule']);
+    n.uv = s.jour ? band(s.uv, UV) : 10;
+    n.air = band(s.aqi, AIR);
+    if (s.aqi >= 100) caps.push([c.c_airx, 'air extrêmement mauvais']);
+    else if (s.aqi >= 80) caps.push([c.c_airtm, 'air très mauvais']);
+    var brut = n.thermique, eff = {}, i, key;
+    for (i = 0; i < ORDRE.length; i++) {
+      key = ORDRE[i];
+      eff[key] = c[key] * (10 - n[key]) / 10; // en %
+      brut *= 1 - eff[key] / 100;
+    }
+    brut = Math.round(brut * 10 + 1e-9) / 10;
+    var note = brut, lim = '';
+    for (i = 0; i < caps.length; i++) { if (caps[i][0] < note) { note = caps[i][0]; lim = caps[i][1]; } }
+    return { fl: fl, td: td, n: n, eff: eff, brut: brut, note: note, lim: lim };
+  }
+  function libelle(x) {
+    return band(x, [[1, ['Extrême', 'extreme']], [3, ['Pénible', 'penible']], [5, ['Médiocre', 'mediocre']], [7, ['Correct', 'correct']], [9, ['Agréable', 'agreable']], [INF, ['Idéal', 'ideal']]]);
+  }
+
+  // ---------- interface
+  function slider(host, def, obj, prefix) {
+    var id = prefix + def[0], row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = '<label for="' + id + '">' + def[1] + '</label><output id="o-' + id + '" for="' + id + '"></output>' +
+      '<input type="range" id="' + id + '" min="' + def[2] + '" max="' + def[3] + '" step="' + def[4] + '">';
+    host.appendChild(row);
+    var inp = row.querySelector('input');
+    inp.addEventListener('input', function () {
+      obj[def[0]] = parseFloat(inp.value);
+      if (obj === CFG && CFG.hi < CFG.lo) { if (def[0] === 'lo') CFG.hi = CFG.lo; else CFG.lo = CFG.hi; sync(); }
+      if (obj === S) $('cas').value = '';
+      if (obj === S && def[0] === 'v' && S.g < S.v) { S.g = S.v; sync(); }
+      rendre();
+    });
+    return { def: def, obj: obj, inp: inp, out: row.querySelector('output') };
+  }
+  var SL = [], i, h, j;
+  for (i = 0; i < SIT.length; i++) SL.push(slider($('sit'), SIT[i], S, 's-'));
+  for (h in REG) for (j = 0; j < REG[h].length; j++) SL.push(slider($(h), REG[h][j], CFG, 'r-'));
+
+  function sync() {
+    for (var i = 0; i < SL.length; i++) SL[i].inp.value = SL[i].obj[SL[i].def[0]];
+    $('s-type').value = S.type; $('s-vis').value = String(S.vis);
+    $('btn-jour').setAttribute('aria-pressed', S.jour ? 'true' : 'false');
+    $('btn-nuit').setAttribute('aria-pressed', S.jour ? 'false' : 'true');
+  }
+  var casSel = $('cas'), o = document.createElement('option');
+  o.value = ''; o.textContent = 'Situation libre (curseurs)'; casSel.appendChild(o);
+  for (i = 0; i < CAS.length; i++) { o = document.createElement('option'); o.value = String(i); o.textContent = CAS[i].n + '. ' + CAS[i].nom; casSel.appendChild(o); }
+  casSel.value = '0';
+  function choisir(i) { charger(CAS[i]); casSel.value = String(i); sync(); rendre(); }
+  casSel.addEventListener('change', function () { if (casSel.value !== '') choisir(parseInt(casSel.value, 10)); });
+  $('s-type').addEventListener('change', function () { S.type = $('s-type').value; casSel.value = ''; rendre(); });
+  $('s-vis').addEventListener('change', function () { S.vis = parseInt($('s-vis').value, 10); casSel.value = ''; rendre(); });
+  $('btn-jour').addEventListener('click', function () { S.jour = 1; casSel.value = ''; sync(); rendre(); });
+  $('btn-nuit').addEventListener('click', function () { S.jour = 0; casSel.value = ''; sync(); rendre(); });
+  $('reset').addEventListener('click', function () { for (var k in DEF) CFG[k] = DEF[k]; sync(); rendre(); });
+
+  var DEFNOTES = [];
+  for (i = 0; i < CAS.length; i++) DEFNOTES.push(calc(CAS[i], DEF).note);
+
+  function rendre() {
+    var i, d, r = calc(S, CFG), lb = libelle(r.note), coul = 'var(--n-' + lb[1] + ')';
+    for (i = 0; i < SL.length; i++) {
+      d = SL[i].def;
+      var val = SL[i].obj[d[0]], txt = fr(val, d[4] < 1 ? 1 : 0) + d[5];
+      if (d[0].indexOf('c_') === 0) txt = val >= 10 ? 'désactivé' : fr(val, 0) + ' au plus';
+      SL[i].out.textContent = txt;
+    }
+    $('note').textContent = fr(r.note); $('lib').textContent = lb[0];
+    $('dot').style.setProperty('--c', coul);
+    $('gauge').style.width = (r.note * 10) + '%'; $('gauge').style.setProperty('--c', coul);
+    $('f-fl').textContent = fr(r.fl, 0) + ' °C'; $('f-td').textContent = fr(r.td, 0) + ' °C';
+    var html = '<tr><td>' + NOMS.thermique + '</td><td class="num">' + r.n.thermique + '<span class="mini"><i style="width:' + r.n.thermique * 10 + '%"></i></span></td><td class="num eff on">base ' + r.n.thermique + '</td></tr>';
+    for (i = 0; i < ORDRE.length; i++) {
+      var key = ORDRE[i], e = Math.round(r.eff[key]);
+      html += '<tr><td>' + NOMS[key] + '</td><td class="num">' + r.n[key] + '<span class="mini"><i style="width:' + r.n[key] * 10 + '%"></i></span></td>' +
+        '<td class="num eff' + (e > 0 ? ' on' : '') + '">' + (e > 0 ? '−' + e + ' %' : 'aucun') + '</td></tr>';
+    }
+    $('detail').querySelector('tbody').innerHTML = html;
+    $('plafond').textContent = r.lim ? 'Calcul : ' + fr(r.brut) + '. Plafond « ' + r.lim + ' » : note ramenée à ' + fr(r.note) + '.' : 'Aucun plafond ne s’applique.';
+    html = '';
+    for (i = 0; i < CAS.length; i++) {
+      var rc = calc(CAS[i], CFG), l = libelle(rc.note), dl = rc.note - DEFNOTES[i];
+      html += '<tr tabindex="0" data-i="' + i + '"><td>' + CAS[i].n + '</td><td>' + CAS[i].nom + '</td><td class="num">' + fr(DEFNOTES[i]) + '</td>' +
+        '<td class="num note">' + fr(rc.note) + (Math.abs(dl) >= 0.05 ? ' <span class="delta">(' + (dl > 0 ? '+' : '') + fr(dl) + ')</span>' : '') + '</td>' +
+        '<td><span class="chip"><span class="dot" style="--c:var(--n-' + l[1] + ')"></span>' + l[0] + '</span></td></tr>';
+    }
+    $('cases').querySelector('tbody').innerHTML = html;
+    var lignes = ['Réglages de l’indice de bien-être', 'Zone idéale : ' + fr(CFG.lo, 0) + ' à ' + fr(CFG.hi, 0) + ' °C ressentis',
+      'Côté froid : 1 point tous les ' + fr(CFG.pc) + ' °C ; côté chaud : 1 point tous les ' + fr(CFG.ph) + ' °C',
+      'Retraits : pluie ' + CFG.pluie + ' %, vent ' + CFG.vent + ' %, air ' + CFG.air + ' %, ciel ' + CFG.ciel + ' %, moiteur ' + CFG.moiteur + ' %, UV ' + CFG.uv + ' %',
+      'Plafonds : orage ' + CFG.c_orage + ', grêle ' + CFG.c_grele + ', verglas ' + CFG.c_verglas + ', pluie violente ' + CFG.c_violente + ', forte pluie ' + CFG.c_forte + ', forte neige ' + CFG.c_neige + ', brouillard dense ' + CFG.c_brouillard,
+      'Plafonds vent : tempête ' + CFG.c_tempete + ', coup de vent fort ' + CFG.c_ventfort + ', coup de vent ' + CFG.c_coupvent,
+      'Canicule à partir de ' + CFG.canSeuil + ' °C : ' + CFG.c_canicule + ' ; chaleur extrême : ' + CFG.c_extreme,
+      'Plafonds air : extrêmement mauvais ' + CFG.c_airx + ', très mauvais ' + CFG.c_airtm];
+    var modifs = [];
+    for (var k in DEF) if (CFG[k] !== DEF[k]) modifs.push(k + ' ' + DEF[k] + ' → ' + CFG[k]);
+    lignes.push(modifs.length ? 'Modifié par rapport à la proposition : ' + modifs.join(', ') : 'Aucun changement par rapport à la proposition.');
+    $('export').value = lignes.join('\n');
+  }
+  function surLigne(ev) {
+    var tr = ev.target; while (tr && tr.tagName !== 'TR') tr = tr.parentNode;
+    if (!tr || !tr.getAttribute('data-i')) return;
+    if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return;
+    ev.preventDefault(); choisir(parseInt(tr.getAttribute('data-i'), 10)); window.scrollTo(0, 0);
+  }
+  $('cases').addEventListener('click', surLigne);
+  $('cases').addEventListener('keydown', surLigne);
+  $('copier').addEventListener('click', function () {
+    var ta = $('export'), etat = $('copie-etat');
+    function repli() { ta.focus(); ta.select(); etat.textContent = 'Texte sélectionné : copie-le à la main.'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ta.value).then(function () { etat.textContent = 'Copié.'; }, repli);
+    } else repli();
+  });
+  sync(); rendre();
+})();
+</script>
