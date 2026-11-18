@@ -47,6 +47,8 @@
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
       field(tt.language, seg('lang', [['en', 'English'], ['fr', 'Français'], ['auto', tt.auto]], s.lang)) +
+      field(tt.comfort, '<p class="about">' + U.esc(tt.calibrationHint) + '</p>' +
+        '<div class="btnrow"><button class="btn" data-open="calib">' + tt.calibration + '</button></div>') +
       field(tt.backup, '<p class="about">' + U.esc(tt.backupHint) + '</p>' +
         '<div class="btnrow"><button class="btn" data-bk="export">' + tt.exportData + '</button><button class="btn" data-bk="import">' + tt.importData + '</button></div>') +
       field(tt.about, '<p class="about">' + tt.version + ' ' + SM.VERSION + '<br>' + U.esc(tt.source) + '<br>' + U.esc(tt.mapCredit) + '</p>' +
@@ -74,7 +76,8 @@
         bindSettings(body);
         return;
       }
-      if (e.target.closest('[data-open="diag"]')) SM.app.open('diag');
+      var op = e.target.closest('[data-open]');
+      if (op) { SM.app.open(op.getAttribute('data-open')); return; }
       // Champ d'heure.
       var pop = U.$('.tppop', body), tb = e.target.closest('.tpbtn');
       if (tb) {
@@ -295,5 +298,5 @@
     });
   }
 
-  SM.settings = { open: bindSettings, openDiag: bindDiag };
+  SM.settings = { open: bindSettings, openDiag: bindDiag, copyText: copyText };
 })();

@@ -274,6 +274,25 @@ header.top {
 .cmfd span { display: inline-block; margin-right: .8rem; white-space: nowrap; }
 .cmfd b { font-weight: 600; color: #fff; }
 .cmfcap { color: #ffd479; }
+/* Calibration du ressenti : la note reste en haut pendant qu'on fait défiler les curseurs. */
+.cbres { position: -webkit-sticky; position: sticky; top: -.4rem; z-index: 2; display: -webkit-flex; display: flex; margin: 0 -1.3rem; padding: .6rem 1.3rem .7rem; background: rgb(16, 24, 44); border-bottom: 1px solid var(--line); }
+.cbres .tile { -webkit-flex: 1; flex: 1; min-width: 0; min-height: 0; }
+.cbres .tile + .tile { margin-left: .6rem; }
+.cbres .cwr { margin-top: .22rem; }
+.cbres .cwr span { width: 5.2rem; }
+.cwr em { width: 2.6rem; -webkit-flex: none; flex: none; text-align: right; font-style: normal; color: var(--muted); }
+.cbmode { margin-left: auto; font-size: .8rem; color: var(--muted); }
+.cbh { margin: 1.6rem 0 .2rem; font-size: 1rem; font-weight: 600; }
+.cbh + .about { margin-bottom: 0; }
+.field.cbf > label { margin: .8rem 0 0; }
+.field.cbf .vrange { margin: .3rem 0 0; }
+.field.cbf .vends b { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
+table.cbcases th { white-space: normal; color: inherit; }
+table.cbcases thead th { color: var(--muted); font-size: .75rem; }
+table.cbcases .n { text-align: right; white-space: nowrap; padding-left: .8rem; font-variant-numeric: tabular-nums; }
+table.cbcases tbody tr { cursor: pointer; border-top: 1px solid var(--line); }
+table.cbcases tbody tr.on { background: rgba(255, 255, 255, .08); }
+table.cbcases .lcmf { margin-right: 0; }
 .cwr { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; font-size: .8rem; margin-top: .3rem; }
 .cwr span { width: 5.6rem; -webkit-flex: none; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cwr b { width: 1.4rem; -webkit-flex: none; flex: none; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }

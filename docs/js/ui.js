@@ -382,12 +382,12 @@
     });
     var body = '<div class="cmfh"><span class="big">' + R.comfortNum(r.note) + '<small>/10</small></span><span class="cmfl cmf-' + lv + '">' + tt.comfortLevels[lv] + '</span></div>' +
       '<div class="cmfbar"><i class="cmf-' + lv + '" style="width:' + (r.note * 10).toFixed(0) + '%"></i></div>' +
-      '<p class="sub">' + tt.comfortBase + ' ' + r.n.thermique + ' · ' + tt.comfortFeels + ' ' + I.temp(r.fl) + '<br>' + (parts.length ? parts.join(' · ') : tt.comfortNone) + '</p>' +
+      '<p class="sub">' + tt.comfortBase + ' ' + R.comfortNum(r.n.thermique) + ' · ' + tt.comfortFeels + ' ' + I.temp(r.fl) + '<br>' + (parts.length ? parts.join(' · ') : tt.comfortNone) + '</p>' +
       (r.lim ? '<p class="sub cmfcap">' + tt.comfortCap + ' : ' + tt.comfortCaps[r.lim] + '</p>' : '');
     // Pourquoi cette note : chaque critère noté sur 10, avec sa jauge (vert bon, orange moyen, rouge mauvais).
     var rows = ['thermique', 'moiteur', 'pluie', 'ciel', 'vent', 'uv', 'air'].map(function (k) {
-      var v = r.n[k], c = v >= 7 ? 'good' : (v >= 4 ? 'mid' : 'bad');
-      return '<div class="cwr"><span>' + tt.comfortWhyParts[k] + '</span><i class="cwb"><i class="cw-' + c + '" style="width:' + v * 10 + '%"></i></i><b>' + v + '</b></div>';
+      var v = Math.round(r.n[k] * 10) / 10, c = v >= 7 ? 'good' : (v >= 4 ? 'mid' : 'bad');
+      return '<div class="cwr"><span>' + tt.comfortWhyParts[k] + '</span><i class="cwb"><i class="cw-' + c + '" style="width:' + v * 10 + '%"></i></i><b>' + R.comfortNum(v) + '</b></div>';
     }).join('');
     return [tile('comfort', 'smile', tt.comfort, body), tile('comfortWhy', 'gauge', tt.comfortWhy, rows)];
   }

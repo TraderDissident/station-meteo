@@ -1,7 +1,7 @@
 <title>Réglages de l'indice de bien-être</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-/* Mise en page : à gauche la situation météo et les réglages (curseurs), à droite la note qui reste visible ; en bas les 20 cas types recalculés en direct. */
+/* Mise en page : à gauche la situation météo et les réglages (curseurs), à droite la note qui reste visible ; en bas les cas types recalculés en direct, au soleil et à l'ombre. */
 :root {
   --bg: #f2f4f9; --surface: #ffffff; --fg: #18202f; --muted: #5a667b; --line: #d8deea; --track: #e6eaf2;
   --accent: #2c6bd8; --accent-fg: #ffffff;
@@ -81,12 +81,16 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .two { display: flex; flex-wrap: wrap; gap: 6px 28px; }
 .two > .sliders { flex: 1 1 260px; min-width: 0; }
+.segs { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg button:disabled { opacity: 0.4; cursor: default; }
+.mode { color: var(--muted); font-weight: 500; }
+.autre { margin: 0; color: var(--muted); }
 </style>
 
 <div class="wrap">
   <header>
     <h1>Réglages de l'indice de bien-être</h1>
-    <p class="lead">Bouge les curseurs. La note se recalcule tout de suite. Les 20 cas types en bas montrent l'effet de tes réglages. Page d'essai : rien n'est branché sur l'app.</p>
+    <p class="lead">Bouge les curseurs. La note se recalcule tout de suite, au soleil et à l'ombre. Les cas types en bas comparent tes réglages avec la note affichée aujourd'hui dans l'app. Page d'essai : rien n'est branché sur l'app.</p>
   </header>
 
   <div class="cols">
@@ -94,9 +98,15 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
       <section class="panel" aria-labelledby="t-sit">
         <div class="panel-head">
           <h2 id="t-sit">Situation météo</h2>
-          <div class="seg" role="group" aria-label="Jour ou nuit">
-            <button type="button" id="btn-jour" aria-pressed="true">Jour</button>
-            <button type="button" id="btn-nuit" aria-pressed="false">Nuit</button>
+          <div class="segs">
+            <div class="seg" role="group" aria-label="Jour ou nuit">
+              <button type="button" id="btn-jour" aria-pressed="true">Jour</button>
+              <button type="button" id="btn-nuit" aria-pressed="false">Nuit</button>
+            </div>
+            <div class="seg" role="group" aria-label="Au soleil ou à l'ombre">
+              <button type="button" id="btn-soleil" aria-pressed="true">Au soleil</button>
+              <button type="button" id="btn-ombre" aria-pressed="false">À l'ombre</button>
+            </div>
           </div>
         </div>
         <select id="cas" aria-label="Charger un cas type"></select>
@@ -104,6 +114,7 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
         <div class="row"><label for="s-type">Type de précipitation</label>
           <select id="s-type">
             <option value="auto">Pluie ou bruine (selon l'intensité)</option>
+            <option value="annonce">Pluie ou bruine annoncée, presque rien mesuré</option>
             <option value="violente">Averse violente</option>
             <option value="neige1">Neige faible</option>
             <option value="neige2">Neige modérée</option>
@@ -119,6 +130,7 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
             <option value="500">Brouillard (moins de 1 km)</option>
             <option value="150">Brouillard dense (moins de 200 m)</option>
           </select></div>
+        <p class="hint">La force du soleil est estimée d'après l'indice UV. Il ne réchauffe le ressenti qu'à partir d'un UV de 3,5 environ, et de 4 °C au plus.</p>
       </section>
 
       <section class="panel" aria-labelledby="t-reg">
@@ -127,23 +139,27 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
           <button type="button" id="reset">Revenir aux valeurs proposées</button>
         </div>
         <p class="sub">Confort thermique (base de la note)</p>
+        <p class="hint">La note thermique vaut 10 dans la zone idéale, puis baisse peu à peu. Par temps froid, l'humidité ne réchauffe plus le ressenti. L'air très chaud limite la note même quand il est sec.</p>
         <div class="sliders" id="reg-therm"></div>
         <p class="sub">Poids de chaque gêne : retrait maximal</p>
         <p class="hint">Une gêne à son pire retire ce pourcentage de la base. À 0 %, elle ne compte plus.</p>
         <div class="sliders" id="reg-poids"></div>
+        <p class="sub">Force de chaque gêne quand elle est forte</p>
+        <p class="hint">Une gêne forte limite aussi la note à elle seule : note maximale = 10 − force × (10 − note de la gêne). Exemple : avec une force de 80 %, un air noté 5 limite la note à 6. À 0 %, cette limite n'existe pas.</p>
+        <div class="sliders" id="reg-force"></div>
+        <p class="sub">Pluie annoncée et ombre</p>
+        <div class="sliders" id="reg-autres"></div>
         <p class="sub">Plafonds : note maximale en cas de danger</p>
         <p class="hint">À 10, le plafond est désactivé.</p>
-        <div class="two">
-          <div class="sliders" id="reg-caps1"></div>
-          <div class="sliders" id="reg-caps2"></div>
-        </div>
+        <div class="sliders" id="reg-caps"></div>
       </section>
     </div>
 
     <aside class="right panel" aria-live="polite" aria-labelledby="t-note">
-      <h2 id="t-note">Note de bien-être</h2>
+      <h2 id="t-note">Note de bien-être <span class="mode" id="mode"></span></h2>
       <div class="score"><span class="n" id="note">–</span><span class="sur">sur 10</span><span class="chip"><span class="dot" id="dot"></span><span id="lib"></span></span></div>
       <div class="gauge"><i id="gauge"></i></div>
+      <p class="autre" id="autre"></p>
       <div class="facts"><span>Ressenti <b id="f-fl"></b></span><span>Point de rosée <b id="f-td"></b></span></div>
       <table id="detail">
         <thead><tr><th>Critère</th><th class="num">Note</th><th class="num">Effet</th></tr></thead>
@@ -155,12 +171,12 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
 
   <section class="panel" aria-labelledby="t-cas">
     <div class="panel-head">
-      <h2 id="t-cas">Les 20 cas types avec tes réglages</h2>
+      <h2 id="t-cas">Les cas types avec tes réglages</h2>
     </div>
-    <p class="hint">Touche une ligne pour charger le cas dans les curseurs. « Proposé » est la note avec les valeurs de départ.</p>
+    <p class="hint">Touche une ligne pour charger le cas dans les curseurs. « Dans l'app » est la note calculée aujourd'hui par l'app (version 1.28.2). La nuit, il n'y a qu'une note.</p>
     <div class="tablewrap">
       <table id="cases">
-        <thead><tr><th>N°</th><th>Situation</th><th class="num">Proposé</th><th class="num">Tes réglages</th><th>Libellé</th></tr></thead>
+        <thead><tr><th>N°</th><th>Situation</th><th class="num">Dans l'app</th><th class="num">Au soleil</th><th class="num">À l'ombre</th><th>Libellé</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -176,18 +192,33 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
 </div>
 
 <script>
+/* Calcul : le même que celui du balayage (formule de l'app 1.28.2 et formule proposée). */
 (function () {
   var INF = Infinity;
-  function $(id) { return document.getElementById(id); }
-  function fr(x, d) {
-    var s = Number(x).toFixed(d === undefined ? 1 : d);
-    if (s.indexOf('.') >= 0) s = s.replace(/\.?0+$/, '');
-    if (s === '-0') s = '0';
-    return s.replace('.', ',').replace('-', '−');
-  }
   function band(x, t) { for (var i = 0; i < t.length; i++) { if (x < t[i][0]) return t[i][1]; } return t[t.length - 1][1]; }
+  function clamp(x, a, b) { return x < a ? a : (x > b ? b : x); }
+  function interp(x, p) {
+    if (x <= p[0][0]) return p[0][1];
+    for (var i = 1; i < p.length; i++) {
+      if (x <= p[i][0]) return p[i - 1][1] + (p[i][1] - p[i - 1][1]) * (x - p[i - 1][0]) / (p[i][0] - p[i - 1][0]);
+    }
+    return p[p.length - 1][1];
+  }
+  function r1(x) { return Math.round(x * 10 + 1e-9) / 10; }
 
-  // ---------- barèmes fixes (document de conception, § 2)
+  // ---------- physique
+  function esat(T) { return 6.105 * Math.exp(17.27 * T / (237.7 + T)); }
+  function soleilUV(uv) { return 300 * Math.sqrt(Math.max(0, uv)); }      // rayonnement estimé d'après l'indice UV (W/m²)
+  function ressenti(T, rh, v, ray) {
+    var w = v / 3.6 * 0.75, e = rh / 100 * esat(T), q = Math.max(0, 0.1 * ((ray || 0) - 550));
+    return T + 0.348 * e - 0.70 * w + 0.70 * q / (w + 10) - 4.25;
+  }
+  function rosee(T, rh) {
+    var g = Math.log(Math.max(rh, 1) / 100) + 17.625 * T / (243.04 + T);
+    return 243.04 * g / (17.625 - g);
+  }
+
+  // ---------- barèmes de l'app (paliers)
   var MOIT = [[-5, 9], [13, 10], [16, 9], [18, 7], [21, 5], [24, 3], [26, 1], [INF, 0]];
   var PLUIE = [[0.1, 10], [0.5, 7], [1, 6], [2.5, 5], [5, 3], [10, 2], [20, 1], [INF, 0]];
   var POP = [[30, 10], [70, 9], [INF, 8]];
@@ -198,106 +229,58 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
   var RAF = [[40, 10], [50, 7], [60, 5], [75, 3], [90, 1], [INF, 0]];
   var UV = [[6, 10], [8, 7], [11, 5], [INF, 3]];
   var AIR = [[40, 10], [60, 7], [80, 5], [100, 2], [INF, 0]];
+  var NEIGE = { neige1: 6, neige2: 4, neige3: 2 };
+  var ORDRE = ['pluie', 'vent', 'air', 'ciel', 'moiteur', 'uv'];
 
-  // ---------- réglages
-  var DEF = { lo: 22, hi: 27, pc: 5, ph: 2,
+  // ---------- barèmes proposés : mêmes valeurs au milieu de chaque tranche, mais sans marche d'escalier
+  var P_MOIT = [[14, 10], [17, 7], [19.5, 5], [22.5, 3], [25, 1], [27, 0]];
+  var P_PLUIE = [[0.1, 7], [0.3, 6.5], [0.75, 6], [1.75, 5], [3.75, 3], [7.5, 2], [15, 1], [25, 0]];
+  var P_POP = [[30, 10], [70, 9], [100, 8]];
+  var P_CIEL = [[15, 10], [35, 9], [65, 7], [87, 5], [100, 4]];
+  var P_VENT_T = [[12, 10], [20, 9], [24.5, 8], [34, 6], [44.5, 4], [56, 2], [68.5, 1], [80, 0]];
+  var P_VENT_C = [[3, 8], [9, 10], [16, 10], [24.5, 9], [34, 7], [44.5, 5], [56, 3], [68.5, 1], [80, 0]];
+  var P_VENT_F = [[3, 10], [9, 9], [16, 8], [24.5, 6], [34, 4], [44.5, 3], [56, 1], [68.5, 0]];
+  var P_RAF = [[30, 10], [45, 7], [55, 5], [67, 3], [82, 1], [95, 0]];
+  var P_UV = [[5, 10], [7, 7], [9.5, 5], [12, 3]];
+  var P_AIR = [[40, 10], [55, 7], [70, 5], [90, 2], [100, 0]];
+  var P_VIS = [[1000, 3], [4000, 6], [10000, 10]];
+
+  var APP = { lo: 22, hi: 27, pc: 5, ph: 2,
     pluie: 60, vent: 40, air: 40, ciel: 20, moiteur: 10, uv: 10,
     c_grele: 2, c_orage: 3, c_verglas: 3, c_violente: 3, c_forte: 4, c_neige: 4,
     c_tempete: 1, c_ventfort: 3, c_coupvent: 5, canSeuil: 40, c_canicule: 3, c_extreme: 1, c_airx: 3, c_airtm: 5, c_brouillard: 6 };
-  var CFG = {}, k;
-  for (k in DEF) CFG[k] = DEF[k];
 
-  var REG = {
-    'reg-therm': [
-      ['lo', 'Zone idéale : de', 10, 26, 1, ' °C'],
-      ['hi', 'Zone idéale : à', 20, 34, 1, ' °C'],
-      ['pc', 'Côté froid : 1 point perdu tous les', 2, 10, 0.5, ' °C'],
-      ['ph', 'Côté chaud : 1 point perdu tous les', 1, 6, 0.5, ' °C']],
-    'reg-poids': [
-      ['pluie', 'Pluie et neige', 0, 100, 5, ' %'], ['vent', 'Vent', 0, 100, 5, ' %'], ['air', 'Qualité de l’air', 0, 100, 5, ' %'],
-      ['ciel', 'Ciel (nuages, brouillard)', 0, 100, 5, ' %'], ['moiteur', 'Moiteur', 0, 100, 5, ' %'], ['uv', 'UV', 0, 100, 5, ' %']],
-    'reg-caps1': [
-      ['c_orage', 'Orage', 0, 10, 1, ''], ['c_grele', 'Orage avec grêle', 0, 10, 1, ''], ['c_verglas', 'Pluie verglaçante', 0, 10, 1, ''],
-      ['c_violente', 'Pluie violente (20 mm/h et plus)', 0, 10, 1, ''], ['c_forte', 'Forte pluie (10 à 20 mm/h)', 0, 10, 1, ''],
-      ['c_neige', 'Forte neige', 0, 10, 1, ''], ['c_brouillard', 'Brouillard dense', 0, 10, 1, '']],
-    'reg-caps2': [
-      ['c_tempete', 'Tempête (rafales 90 km/h et plus)', 0, 10, 1, ''], ['c_ventfort', 'Coup de vent fort (rafales 75 à 89)', 0, 10, 1, ''],
-      ['c_coupvent', 'Coup de vent (rafales 60 à 74)', 0, 10, 1, ''],
-      ['canSeuil', 'Canicule : à partir de', 35, 45, 1, ' °C d’air'], ['c_canicule', 'Canicule', 0, 10, 1, ''],
-      ['c_extreme', 'Chaleur extrême (5 °C au-dessus)', 0, 10, 1, ''],
-      ['c_airx', 'Air extrêmement mauvais (100 et plus)', 0, 10, 1, ''], ['c_airtm', 'Air très mauvais (80 à 100)', 0, 10, 1, '']]
-  };
+  var DEF = { lo: 22, hi: 27, pc: 3.5, pc2: 6, ph: 3, chSeuil: 28, chPente: 2,
+    pluie: 60, vent: 40, air: 40, ciel: 20, moiteur: 10, uv: 10,
+    k_pluie: 90, k_vent: 80, k_air: 80, k_ciel: 30, k_moiteur: 30, k_uv: 30,
+    annonce: 7, fh: 0.5, uvOmbre: 50,
+    c_grele: 2, c_orage: 3, c_verglas: 3, c_brouillard: 6 };
 
-  // ---------- situation
-  var SIT = [
-    ['T', 'Température de l’air', -40, 50, 1, ' °C'], ['rh', 'Humidité', 5, 100, 1, ' %'],
-    ['v', 'Vent moyen', 0, 100, 1, ' km/h'], ['g', 'Rafales', 0, 130, 1, ' km/h'],
-    ['mm', 'Pluie ou neige', 0, 30, 0.1, ' mm/h'], ['pop', 'Probabilité de pluie (s’il ne pleut pas)', 0, 100, 5, ' %'],
-    ['nuages', 'Nuages', 0, 100, 5, ' %'], ['uv', 'Indice UV', 0, 14, 1, ''], ['aqi', 'Indice européen de qualité de l’air', 0, 150, 1, '']
-  ];
-  function cas(n, nom, T, rh, v, g, nuages, uv, aqi, extra) {
-    var c = { n: n, nom: nom, T: T, rh: rh, v: v, g: g, nuages: nuages, uv: uv, aqi: aqi, mm: 0, pop: 0, type: 'auto', vis: 20000, jour: 1 };
-    for (var e in (extra || {})) c[e] = extra[e];
-    return c;
+  /* Situation s : { T, rh, v, g, mm, pop, nuages, uv, aqi, type, vis, jour, soleil, ray (facultatif), fl (facultatif, ressenti reçu au soleil) } */
+  function flDe(s, soleil) {
+    if (soleil && s.fl !== undefined && s.fl !== null) return s.fl;
+    var ray = soleil && s.jour ? (s.ray !== undefined && s.ray !== null ? s.ray : soleilUV(s.uv)) : 0;
+    return ressenti(s.T, s.rh, s.v, ray);
   }
-  var CAS = [
-    cas(1, '24 °C, soleil, vent léger', 24, 50, 8, 15, 10, 5, 18),
-    cas(2, '35 °C à 20 % d’humidité, soleil', 35, 20, 10, 20, 5, 9, 35),
-    cas(3, '35 °C à 80 % d’humidité', 35, 80, 8, 15, 40, 9, 35),
-    cas(4, '28 °C à 85 % (Pattaya, Singapour), nuageux', 28, 85, 8, 15, 60, 8, 30),
-    cas(5, '30 °C sec et venté (Dubai)', 30, 15, 30, 45, 0, 7, 45),
-    cas(6, '42 °C très sec, vent chaud (Ahvaz en été)', 42, 10, 25, 40, 0, 10, 70),
-    cas(7, '15 °C, couvert, bruine (Dublin)', 15, 85, 15, 28, 100, 1, 15, { mm: 0.3 }),
-    cas(8, '5 °C, pluie et vent', 5, 90, 30, 50, 100, 1, 15, { mm: 3 }),
-    cas(9, '−3 °C, ciel clair, sans vent (Anchorage)', -3, 70, 3, 6, 5, 1, 12),
-    cas(10, '−28 °C, ciel clair (Tiksi)', -28, 75, 8, 12, 5, 0, 10),
-    cas(11, '22 °C, orage', 22, 75, 20, 55, 100, 2, 25, { mm: 6, type: 'orage' }),
-    cas(12, '26 °C, grand soleil, UV 11 (Tahiti)', 26, 55, 10, 18, 5, 11, 25),
-    cas(13, '24 °C, air très pollué (indice 115)', 24, 50, 5, 10, 20, 5, 115),
-    cas(14, 'Nuit claire à 18 °C', 18, 70, 5, 10, 5, 0, 20, { jour: 0 }),
-    cas(15, '12 °C, soleil, vent faible (Paris au printemps)', 12, 60, 10, 18, 15, 4, 30),
-    cas(16, '0 °C, neige faible, couvert', 0, 95, 10, 20, 100, 0, 20, { mm: 0.5, type: 'neige1' }),
-    cas(17, '2 °C, brouillard épais, calme', 2, 100, 3, 6, 100, 0, 45, { vis: 150 }),
-    cas(18, '18 °C, tempête sèche (vent 55, rafales 85)', 18, 65, 55, 85, 70, 3, 15),
-    cas(19, '30 °C, grosse averse tropicale (15 mm/h)', 30, 85, 15, 35, 100, 3, 25, { mm: 15 }),
-    cas(20, '24 °C, couvert, calme, sec', 24, 60, 8, 15, 100, 3, 20)
-  ];
-  var S = {};
-  function charger(c) { for (var e in c) { if (e !== 'n' && e !== 'nom') S[e] = c[e]; } }
-  charger(CAS[0]);
 
-  // ---------- calcul (identique au script du document)
-  function ressenti(T, rh, v) {
-    var w = v / 3.6 * 0.75, e = rh / 100 * 6.105 * Math.exp(17.27 * T / (237.7 + T));
-    return T + 0.348 * e - 0.70 * w - 4.25;
-  }
-  function rosee(T, rh) {
-    var g = Math.log(rh / 100) + 17.625 * T / (243.04 + T);
-    return 243.04 * g / (17.625 - g);
-  }
-  function therm(fl, c) {
-    var n = 10;
-    if (fl < c.lo) n = 10 - Math.ceil((c.lo - fl) / c.pc);
-    else if (fl >= c.hi) n = 10 - (Math.floor((fl - c.hi) / c.ph) + 1);
-    return Math.max(0, n);
-  }
-  var NEIGE = { neige1: 6, neige2: 4, neige3: 2 };
-  var ORDRE = ['pluie', 'vent', 'air', 'ciel', 'moiteur', 'uv'];
-  var NOMS = { thermique: 'Confort thermique', pluie: 'Pluie et neige', vent: 'Vent', air: 'Qualité de l’air', ciel: 'Ciel', moiteur: 'Moiteur', uv: 'UV' };
-
-  function calc(s, c) {
-    var T = s.T, v = s.v, g = Math.max(s.g, s.v), fl = ressenti(T, s.rh, v), td = rosee(T, s.rh);
-    var n = {}, caps = [], p;
-    n.thermique = therm(fl, c);
+  // ---------- calcul de l'app, tel qu'il est publié
+  function calcApp(s, c) {
+    c = c || APP;
+    var T = s.T, v = s.v, g = Math.max(s.g, s.v), fl = flDe(s, 1), td = rosee(T, s.rh);
+    var n = {}, caps = [], p, type = s.type === 'annonce' ? 'auto' : s.type;
+    n.thermique = 10;
+    if (fl < c.lo) n.thermique = 10 - Math.ceil((c.lo - fl) / c.pc);
+    else if (fl >= c.hi) n.thermique = 10 - (Math.floor((fl - c.hi) / c.ph) + 1);
+    n.thermique = Math.max(0, n.thermique);
     n.moiteur = band(td, MOIT);
-    if (s.type === 'grele') { p = 0; caps.push([c.c_grele, 'orage avec grêle']); }
-    else if (s.type === 'orage') { p = Math.min(band(s.mm, PLUIE), 2); caps.push([c.c_orage, 'orage']); }
-    else if (s.type === 'verglas') { p = 1; caps.push([c.c_verglas, 'pluie verglaçante']); }
-    else if (NEIGE[s.type]) { p = NEIGE[s.type]; }
-    else if (s.mm >= 0.1 || s.type === 'violente') { p = band(s.mm, PLUIE); }
+    if (type === 'grele') { p = 0; caps.push([c.c_grele, 'orage avec grêle']); }
+    else if (type === 'orage') { p = Math.min(band(s.mm, PLUIE), 2); caps.push([c.c_orage, 'orage']); }
+    else if (type === 'verglas') { p = 1; caps.push([c.c_verglas, 'pluie verglaçante']); }
+    else if (NEIGE[type]) { p = NEIGE[type]; }
+    else if (s.mm >= 0.1 || type === 'violente') { p = band(s.mm, PLUIE); }
     else { p = band(s.pop, POP); }
-    if (s.type === 'neige3') caps.push([c.c_neige, 'forte neige']);
-    if (s.mm >= 20 || s.type === 'violente') caps.push([c.c_violente, 'pluie violente']);
+    if (type === 'neige3') caps.push([c.c_neige, 'forte neige']);
+    if (s.mm >= 20 || type === 'violente') caps.push([c.c_violente, 'pluie violente']);
     else if (s.mm >= 10) caps.push([c.c_forte, 'forte pluie']);
     n.pluie = p;
     var ci;
@@ -322,21 +305,154 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
     if (s.aqi >= 100) caps.push([c.c_airx, 'air extrêmement mauvais']);
     else if (s.aqi >= 80) caps.push([c.c_airtm, 'air très mauvais']);
     var brut = n.thermique, eff = {}, i, key;
-    for (i = 0; i < ORDRE.length; i++) {
-      key = ORDRE[i];
-      eff[key] = c[key] * (10 - n[key]) / 10; // en %
-      brut *= 1 - eff[key] / 100;
-    }
-    brut = Math.round(brut * 10 + 1e-9) / 10;
+    for (i = 0; i < ORDRE.length; i++) { key = ORDRE[i]; eff[key] = c[key] * (10 - n[key]) / 10; brut *= 1 - eff[key] / 100; }
+    brut = r1(brut);
     var note = brut, lim = '';
     for (i = 0; i < caps.length; i++) { if (caps[i][0] < note) { note = caps[i][0]; lim = caps[i][1]; } }
     return { fl: fl, td: td, n: n, eff: eff, brut: brut, note: note, lim: lim };
+  }
+
+  // ---------- calcul proposé
+  var NOMS = { thermique: 'Confort thermique', pluie: 'Pluie et neige', vent: 'Vent', air: 'Qualité de l’air', ciel: 'Ciel', moiteur: 'Moiteur', uv: 'UV' };
+  var LIMS = { pluie: 'pluie ou neige', vent: 'vent', air: 'qualité de l’air', ciel: 'ciel', moiteur: 'moiteur', uv: 'UV' };
+  function pluieNote(mm) { return interp(mm, P_PLUIE); }
+  function calc(s, c, soleil) {
+    c = c || DEF;
+    if (soleil === undefined) soleil = s.soleil === undefined ? 1 : s.soleil;
+    if (!s.jour) soleil = 0;
+    var T = s.T, v = s.v, g = Math.max(s.g, s.v), fl = flDe(s, soleil), td = rosee(T, s.rh);
+    var n = {}, caps = [], p, i, key;
+    // Confort thermique : continu. Par temps froid, l'humidité ne réchauffe plus (calcul comme à 50 %), et le froid humide coûte un peu.
+    var froid = clamp((c.lo - fl) / 8, 0, 1);
+    var flT = fl - froid * 0.348 * esat(T) * (s.rh - 50) / 100;
+    var th = 10, ec = c.lo - flT;                                            // écart sous la zone idéale
+    if (ec > 0) th = ec <= 14 ? 10 - ec / c.pc : 10 - 14 / c.pc - (ec - 14) / c.pc2;
+    else if (flT > c.hi) th = 10 - (flT - c.hi) / c.ph;
+    th -= c.fh * froid * clamp((s.rh - 75) / 20, 0, 1);
+    n.thermique = clamp(th, 0, 10);
+    n.moiteur = interp(td, P_MOIT);
+    var popNote = interp(s.pop, P_POP);
+    if (s.type === 'grele') { p = 0; caps.push([c.c_grele, 'orage avec grêle']); }
+    else if (s.type === 'orage') { p = Math.min(s.mm >= 0.1 ? pluieNote(s.mm) : 10, 2); caps.push([c.c_orage, 'orage']); }
+    else if (s.type === 'verglas') { p = 1; caps.push([c.c_verglas, 'pluie verglaçante']); }
+    else if (NEIGE[s.type]) { p = NEIGE[s.type]; }
+    else if (s.type === 'violente') { p = Math.min(pluieNote(Math.max(s.mm, 0.1)), 1); }
+    else if (s.mm >= 0.1) { p = pluieNote(s.mm); }
+    else if (s.type === 'annonce') { p = Math.min(popNote, c.annonce); }
+    else { p = popNote; }
+    n.pluie = p;
+    var ci = Math.min(interp(s.nuages, P_CIEL), interp(s.vis, P_VIS));
+    if (s.jour) ci += clamp((fl - 27) / 4, 0, 1) * Math.max(0, 8 - ci);      // par forte chaleur, de jour, les nuages gênent moins
+    else ci = 10 - (10 - ci) / 2;                                            // la nuit, le ciel compte deux fois moins
+    if (s.vis < 1000) caps.push([interp(s.vis, [[200, c.c_brouillard], [1000, 10]]), 'brouillard']);
+    n.ciel = ci;
+    var wF = clamp((17 - T) / 4, 0, 1), wC = clamp((T - 25) / 4, 0, 1) * clamp((39 - T) / 4, 0, 1);
+    var vm = wF * interp(v, P_VENT_F) + wC * interp(v, P_VENT_C) + (1 - wF - wC) * interp(v, P_VENT_T);
+    n.vent = Math.min(vm, interp(g, P_RAF));
+    if (T > c.chSeuil) caps.push([Math.max(0, 10 - (T - c.chSeuil) / c.chPente), 'air très chaud']);              // chaleur sèche : le ressenti la sous-estime
+    n.uv = s.jour ? interp(s.uv * (soleil ? 1 : c.uvOmbre / 100), P_UV) : 10;
+    n.air = interp(s.aqi, P_AIR);
+    var brut = n.thermique, eff = {}, force = {};
+    for (i = 0; i < ORDRE.length; i++) {
+      key = ORDRE[i];
+      eff[key] = c[key] * (10 - n[key]) / 10;
+      brut *= 1 - eff[key] / 100;
+      force[key] = 10 - c['k_' + key] / 100 * (10 - n[key]);
+      if (force[key] < 10) caps.push([force[key], LIMS[key]]);
+    }
+    brut = r1(brut);
+    var note = brut, lim = '';
+    for (i = 0; i < caps.length; i++) { if (r1(caps[i][0]) < note) { note = r1(caps[i][0]); lim = caps[i][1]; } }
+    return { fl: fl, flT: flT, td: td, n: n, eff: eff, force: force, brut: brut, note: note, lim: lim, soleil: soleil };
   }
   function libelle(x) {
     return band(x, [[1, ['Extrême', 'extreme']], [3, ['Pénible', 'penible']], [5, ['Médiocre', 'mediocre']], [7, ['Correct', 'correct']], [9, ['Agréable', 'agreable']], [INF, ['Idéal', 'ideal']]]);
   }
 
   // ---------- interface
+  function $(id) { return document.getElementById(id); }
+  function fr(x, d) {
+    var s = Number(x).toFixed(d === undefined ? 1 : d);
+    if (s.indexOf('.') >= 0) s = s.replace(/\.?0+$/, '');
+    if (s === '-0') s = '0';
+    return s.replace('.', ',').replace('-', '−');
+  }
+  var CFG = {}, k;
+  for (k in DEF) CFG[k] = DEF[k];
+  var SOLEIL = 1;
+
+  var REG = {
+    'reg-therm': [
+      ['lo', 'Zone idéale : de', 10, 26, 1, ' °C'],
+      ['hi', 'Zone idéale : à', 20, 34, 1, ' °C'],
+      ['pc', 'Côté froid : 1 point perdu tous les', 2, 8, 0.5, ' °C'],
+      ['pc2', 'Grand froid (plus de 14 °C sous la zone) : 1 point tous les', 2, 12, 0.5, ' °C'],
+      ['fh', 'Froid humide : retrait au plus', 0, 2, 0.1, ' point'],
+      ['ph', 'Côté chaud : 1 point perdu tous les', 1, 6, 0.5, ' °C'],
+      ['chSeuil', 'Air très chaud : la note baisse à partir de', 24, 40, 1, ' °C d’air'],
+      ['chPente', 'Air très chaud : 1 point perdu tous les', 1, 5, 0.5, ' °C']],
+    'reg-poids': [
+      ['pluie', 'Pluie et neige', 0, 100, 5, ' %'], ['vent', 'Vent', 0, 100, 5, ' %'], ['air', 'Qualité de l’air', 0, 100, 5, ' %'],
+      ['ciel', 'Ciel (nuages, brouillard)', 0, 100, 5, ' %'], ['moiteur', 'Moiteur', 0, 100, 5, ' %'], ['uv', 'UV', 0, 100, 5, ' %']],
+    'reg-force': [
+      ['k_pluie', 'Pluie et neige', 0, 100, 10, ' %'], ['k_vent', 'Vent', 0, 100, 10, ' %'], ['k_air', 'Qualité de l’air', 0, 100, 10, ' %'],
+      ['k_ciel', 'Ciel', 0, 100, 10, ' %'], ['k_moiteur', 'Moiteur', 0, 100, 10, ' %'], ['k_uv', 'UV', 0, 100, 10, ' %']],
+    'reg-autres': [
+      ['annonce', 'Pluie annoncée sans quantité : note de pluie au plus', 5, 10, 0.5, ''],
+      ['uvOmbre', 'Part des UV reçue à l’ombre', 0, 100, 10, ' %']],
+    'reg-caps': [
+      ['c_orage', 'Orage', 0, 10, 1, ''], ['c_grele', 'Orage avec grêle', 0, 10, 1, ''], ['c_verglas', 'Pluie verglaçante', 0, 10, 1, ''],
+      ['c_brouillard', 'Brouillard dense (moins de 200 m)', 0, 10, 1, '']]
+  };
+
+  // ---------- situation
+  var SIT = [
+    ['T', 'Température de l’air', -40, 50, 1, ' °C'], ['rh', 'Humidité', 5, 100, 1, ' %'],
+    ['v', 'Vent moyen', 0, 100, 1, ' km/h'], ['g', 'Rafales', 0, 130, 1, ' km/h'],
+    ['mm', 'Pluie ou neige', 0, 30, 0.1, ' mm/h'], ['pop', 'Probabilité de pluie (s’il ne pleut pas)', 0, 100, 5, ' %'],
+    ['nuages', 'Nuages', 0, 100, 5, ' %'], ['uv', 'Indice UV', 0, 14, 1, ''], ['aqi', 'Indice européen de qualité de l’air', 0, 150, 1, '']
+  ];
+  function cas(n, nom, T, rh, v, g, nuages, uv, aqi, extra) {
+    var c = { n: n, nom: nom, T: T, rh: rh, v: v, g: g, nuages: nuages, uv: uv, aqi: aqi, mm: 0, pop: 0, type: 'auto', vis: 20000, jour: 1 };
+    for (var e in (extra || {})) c[e] = extra[e];
+    return c;
+  }
+  var CAS = [
+    cas(1, '24 °C, soleil, vent léger', 24, 50, 8, 15, 10, 5, 18),
+    cas(2, '35 °C à 20 % d’humidité, soleil', 35, 20, 10, 20, 5, 9, 35),
+    cas(3, '35 °C à 80 % d’humidité', 35, 80, 8, 15, 40, 9, 35),
+    cas(4, '28 °C à 85 % (Singapour), nuageux', 28, 85, 8, 15, 60, 8, 30),
+    cas(5, '30 °C sec et venté (Dubai)', 30, 15, 30, 45, 0, 7, 45),
+    cas(6, '42 °C très sec, vent chaud (Ahvaz en été)', 42, 10, 25, 40, 0, 10, 70),
+    cas(7, '15 °C, couvert, bruine (Dublin)', 15, 85, 15, 28, 100, 1, 15, { mm: 0.3 }),
+    cas(8, '5 °C, pluie et vent', 5, 90, 30, 50, 100, 1, 15, { mm: 3 }),
+    cas(9, '−3 °C, ciel clair, sans vent (Anchorage)', -3, 70, 3, 6, 5, 1, 12),
+    cas(10, '−28 °C, ciel clair (Tiksi)', -28, 75, 8, 12, 5, 0, 10),
+    cas(11, '22 °C, orage', 22, 75, 20, 55, 100, 2, 25, { mm: 6, type: 'orage' }),
+    cas(12, '26 °C, grand soleil, UV 11 (Tahiti)', 26, 55, 10, 18, 5, 11, 25),
+    cas(13, '24 °C, air très pollué (indice 115)', 24, 50, 5, 10, 20, 5, 115),
+    cas(14, 'Nuit claire à 18 °C', 18, 70, 5, 10, 5, 0, 20, { jour: 0 }),
+    cas(15, '12 °C, soleil, vent faible (Paris au printemps)', 12, 60, 10, 18, 15, 4, 30),
+    cas(16, '0 °C, neige faible, couvert', 0, 95, 10, 20, 100, 0, 20, { mm: 0.5, type: 'neige1' }),
+    cas(17, '2 °C, brouillard épais, calme', 2, 100, 3, 6, 100, 0, 45, { vis: 150 }),
+    cas(18, '18 °C, tempête sèche (vent 55, rafales 85)', 18, 65, 55, 85, 70, 3, 15),
+    cas(19, '30 °C, grosse averse tropicale (15 mm/h)', 30, 85, 15, 35, 100, 3, 25, { mm: 15 }),
+    cas(20, '24 °C, couvert, calme, sec', 24, 60, 8, 15, 100, 3, 20),
+    cas(21, 'Dublin le 18/11 à 22 h : 9 °C, 87 %, bruine annoncée', 9.2, 87, 6, 14, 100, 0, 48, { jour: 0, pop: 47, type: 'annonce' }),
+    cas(22, '34 °C à 69 %, vent faible, peu de nuages', 34, 69, 5, 37, 10, 5, 23),
+    cas(23, '24 °C, soleil, air mauvais (indice 70)', 24, 50, 8, 15, 10, 5, 70),
+    cas(24, 'Pattaya à 14 h : 32 °C à 56 %, soleil', 32, 56, 14, 29, 12, 6.5, 45),
+    cas(25, 'Niamey : 36 °C à 7 %, vent sec', 36, 7, 15, 41, 10, 6, 48),
+    cas(26, 'Miami la nuit : 23 °C à 96 %', 23, 96, 6, 10, 88, 0, 30, { jour: 0 }),
+    cas(27, 'Paris en hiver : 2 °C, couvert', 2, 80, 10, 20, 100, 1, 30),
+    cas(28, 'Beau jour d’hiver : −5 °C, soleil, calme', -5, 60, 5, 10, 0, 2, 20),
+    cas(29, '40 °C à 10 %, sans vent', 40, 10, 5, 12, 0, 10, 30),
+    cas(30, '30 °C à 50 %, plein soleil (UV 8)', 30, 50, 10, 20, 10, 8, 25)
+  ];
+  var S = {};
+  function charger(c) { for (var e in c) { if (e !== 'n' && e !== 'nom') S[e] = c[e]; } }
+  charger(CAS[0]);
+
   function slider(host, def, obj, prefix) {
     var id = prefix + def[0], row = document.createElement('div');
     row.className = 'row';
@@ -357,11 +473,13 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
   for (i = 0; i < SIT.length; i++) SL.push(slider($('sit'), SIT[i], S, 's-'));
   for (h in REG) for (j = 0; j < REG[h].length; j++) SL.push(slider($(h), REG[h][j], CFG, 'r-'));
 
+  function presse(id, on) { $(id).setAttribute('aria-pressed', on ? 'true' : 'false'); }
   function sync() {
     for (var i = 0; i < SL.length; i++) SL[i].inp.value = SL[i].obj[SL[i].def[0]];
     $('s-type').value = S.type; $('s-vis').value = String(S.vis);
-    $('btn-jour').setAttribute('aria-pressed', S.jour ? 'true' : 'false');
-    $('btn-nuit').setAttribute('aria-pressed', S.jour ? 'false' : 'true');
+    presse('btn-jour', S.jour); presse('btn-nuit', !S.jour);
+    presse('btn-soleil', S.jour && SOLEIL); presse('btn-ombre', S.jour && !SOLEIL);
+    $('btn-soleil').disabled = !S.jour; $('btn-ombre').disabled = !S.jour;
   }
   var casSel = $('cas'), o = document.createElement('option');
   o.value = ''; o.textContent = 'Situation libre (curseurs)'; casSel.appendChild(o);
@@ -373,46 +491,54 @@ textarea { width: 100%; min-height: 120px; font-family: var(--mono); font-size: 
   $('s-vis').addEventListener('change', function () { S.vis = parseInt($('s-vis').value, 10); casSel.value = ''; rendre(); });
   $('btn-jour').addEventListener('click', function () { S.jour = 1; casSel.value = ''; sync(); rendre(); });
   $('btn-nuit').addEventListener('click', function () { S.jour = 0; casSel.value = ''; sync(); rendre(); });
+  $('btn-soleil').addEventListener('click', function () { SOLEIL = 1; sync(); rendre(); });
+  $('btn-ombre').addEventListener('click', function () { SOLEIL = 0; sync(); rendre(); });
   $('reset').addEventListener('click', function () { for (var k in DEF) CFG[k] = DEF[k]; sync(); rendre(); });
 
-  var DEFNOTES = [];
-  for (i = 0; i < CAS.length; i++) DEFNOTES.push(calc(CAS[i], DEF).note);
+  var APPNOTES = [];
+  for (i = 0; i < CAS.length; i++) APPNOTES.push(calcApp(CAS[i], APP).note);
+  function puce(l) { return '<span class="chip"><span class="dot" style="--c:var(--n-' + l[1] + ')"></span>' + l[0] + '</span>'; }
 
   function rendre() {
-    var i, d, r = calc(S, CFG), lb = libelle(r.note), coul = 'var(--n-' + lb[1] + ')';
+    var i, d, soleil = S.jour ? SOLEIL : 0, r = calc(S, CFG, soleil), lb = libelle(r.note), coul = 'var(--n-' + lb[1] + ')';
     for (i = 0; i < SL.length; i++) {
       d = SL[i].def;
       var val = SL[i].obj[d[0]], txt = fr(val, d[4] < 1 ? 1 : 0) + d[5];
       if (d[0].indexOf('c_') === 0) txt = val >= 10 ? 'désactivé' : fr(val, 0) + ' au plus';
       SL[i].out.textContent = txt;
     }
+    $('mode').textContent = S.jour ? (soleil ? 'au soleil' : 'à l’ombre') : 'de nuit';
     $('note').textContent = fr(r.note); $('lib').textContent = lb[0];
     $('dot').style.setProperty('--c', coul);
     $('gauge').style.width = (r.note * 10) + '%'; $('gauge').style.setProperty('--c', coul);
+    if (S.jour) {
+      var a = calc(S, CFG, soleil ? 0 : 1), ec = (soleil ? a.note : r.note) - (soleil ? r.note : a.note);
+      $('autre').textContent = (soleil ? 'À l’ombre : ' : 'Au soleil : ') + fr(a.note) + ' (' + libelle(a.note)[0].toLowerCase() + ', ressenti ' + fr(a.fl, 0) + ' °C). ' +
+        (Math.abs(ec) < 0.05 ? 'Le soleil ne change rien ici.' : (ec > 0 ? 'L’ombre fait gagner ' : 'Le soleil fait gagner ') + fr(Math.abs(ec)) + ' point.');
+    } else $('autre').textContent = 'La nuit, il n’y a qu’une seule note.';
     $('f-fl').textContent = fr(r.fl, 0) + ' °C'; $('f-td').textContent = fr(r.td, 0) + ' °C';
-    var html = '<tr><td>' + NOMS.thermique + '</td><td class="num">' + r.n.thermique + '<span class="mini"><i style="width:' + r.n.thermique * 10 + '%"></i></span></td><td class="num eff on">base ' + r.n.thermique + '</td></tr>';
+    var html = '<tr><td>' + NOMS.thermique + '</td><td class="num">' + fr(r.n.thermique) + '<span class="mini"><i style="width:' + r.n.thermique * 10 + '%"></i></span></td><td class="num eff on">base ' + fr(r.n.thermique) + '</td></tr>';
     for (i = 0; i < ORDRE.length; i++) {
       var key = ORDRE[i], e = Math.round(r.eff[key]);
-      html += '<tr><td>' + NOMS[key] + '</td><td class="num">' + r.n[key] + '<span class="mini"><i style="width:' + r.n[key] * 10 + '%"></i></span></td>' +
+      html += '<tr><td>' + NOMS[key] + '</td><td class="num">' + fr(r.n[key]) + '<span class="mini"><i style="width:' + r.n[key] * 10 + '%"></i></span></td>' +
         '<td class="num eff' + (e > 0 ? ' on' : '') + '">' + (e > 0 ? '−' + e + ' %' : 'aucun') + '</td></tr>';
     }
     $('detail').querySelector('tbody').innerHTML = html;
-    $('plafond').textContent = r.lim ? 'Calcul : ' + fr(r.brut) + '. Plafond « ' + r.lim + ' » : note ramenée à ' + fr(r.note) + '.' : 'Aucun plafond ne s’applique.';
+    $('plafond').textContent = r.lim ? 'Calcul : ' + fr(r.brut) + '. Limite « ' + r.lim + ' » : note ramenée à ' + fr(r.note) + '.' : 'Aucune limite ne s’applique.';
     html = '';
     for (i = 0; i < CAS.length; i++) {
-      var rc = calc(CAS[i], CFG), l = libelle(rc.note), dl = rc.note - DEFNOTES[i];
-      html += '<tr tabindex="0" data-i="' + i + '"><td>' + CAS[i].n + '</td><td>' + CAS[i].nom + '</td><td class="num">' + fr(DEFNOTES[i]) + '</td>' +
-        '<td class="num note">' + fr(rc.note) + (Math.abs(dl) >= 0.05 ? ' <span class="delta">(' + (dl > 0 ? '+' : '') + fr(dl) + ')</span>' : '') + '</td>' +
-        '<td><span class="chip"><span class="dot" style="--c:var(--n-' + l[1] + ')"></span>' + l[0] + '</span></td></tr>';
+      var rs = calc(CAS[i], CFG, 1), ro = CAS[i].jour ? calc(CAS[i], CFG, 0) : null;
+      html += '<tr tabindex="0" data-i="' + i + '"><td>' + CAS[i].n + '</td><td>' + CAS[i].nom + '</td><td class="num">' + fr(APPNOTES[i]) + '</td>' +
+        '<td class="num note">' + fr(rs.note) + '</td><td class="num">' + (ro ? fr(ro.note) : '–') + '</td><td>' + puce(libelle(rs.note)) + '</td></tr>';
     }
     $('cases').querySelector('tbody').innerHTML = html;
     var lignes = ['Réglages de l’indice de bien-être', 'Zone idéale : ' + fr(CFG.lo, 0) + ' à ' + fr(CFG.hi, 0) + ' °C ressentis',
-      'Côté froid : 1 point tous les ' + fr(CFG.pc) + ' °C ; côté chaud : 1 point tous les ' + fr(CFG.ph) + ' °C',
+      'Côté froid : 1 point tous les ' + fr(CFG.pc) + ' °C, puis tous les ' + fr(CFG.pc2) + ' °C par grand froid ; froid humide : ' + fr(CFG.fh) + ' point au plus',
+      'Côté chaud : 1 point tous les ' + fr(CFG.ph) + ' °C ressentis ; air très chaud : à partir de ' + fr(CFG.chSeuil, 0) + ' °C, 1 point tous les ' + fr(CFG.chPente) + ' °C',
       'Retraits : pluie ' + CFG.pluie + ' %, vent ' + CFG.vent + ' %, air ' + CFG.air + ' %, ciel ' + CFG.ciel + ' %, moiteur ' + CFG.moiteur + ' %, UV ' + CFG.uv + ' %',
-      'Plafonds : orage ' + CFG.c_orage + ', grêle ' + CFG.c_grele + ', verglas ' + CFG.c_verglas + ', pluie violente ' + CFG.c_violente + ', forte pluie ' + CFG.c_forte + ', forte neige ' + CFG.c_neige + ', brouillard dense ' + CFG.c_brouillard,
-      'Plafonds vent : tempête ' + CFG.c_tempete + ', coup de vent fort ' + CFG.c_ventfort + ', coup de vent ' + CFG.c_coupvent,
-      'Canicule à partir de ' + CFG.canSeuil + ' °C : ' + CFG.c_canicule + ' ; chaleur extrême : ' + CFG.c_extreme,
-      'Plafonds air : extrêmement mauvais ' + CFG.c_airx + ', très mauvais ' + CFG.c_airtm];
+      'Force des gênes : pluie ' + CFG.k_pluie + ' %, vent ' + CFG.k_vent + ' %, air ' + CFG.k_air + ' %, ciel ' + CFG.k_ciel + ' %, moiteur ' + CFG.k_moiteur + ' %, UV ' + CFG.k_uv + ' %',
+      'Pluie annoncée : au plus ' + fr(CFG.annonce) + ' ; UV à l’ombre : ' + CFG.uvOmbre + ' %',
+      'Plafonds : orage ' + CFG.c_orage + ', grêle ' + CFG.c_grele + ', verglas ' + CFG.c_verglas + ', brouillard dense ' + CFG.c_brouillard];
     var modifs = [];
     for (var k in DEF) if (CFG[k] !== DEF[k]) modifs.push(k + ' ' + DEF[k] + ' → ' + CFG[k]);
     lignes.push(modifs.length ? 'Modifié par rapport à la proposition : ' + modifs.join(', ') : 'Aucun changement par rapport à la proposition.');

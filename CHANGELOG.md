@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.29.0 · 18/11/2026
+
+- Indice de bien-être : nouvelle formule, sans palier. Chaque critère est noté de façon continue, une petite variation de la météo ne fait plus sauter la note. Froid humide moins bien noté que froid sec, chaleur sèche limitée au-dessus de 28 °C d'air, une gêne forte limite la note à elle seule (air mauvais, pluie fine), quatre plafonds de danger (orage, grêle, verglas, brouillard dense). Pluie ou bruine annoncée par le code météo sans quantité mesurée : note de pluie de 7 au plus.
+- Réglages, rubrique « Bien-être » : feuille « Calibration du ressenti », ouverte comme le Diagnostic. La note du lieu affiché (ou d'un cas type, ou d'une situation réglée aux curseurs), au soleil et à l'ombre, avec le détail de chaque critère, reste en haut ; dessous, toutes les valeurs de la formule, appliquées partout dans l'app au lâcher du curseur, « Revenir aux valeurs proposées », « Copier », et les 30 cas types recalculés en direct. Les valeurs réglées font partie de la sauvegarde.
+
 ## 1.28.2 · 18/11/2026
 
 - Cadran d'un lieu : la pastille de bien-être montre le libellé et la note ensemble (« Correct 5,4 »), fixe. L'alternance entre la note et le libellé et ses trois réglages (intervalle, effet, durée) sont supprimés.

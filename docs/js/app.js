@@ -591,10 +591,11 @@
     A.close(true);
     A.sheet = which;
     var sh = el.sheet, tt = I.t();
-    U.$('h2', sh).textContent = which === 'places' ? tt.places : (which === 'settings' ? tt.settings : tt.diagnostic);
+    U.$('h2', sh).textContent = which === 'places' ? tt.places : (which === 'settings' ? tt.settings : (which === 'calib' ? tt.calibration : tt.diagnostic));
     var body = U.$('.sheet-body', sh);
     if (which === 'places') SM.places.open(body);
     else if (which === 'settings') SM.settings.open(body);
+    else if (which === 'calib') SM.calib.open(body);
     else SM.settings.openDiag(body);
     sh.className = 'sheet open';
   };
