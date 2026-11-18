@@ -163,6 +163,16 @@ header.top {
 .tneg { position: absolute; right: 100%; top: 0; font-style: normal; }
 .dial .feels { font-size: 1.1rem; color: var(--muted); margin-top: .1rem; }
 .dcmf { display: inline-block; margin-left: .55rem; padding: .08rem .5rem; border-radius: .7rem; font-size: .8rem; font-weight: 700; vertical-align: .1rem; text-shadow: none; }
+/* Note et libellé superposés dans la même case : la pastille prend la largeur du plus long, centrée. */
+.dcmf.flip { display: -webkit-inline-box; display: inline-grid; text-align: center; }
+.dcmf.flip span { grid-row: 1; grid-column: 1; -webkit-animation: cflipA 10s ease-in-out infinite; animation: cflipA 10s ease-in-out infinite; }
+.dcmf.flip .fb { -webkit-animation-name: cflipB; animation-name: cflipB; }
+@-webkit-keyframes cflipA { 0%, 45% { opacity: 1; } 50%, 95% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes cflipA { 0%, 45% { opacity: 1; } 50%, 95% { opacity: 0; } 100% { opacity: 1; } }
+@-webkit-keyframes cflipB { 0%, 45% { opacity: 0; } 50%, 95% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cflipB { 0%, 45% { opacity: 0; } 50%, 95% { opacity: 1; } 100% { opacity: 0; } }
+#sky.still ~ #ui .dcmf.flip span { -webkit-animation: none; animation: none; }
+#sky.still ~ #ui .dcmf.flip .fb { opacity: 0; }
 .dial-mid { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; margin: .5rem 0 .2rem; }
 .dcol { width: 34%; text-align: right; font-size: .95rem; }
 .dcol.r { text-align: left; }

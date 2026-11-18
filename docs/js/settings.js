@@ -46,6 +46,7 @@
     html +=
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
+      field(tt.comfortFlip, seg('comfortFlip', [[0, tt.comfortFlipOff], [3, '3 s'], [5, '5 s'], [10, '10 s'], [20, '20 s']], s.comfortFlip)) +
       field(tt.language, seg('lang', [['en', 'English'], ['fr', 'Français'], ['auto', tt.auto]], s.lang)) +
       field(tt.backup, '<p class="about">' + U.esc(tt.backupHint) + '</p>' +
         '<div class="btnrow"><button class="btn" data-bk="export">' + tt.exportData + '</button><button class="btn" data-bk="import">' + tt.importData + '</button></div>') +
@@ -57,7 +58,7 @@
   }
 
   function parse(key, v) {
-    if (key === 'carousel') return parseInt(v, 10);
+    if (key === 'carousel' || key === 'comfortFlip') return parseInt(v, 10);
     if (key === 'veilLevel') return parseFloat(v);
     if (key === 'seconds') return v === 'true';
     return v;

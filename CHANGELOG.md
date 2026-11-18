@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.28.0 · 18/11/2026
+
+- Cadran d'un lieu : la pastille de bien-être alterne en boucle entre la note (« Comfort 6,9 ») et son libellé (« Correct »), avec un fondu, sans changer de taille. Fondu joué par la carte graphique, sans minuterie.
+- Réglages : intervalle de l'alternance, 3, 5 (par défaut), 10 ou 20 s, ou « Note seule ». Animations coupées : la note seule.
+
 ## 1.27.2 · 18/11/2026
 
 - Cadran d'un lieu : la note de bien-être en pastille colorée sur la ligne du ressenti (« Feels like 19° · Comfort 6,9 »), sans icône et sans agrandir le cadran.

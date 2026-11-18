@@ -117,11 +117,18 @@
   }
 
   // Note de bien-être en pastille, sur la ligne du ressenti (sans agrandir le cadran).
+  /* Pastille du cadran : la note, puis son libellé (Correct, Médiocre…), en boucle toutes les N secondes (réglage
+     comfortFlip, 0 = note seule). Fondu joué par la carte graphique (animation CSS sur l'opacité de deux textes
+     superposés), sans aucune minuterie : rien ne tourne sur la page entre deux changements. La pastille garde la
+     largeur du plus long des deux textes, elle ne change pas de taille. */
   function dialComfort(w, now) {
     var r = SM.comfort.now(w, now);
     if (!r) return '';
-    var lv = SM.comfort.level(r.note);
-    return '<span class="dcmf cmf-' + lv + '">' + t().comfort + ' ' + R.comfortNum(r.note) + '</span>';
+    var tt = t(), lv = SM.comfort.level(r.note), n = SM.app.settings.comfortFlip || 0;
+    var a = tt.comfort + ' ' + R.comfortNum(r.note);
+    if (!n) return '<span class="dcmf cmf-' + lv + '"><span>' + a + '</span></span>';
+    var st = ' style="-webkit-animation-duration:' + (n * 2) + 's;animation-duration:' + (n * 2) + 's"';
+    return '<span class="dcmf flip cmf-' + lv + '"><span class="fa"' + st + '>' + a + '</span><span class="fb"' + st + '>' + tt.comfortLevels[lv] + '</span></span>';
   }
 
   /* ---------- blocs ---------- */
