@@ -613,7 +613,6 @@
     SM.store.saveSettings(A.settings);
     if (key === 'lang') { A.settings.langChosen = true; SM.store.saveSettings(A.settings); I.setLang(v); if (A.sheet) A.open(A.sheet); }
     if (key === 'motion') SM.sky.setMotion(v);
-    if ((key === 'comfortFlip' || key === 'comfortFx' || key === 'comfortFxDur') && A.mode === 'place') render(0);
     if (key === 'veil' || key === 'veilLevel' || key === 'veilFrom' || key === 'veilTo') veil();
   };
 

@@ -163,13 +163,6 @@ header.top {
 .tneg { position: absolute; right: 100%; top: 0; font-style: normal; }
 .dial .feels { font-size: 1.1rem; color: var(--muted); margin-top: .1rem; }
 .dcmf { display: inline-block; margin-left: .55rem; padding: .08rem .5rem; border-radius: .7rem; font-size: .8rem; font-weight: 700; vertical-align: .1rem; text-shadow: none; }
-/* Note et libellé superposés dans la même case : la pastille prend la largeur du plus long, centrée. */
-/* Les animations elles-mêmes sont écrites par ui.js selon l'effet et la durée choisis ; la pastille coupe ce qui
-   glisse au-dehors (effets vers le haut et vers le bas). */
-.dcmf.flip { display: -webkit-inline-box; display: inline-grid; text-align: center; overflow: hidden; }
-.dcmf.flip span { grid-row: 1; grid-column: 1; }
-#sky.still ~ #ui .dcmf.flip span { -webkit-animation: none; animation: none; }
-#sky.still ~ #ui .dcmf.flip .fb { opacity: 0; }
 .dial-mid { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; margin: .5rem 0 .2rem; }
 .dcol { width: 34%; text-align: right; font-size: .95rem; }
 .dcol.r { text-align: left; }

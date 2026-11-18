@@ -46,10 +46,6 @@
     html +=
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
-      field(tt.comfortFlip, seg('comfortFlip', [[0, tt.comfortFlipOff], [3, '3 s'], [5, '5 s'], [10, '10 s'], [20, '20 s']], s.comfortFlip)) +
-      (s.comfortFlip ? field(tt.comfortFx, seg('comfortFx', [['fade', tt.comfortFxFade], ['up', tt.comfortFxUp], ['down', tt.comfortFxDown]], s.comfortFx)) +
-        field(tt.comfortFxDur, '<input type="range" class="vrange crange" data-key="comfortFxDur" min="0" max="2" step="0.1" value="' + s.comfortFxDur + '">' +
-          '<div class="vends"><span>0 s</span><b id="cfxdur">' + I.num(s.comfortFxDur, 1) + ' s</b><span>2 s</span></div>') : '') +
       field(tt.language, seg('lang', [['en', 'English'], ['fr', 'Français'], ['auto', tt.auto]], s.lang)) +
       field(tt.backup, '<p class="about">' + U.esc(tt.backupHint) + '</p>' +
         '<div class="btnrow"><button class="btn" data-bk="export">' + tt.exportData + '</button><button class="btn" data-bk="import">' + tt.importData + '</button></div>') +
@@ -61,7 +57,7 @@
   }
 
   function parse(key, v) {
-    if (key === 'carousel' || key === 'comfortFlip') return parseInt(v, 10);
+    if (key === 'carousel') return parseInt(v, 10);
     if (key === 'veilLevel') return parseFloat(v);
     if (key === 'seconds') return v === 'true';
     return v;
@@ -111,12 +107,6 @@
     };
     U.$$('.vrange', body).forEach(function (r) {
       var key = r.getAttribute('data-key') || 'veilLevel';
-      // Durée du passage : la valeur s'affiche en direct, l'écran n'est redessiné qu'au lâcher.
-      if (key === 'comfortFxDur') {
-        r.oninput = function () { var o = U.$('#cfxdur', body); if (o) o.textContent = I.num(parseFloat(r.value), 1) + ' s'; };
-        r.onchange = function () { SM.app.setSetting(key, Math.round(parseFloat(r.value) * 10) / 10); };
-        return;
-      }
       var save = function () { SM.app.setSetting(key, parseFloat(r.value)); };
       r.oninput = save; r.onchange = save;
     });

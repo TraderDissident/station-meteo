@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.28.2 · 18/11/2026
+
+- Cadran d'un lieu : la pastille de bien-être montre le libellé et la note ensemble (« Correct 5,4 »), fixe. L'alternance entre la note et le libellé et ses trois réglages (intervalle, effet, durée) sont supprimés.
+
 ## 1.28.1 · 18/11/2026
 
 - Réglages de la pastille de bien-être du cadran : effet du passage entre la note et le libellé (apparaître comme avant, vers le haut, vers le bas) et durée du passage, de 0 à 2 s par pas de 0,1 s (0,5 s par défaut). Les deux réglages n'apparaissent que si l'alternance est active.

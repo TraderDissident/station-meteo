@@ -7,7 +7,7 @@ window.SM = SM;
    arrivées d'un lieu figées une seconde pile). Les seuls non passifs sont posés sur l'élément qui en a besoin, et
    seulement pendant qu'il sert : poignées de la feuille des lieux, blocs en mode édition, carte du monde. */
 
-SM.VERSION = '1.28.1';
+SM.VERSION = '1.28.2';
 
 // D'ouest en est, comme sur une carte classique.
 SM.DEFAULT_PLACES = [
@@ -58,9 +58,6 @@ SM.DEFAULT_SETTINGS = {
   tiles: [],           // ordre des blocs des détails (vide = ordre d'origine)
   hiddenTiles: [],     // blocs retirés en mode édition
   carousel: 0,          // secondes entre deux lieux, 0 = arrêté
-  comfortFlip: 5,      // pastille du cadran : secondes entre la note et son libellé, 0 = note seule
-  comfortFx: 'fade',   // passage de l'une à l'autre : 'fade' (apparaître) | 'up' (vers le haut) | 'down' (vers le bas)
-  comfortFxDur: 0.5,   // durée du passage, de 0 à 2 s
   veil: 'hours',        // 'off' | 'auto' (nuit au lieu de démarrage) | 'hours'
   veilFrom: '23:00',
   veilTo: '07:00',
