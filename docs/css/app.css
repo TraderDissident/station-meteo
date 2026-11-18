@@ -973,10 +973,13 @@ html.phone .mapmode #hbar.open { left: 8px; right: 8px; width: auto; max-width: 
 html.phone #hbar .seg button { margin: 0 8px 8px 0; padding: 0 14px; }
 html.phone .dsw { -webkit-flex-wrap: wrap; flex-wrap: wrap; }
 
+/* Message « Tournez le téléphone », seulement sur téléphone en portrait. */
+.mrotate { display: none; }
 /* Carte du monde sur téléphone en portrait : trop petite pour servir (étiquettes les unes sur les autres). Seules les
    cartes des lieux (horloges ou météo) restent ; la carte revient en tournant le téléphone. */
 @media (orientation: portrait) {
   html.phone .mapwrap, html.phone [data-act=mapfull] { display: none; }
+  html.phone .mrotate { display: block; margin: 4px 16px 6px; text-align: center; font-size: 15px; color: var(--muted); }
   /* Les cartes des lieux, une par ligne sur toute la largeur (leur alignement sur la carte ne vaut plus). */
   html.phone .mcards { -webkit-flex-direction: column; flex-direction: column; overflow-x: visible; padding: 8px 16px 24px !important; }
   html.phone .mcards::before, html.phone .mcards::after { display: none; }

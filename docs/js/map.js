@@ -817,7 +817,7 @@
     // Nouveau cadre : l'ancien globe y serait resté accroché.
     SM.globe.detach();
     container.innerHTML =
-      '<div class="mapview"><div class="mapwrap">' +
+      '<div class="mapview"><p class="mrotate">' + U.esc(tt.rotateForMap) + '</p><div class="mapwrap">' +
         '<div class="zones">' + rulerHTML() + '</div>' +
         '<div class="mapbox"><canvas></canvas><div class="msun"><i></i></div><div class="mmoon"></div>' +
         '<svg class="mklines" aria-hidden="true"></svg><div class="mks"></div><p class="mapcredit">' + U.esc(tt.mapCredit) + '</p>' + spinHTML() + '</div>' +

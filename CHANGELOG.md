@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.30.2 · 18/11/2026
+
+- Téléphone en portrait, vue de la carte : un message en haut, « Tournez le téléphone pour afficher la carte. »
+
 ## 1.30.1 · 18/11/2026
 
 - Téléphone en portrait : la carte du monde (et le globe) n'est plus affichée, trop petite pour servir. La vue garde les cartes des lieux (horloges ou météo), une par ligne sur toute la largeur, et ses réglages ; le bouton plein écran est masqué. La carte revient en tournant le téléphone. Le globe ne tourne pas pendant qu'il est masqué.
