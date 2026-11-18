@@ -128,7 +128,7 @@ header.top {
 .land .view { display: -webkit-flex; display: flex; }
 .land .hero { width: 45%; -webkit-flex: none; flex: none; padding: 0 1rem 2.2rem; }
 .land .side { -webkit-flex: 1; flex: 1; min-width: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.land .side-in { padding: 1.1rem 1.3rem 2rem .3rem; }
+.land .side-in { padding: 2.2rem 1.3rem 2rem .3rem; }
 
 /* Portrait : tout défile, le cadran en tête. */
 .port .view { overflow-y: auto; -webkit-overflow-scrolling: touch; }

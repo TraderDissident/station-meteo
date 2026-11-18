@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.29.4 · 18/11/2026
+
+- Écran d'un lieu en paysage : la colonne de droite descend nettement plus (marge du haut doublée), loin des points des lieux.
+
 ## 1.29.3 · 18/11/2026
 
 - Écran d'un lieu en paysage : la colonne de droite descend un peu, elle ne touche plus les points des lieux.
