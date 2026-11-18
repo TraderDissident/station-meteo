@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.28.1 · 18/11/2026
+
+- Réglages de la pastille de bien-être du cadran : effet du passage entre la note et le libellé (apparaître comme avant, vers le haut, vers le bas) et durée du passage, de 0 à 2 s par pas de 0,1 s (0,5 s par défaut). Les deux réglages n'apparaissent que si l'alternance est active.
+
 ## 1.28.0 · 18/11/2026
 
 - Cadran d'un lieu : la pastille de bien-être alterne en boucle entre la note (« Comfort 6,9 ») et son libellé (« Correct »), avec un fondu, sans changer de taille. Fondu joué par la carte graphique, sans minuterie.

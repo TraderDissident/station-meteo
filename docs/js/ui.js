@@ -124,11 +124,38 @@
   function dialComfort(w, now) {
     var r = SM.comfort.now(w, now);
     if (!r) return '';
-    var tt = t(), lv = SM.comfort.level(r.note), n = SM.app.settings.comfortFlip || 0;
+    var tt = t(), st0 = SM.app.settings, lv = SM.comfort.level(r.note), n = st0.comfortFlip || 0;
     var a = tt.comfort + ' ' + R.comfortNum(r.note);
     if (!n) return '<span class="dcmf cmf-' + lv + '"><span>' + a + '</span></span>';
-    var st = ' style="-webkit-animation-duration:' + (n * 2) + 's;animation-duration:' + (n * 2) + 's"';
-    return '<span class="dcmf flip cmf-' + lv + '"><span class="fa"' + st + '>' + a + '</span><span class="fb"' + st + '>' + tt.comfortLevels[lv] + '</span></span>';
+    var names = flipKeyframes(n, st0.comfortFx || 'fade', U.has(st0.comfortFxDur) ? st0.comfortFxDur : 0.5);
+    var anim = function (nm) { var v = nm + ' ' + (n * 2) + 's linear infinite'; return ' style="-webkit-animation:' + v + ';animation:' + v + '"'; };
+    return '<span class="dcmf flip cmf-' + lv + '"><span class="fa"' + anim(names[0]) + '>' + a + '</span><span class="fb"' + anim(names[1]) + '>' + tt.comfortLevels[lv] + '</span></span>';
+  }
+  /* Les deux animations (note, libellé) pour un intervalle, un effet et une durée de passage donnés, écrites une
+     seule fois dans une feuille de style dédiée. Un cycle = 2 × intervalle ; chaque passage dure « dur » secondes.
+     Effets : apparaître (fondu), vers le haut (le texte sort par le haut, le suivant entre par le bas), vers le bas. */
+  var flipDone = {};
+  function flipKeyframes(n, fx, dur) {
+    var key = fx + '-' + n + '-' + Math.round(dur * 10), na = 'cfa-' + key, nb = 'cfb-' + key;
+    if (flipDone[key]) return [na, nb];
+    var cyc = n * 2, f = Math.min(dur, n * 0.9) / cyc * 100, e = 0.01;
+    var off = fx === 'up' ? -110 : (fx === 'down' ? 110 : 0);
+    function tr(y, o) {
+      var t3 = 'translate3d(0,' + y + '%,0)';
+      return '{opacity:' + o + ';-webkit-transform:' + t3 + ';transform:' + t3 + '}';
+    }
+    function p(x) { return Math.max(0, Math.min(100, x)).toFixed(3) + '%'; }
+    // La note : visible, puis sort (vers off), cachée, revient de l'autre côté (-off) pendant le dernier passage.
+    var A = p(0) + tr(0, 1) + p(50 - f) + tr(0, 1) + p(50 - e) + tr(off, 0) + p(100 - f) + tr(-off, 0) + p(100) + tr(0, 1);
+    // Le libellé : entre (de -off) pendant le premier passage, visible, puis sort (vers off).
+    var B = p(0) + tr(-off, 0) + p(50 - f) + tr(-off, 0) + p(50) + tr(0, 1) + p(100 - f) + tr(0, 1) + p(100 - e) + tr(off, 0);
+    var css = '@-webkit-keyframes ' + na + '{' + A.replace(/transform:/g, 'transform:') + '}@keyframes ' + na + '{' + A + '}' +
+      '@-webkit-keyframes ' + nb + '{' + B + '}@keyframes ' + nb + '{' + B + '}';
+    var el = document.getElementById('cflipcss');
+    if (!el) { el = document.createElement('style'); el.id = 'cflipcss'; document.head.appendChild(el); }
+    el.appendChild(document.createTextNode(css));
+    flipDone[key] = true;
+    return [na, nb];
   }
 
   /* ---------- blocs ---------- */
