@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.29.3 · 18/11/2026
+
+- Écran d'un lieu en paysage : la colonne de droite descend un peu, elle ne touche plus les points des lieux.
+
 ## 1.29.2 · 18/11/2026
 
 - Bouton de la vue d'un lieu : une carte (rectangle aux coins légèrement arrondis) à la place du soleil, en paysage, ou en portrait quand l'iPad est en portrait.
