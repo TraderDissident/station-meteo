@@ -397,9 +397,21 @@
     var noNet = !navigator.onLine, failed = !noNet && A.failures[p.id], off = noNet || failed;
     var cls = 'status' + (age > SM.STALE_BADGE_MS || off ? ' stale' : '');
     var sh = (off ? IC.ui('offline') + (noNet ? tt.offline : tt.retrying) + ' · ' : '') + U.esc(txt) + (age > SM.STALE_DATA_MS ? ' · ' + tt.stale : '');
+    // Rafraîchissement demandé au doigt, en cours.
+    if (A.manualFor === p.id && A.inflight[p.id]) { cls = 'status busy'; sh = U.esc(tt.loading); }
     if (st._k !== cls + sh) { st._k = cls + sh; st.className = cls; st.innerHTML = sh; }
     var demo = A.demo.time || A.demo.weather || A.demo.cycle;
     el.badge.style.display = demo ? '' : 'none';
+  }
+
+  function refreshNow() {
+    var p = A.places[A.idx];
+    if (!p || A.inflight[p.id] || Date.now() - (A.manualAt || 0) < 10000) return;
+    A.manualAt = Date.now(); A.manualFor = p.id; A.retryAt[p.id] = 0;
+    SM.diag.info('manual refresh ' + p.name);
+    var pr = load(p, true);
+    status();
+    pr.then(function () { A.manualFor = null; status(); });
   }
 
   /* ---------- données ---------- */
@@ -866,6 +878,8 @@
       var hv = e.target.closest('[data-hview]');
       if (hv) { A.setSetting('hourView', hv.getAttribute('data-hview')); render(0); return; }
       if (e.target.closest('.retry')) { var p = A.places[A.idx]; A.retryAt[p.id] = 0; load(p, true); return; }
+      // Toucher « Mis à jour à … » : nouvelle requête pour le lieu affiché (une toutes les 10 s au plus).
+      if (e.target.closest('.status')) { refreshNow(); return; }
       if (e.target.closest('#dots i')) { var dots = U.$$('#dots i'); show(dots.indexOf(e.target.closest('#dots i')), 1); return; }
       var row = e.target.closest('.drow');
       if (row) {

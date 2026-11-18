@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.25.2 · 18/11/2026
+
+Demande de Matt.
+
+- Écran d'un lieu : toucher « Mis à jour à … » relance tout de suite la météo du lieu affiché. « Chargement… » s'affiche pendant la requête, puis la nouvelle heure (ou « Météo injoignable, nouvel essai » en cas d'échec). Une requête manuelle toutes les 10 s au plus ; la zone à toucher déborde un peu du texte. Si le service n'a rien de plus récent, les chiffres restent les mêmes et seule l'heure avance.
+
 ## 1.25.1 · 17/11/2026
 
 - Mode liste, en paysage : les cartes sont plus hautes et occupent toute la hauteur de l'écran en 5 rangées (4 × 5 pour 20 lieux), sans vide en bas. Jamais plus de 5 cartes par colonne : au-delà de 20 lieux, une colonne de plus.
