@@ -985,3 +985,9 @@ html.phone .dsw { -webkit-flex-wrap: wrap; flex-wrap: wrap; }
   html.phone .mcards::before, html.phone .mcards::after { display: none; }
   html.phone .mcard, html.phone .mcard.clock { width: auto; margin: 0 0 10px; }
 }
+
+/* Défilement sous l'en-tête : un espace sous les points, puis le contenu s'efface en fondu au lieu d'être coupé net
+   contre le nom du lieu. */
+html.phone header.top { padding-bottom: 12px; }
+html.phone .port .view { -webkit-mask-image: -webkit-linear-gradient(top, transparent 0, #000 18px); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px); }
+html.phone .port .hero { padding-top: 18px; }

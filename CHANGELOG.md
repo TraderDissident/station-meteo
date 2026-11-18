@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.30.3 · 18/11/2026
+
+- Téléphone, écran d'un lieu : en faisant défiler, le contenu n'est plus coupé net contre les points des lieux. Un espace sous les points, puis un fondu en haut de la zone qui défile.
+
 ## 1.30.2 · 18/11/2026
 
 - Téléphone en portrait, vue de la carte : un message en haut, « Tournez le téléphone pour afficher la carte. »
