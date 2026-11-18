@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.29.5 · 18/11/2026
+
+- Haut de la web app flou sous iOS 27 : la barre d'état était déclarée translucide (`black-translucent`), la page passait dessous et iOS la floutait (même cause que Travel Hub 2.32.4). Barre d'état opaque noire (`black`). iOS fige ce réglage à l'ajout de l'icône : supprimer l'icône, recharger le site dans Safari jusqu'à voir 1.29.5 dans les Réglages, puis la rajouter à l'écran d'accueil.
+
 ## 1.29.4 · 18/11/2026
 
 - Écran d'un lieu en paysage : la colonne de droite descend nettement plus (marge du haut doublée), loin des points des lieux.
