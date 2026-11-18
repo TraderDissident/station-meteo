@@ -972,3 +972,13 @@ html.phone .seg .dsw button, html.phone #hbar .seg .dsw button { width: 44px; he
 html.phone .mapmode #hbar.open { left: 8px; right: 8px; width: auto; max-width: none; -webkit-transform: none; transform: none; box-sizing: border-box; }
 html.phone #hbar .seg button { margin: 0 8px 8px 0; padding: 0 14px; }
 html.phone .dsw { -webkit-flex-wrap: wrap; flex-wrap: wrap; }
+
+/* Carte du monde sur téléphone en portrait : trop petite pour servir (étiquettes les unes sur les autres). Seules les
+   cartes des lieux (horloges ou météo) restent ; la carte revient en tournant le téléphone. */
+@media (orientation: portrait) {
+  html.phone .mapwrap, html.phone [data-act=mapfull] { display: none; }
+  /* Les cartes des lieux, une par ligne sur toute la largeur (leur alignement sur la carte ne vaut plus). */
+  html.phone .mcards { -webkit-flex-direction: column; flex-direction: column; overflow-x: visible; padding: 8px 16px 24px !important; }
+  html.phone .mcards::before, html.phone .mcards::after { display: none; }
+  html.phone .mcard, html.phone .mcard.clock { width: auto; margin: 0 0 10px; }
+}

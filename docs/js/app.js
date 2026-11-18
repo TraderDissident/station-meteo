@@ -783,6 +783,7 @@
        d'un iPad réduit (11 px sur un iPhone). Les règles propres au téléphone sont préfixées html.phone (app.css). */
     A.phone = Math.min(w, h) < 500;
     if (A.phone) base = 16;
+    A.mapHidden = A.phone && !isLand();
     // Téléphone : le zoom à deux doigts reste possible (sur l'iPad, borne fixe, il reste bloqué).
     var vp = document.querySelector('meta[name=viewport]');
     if (A.phone && vp && vp.content.indexOf('user-scalable=no') >= 0) vp.content = 'width=device-width, initial-scale=1, viewport-fit=cover';

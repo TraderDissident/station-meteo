@@ -186,7 +186,8 @@
     function frame(ts) {
       if (!gl) return;
       raf = requestAnimationFrame(frame);
-      if (document.hidden) return;
+      // Téléphone en portrait : la carte est masquée (app.css), le globe ne tourne pas pour rien.
+      if (document.hidden || SM.app.mapHidden) return;
       if (last && ts - last < 32) return;
       var dt = last ? Math.min(ts - last, 100) / 1000 : 0;
       last = ts;

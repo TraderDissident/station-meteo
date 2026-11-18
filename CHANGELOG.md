@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.30.1 · 18/11/2026
+
+- Téléphone en portrait : la carte du monde (et le globe) n'est plus affichée, trop petite pour servir. La vue garde les cartes des lieux (horloges ou météo), une par ligne sur toute la largeur, et ses réglages ; le bouton plein écran est masqué. La carte revient en tournant le téléphone. Le globe ne tourne pas pendant qu'il est masqué.
+
 ## 1.30.0 · 18/11/2026
 
 Téléphone : toutes les tailles revues (plan de la session de conception). Rien ne change sur l'iPad : les nouvelles règles ne s'appliquent que si le plus petit côté de l'écran fait moins de 500 px (classe `phone`).
