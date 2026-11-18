@@ -943,7 +943,7 @@
           '<div id="hbar"></div>' +
           '<div class="hside r"><button class="iconbtn mapctl" data-act="mapctl" aria-label="Map options">' + IC.ui('sliders') + '</button>' +
           '<button class="iconbtn mapctl" data-act="mapfull" aria-label="Full screen">' + IC.ui('expand') + '</button>' +
-          '<button class="iconbtn" data-act="place" aria-label="City">' + IC.ui('sunny') + '</button>' +
+          '<button class="iconbtn" data-act="place" aria-label="City">' + IC.ui('card') + '</button>' +
           '<button class="iconbtn" data-act="list" aria-label="All places">' + IC.ui('list') + '</button>' +
           '<button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button>' +
           '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button></div>' +

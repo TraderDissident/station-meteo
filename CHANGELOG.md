@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.29.2 · 18/11/2026
+
+- Bouton de la vue d'un lieu : une carte (rectangle aux coins légèrement arrondis) à la place du soleil, en paysage, ou en portrait quand l'iPad est en portrait.
+
 ## 1.29.1 · 18/11/2026
 
 - Bien-être : la note affichée est celle au soleil. De jour, quand l'ombre fait gagner un demi-point ou plus, une ligne « À l'ombre » donne la note à l'ombre et son libellé. C'est rare : il faut un soleil fort (UV élevé) ou une forte chaleur.

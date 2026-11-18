@@ -767,3 +767,7 @@ html.listmode { background: #262d38; }
 .lcond { min-width: 0; -webkit-flex: 1; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lhl { -webkit-flex: none; flex: none; margin-left: .5rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .lhl .ic { width: .8rem; height: .8rem; vertical-align: -.08rem; margin: 0 .1rem 0 .45rem; }
+
+/* Icône de la vue d'un lieu : la carte suit l'orientation de l'écran. */
+.icp { display: none; }
+@media (orientation: portrait) { .icl { display: none; } .icp { display: inline; } }
