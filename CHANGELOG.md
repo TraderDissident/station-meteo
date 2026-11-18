@@ -1,5 +1,21 @@
 # Journal des modifications
 
+## 1.30.0 · 18/11/2026
+
+Téléphone : toutes les tailles revues (plan de la session de conception). Rien ne change sur l'iPad : les nouvelles règles ne s'appliquent que si le plus petit côté de l'écran fait moins de 500 px (classe `phone`).
+
+- Taille de base fixe de 16 px sur téléphone, au lieu de 11 px (l'app était un iPad réduit à 69 %). Chaque taille de texte de l'iPad a sa version téléphone, rangée dans l'échelle d'iOS : 17 px pour le texte courant, 15 px pour le secondaire, 13 px pour les légendes. Plus aucun texte sous 13 px, sauf les unités dans un dessin (« km/h » de la boussole, chiffres des horloges, 11 px).
+- Zones tactiles de 44 px au moins : boutons de l'en-tête, choix Conditions / Précipitations / Vent, « Modifier », boutons et choix des feuilles, lignes de la feuille des lieux, curseurs (pouce de 28 px), pastilles de couleur de la carte.
+- En-tête sur deux lignes en portrait : les boutons en haut, le nom du lieu dessous sur toute la largeur. Les points des lieux ne sont plus touchables (on change de lieu en glissant). Espace sous les points avant l'horloge.
+- 10 jours : jour, pictogramme, probabilité, min, barre, max ; les millimètres restent dans le détail du jour.
+- Détails : deux colonnes ; Bien-être et « Pourquoi cette note » sur toute la largeur ; boussole agrandie.
+- Feuilles (Lieux, Réglages, Diagnostic, Calibration du ressenti) en plein écran. Calibration : seule la note reste collée en haut, le détail des critères défile avec la feuille.
+- Mode liste : une carte par ligne en portrait, deux en paysage, à leur hauteur naturelle.
+- Carte du monde : une heure sur deux dans la bande des fuseaux, crédit des images retiré de la carte (il reste dans les Réglages, À propos), panneau des réglages de la carte sur la largeur de l'écran.
+- Paysage sur téléphone : en-tête sur une ligne, contenu sur une seule colonne centrée qui défile (le cadran ne tient pas en deux colonnes sur 393 px de haut).
+- Zoom à deux doigts rendu possible sur téléphone ; toujours bloqué sur l'iPad.
+- Calibration (iPad aussi) : les noms des cas types passent à la ligne au lieu de déborder sur les notes.
+
 ## 1.29.5 · 18/11/2026
 
 - Haut de la web app flou sous iOS 27 : la barre d'état était déclarée translucide (`black-translucent`), la page passait dessous et iOS la floutait (même cause que Travel Hub 2.32.4). Barre d'état opaque noire (`black`). iOS fige ce réglage à l'ajout de l'icône : supprimer l'icône, recharger le site dans Safari jusqu'à voir 1.29.5 dans les Réglages, puis la rajouter à l'écran d'accueil.

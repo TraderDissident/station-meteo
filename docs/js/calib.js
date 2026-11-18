@@ -60,6 +60,8 @@
     var tt = t(), g = tt.calib, s = st.s, c = st.c;
     var out = '<p class="about">' + U.esc(g.hint) + '</p>' +
       '<div class="cbres" id="cbres"></div>' +
+      // Téléphone : seule la note reste collée en haut ; le détail des critères suit, et défile avec la feuille.
+      (SM.app.phone ? '<div class="cbwhy tile" id="cbwhy"></div>' : '') +
       field(g.situation, '<p class="about" id="cbname"></p>' + seg('src', [['place', g.srcPlace]], st.src)) +
       field(g.time, seg('jour', [[1, g.day], [0, g.night]], s.jour) + (s.jour ? seg('soleil', [[1, g.sun], [0, g.shade]], st.soleil) : '')) +
       SIT.map(function (d) { return slider('s', d, g.sit[d[0]], s[d[0]]); }).join('') +
@@ -105,7 +107,9 @@
     }).join('');
     var tail = '<p class="sub">' + U.esc(other) + '</p><p class="sub">' + tt.comfortFeels + ' ' + num(r.fl, 0) + '° · ' + g.dew + ' ' + num(r.td, 0) + '°</p>' +
       '<p class="sub' + (r.lim ? ' cmfcap' : '') + '">' + (r.lim ? g.capped.replace('%1', num(r.brut)).replace('%2', tt.comfortCaps[r.lim]).replace('%3', num(r.note)) : g.noCap) + '</p>';
-    U.$('#cbres', st.body).innerHTML = '<div class="tile">' + head + tail + '</div><div class="tile">' + rows + '</div>';
+    var why = U.$('#cbwhy', st.body);
+    if (why) { why.innerHTML = rows; U.$('#cbres', st.body).innerHTML = '<div class="tile">' + head + tail + '</div>'; }
+    else U.$('#cbres', st.body).innerHTML = '<div class="tile">' + head + tail + '</div><div class="tile">' + rows + '</div>';
   }
   function cases() {
     var g = t().calib, D = SM.comfort.DEF;

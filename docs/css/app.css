@@ -287,7 +287,7 @@ header.top {
 .field.cbf > label { margin: .8rem 0 0; }
 .field.cbf .vrange { margin: .3rem 0 0; }
 .field.cbf .vends b { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
-table.cbcases th { white-space: normal; color: inherit; }
+table.kv.cbcases th { white-space: normal; color: inherit; }
 table.cbcases thead th { color: var(--muted); font-size: .75rem; }
 table.cbcases .n { text-align: right; white-space: nowrap; padding-left: .8rem; font-variant-numeric: tabular-nums; }
 table.cbcases tbody tr { cursor: pointer; border-top: 1px solid var(--line); }
@@ -771,3 +771,204 @@ html.listmode { background: #262d38; }
 /* Icône de la vue d'un lieu : la carte suit l'orientation de l'écran. */
 .icp { display: none; }
 @media (orientation: portrait) { .icl { display: none; } .icp { display: inline; } }
+
+/* ========== Téléphone (html.phone, plus petit côté sous 500 px ; jamais sur l’iPad) ==========
+   1 rem = 16 px (app.js, layout). Échelle de texte d’iOS : courant 17 px, secondaire 15 px, légende 13 px ; rien de
+   lisible sous 13 px, sauf les unités dans un dessin. Zones tactiles de 44 px au moins. */
+/* Textes : chaque règle de taille de l’iPad a sa version téléphone, dans le même ordre (la priorité entre règles
+   est gardée) ; les tailles sous 1 rem sont rangées dans l’échelle du téléphone, les autres restent en rem. */
+html.phone #pname { font-size: 1.45rem; }
+html.phone #pcountry { font-size: 15px; }
+html.phone #badge { font-size: 13px; }
+html.phone .clock .hm { font-size: 5.6rem; }
+html.phone .clock .ss { font-size: 2rem; }
+html.phone .date { font-size: 1.25rem; }
+html.phone .dial .temp { font-size: 6.4rem; }
+html.phone .dial .feels { font-size: 1.1rem; }
+html.phone .dcmf { font-size: 13px; }
+html.phone .dcol { font-size: 15px; }
+html.phone .dcol small { font-size: 13px; }
+html.phone .dial .label { font-size: 1.3rem; }
+html.phone .dial .dwind { font-size: 15px; }
+html.phone .empty .dial .label { font-size: 1.1rem; }
+html.phone .status { font-size: 13px; }
+html.phone .card h2, html.phone .tile h3 { font-size: 13px; }
+html.phone .summary { font-size: 1.18rem; }
+html.phone .alert { font-size: 15px; }
+html.phone .nb span { font-size: 13px; }
+html.phone .ht { font-size: 15px; }
+html.phone .tl { font-size: 17px; }
+html.phone .hp { font-size: 13px; }
+html.phone .hw { font-size: 13px; }
+html.phone .hs { font-size: 13px; }
+html.phone .dn { font-size: 17px; }
+html.phone .dp { font-size: 13px; }
+html.phone .dmin { font-size: 17px; }
+html.phone .dmax { font-size: 17px; }
+html.phone .dw { font-size: 13px; }
+html.phone .cmfl { font-size: 13px; }
+html.phone .cbmode { font-size: 13px; }
+html.phone .cbh { font-size: 17px; }
+html.phone table.cbcases thead th { font-size: 13px; }
+html.phone .cwr { font-size: 13px; }
+html.phone .lcmf { font-size: 13px; }
+html.phone .tile .big { font-size: 2.2rem; }
+html.phone .tile .big small { font-size: 15px; }
+html.phone .tile .sub { font-size: 13px; }
+html.phone .sunrow { font-size: 1.05rem; }
+html.phone .moonrow b { font-size: 1.1rem; }
+html.phone .polrow { font-size: 15px; }
+html.phone .credit { font-size: 13px; }
+html.phone .sheet-in h2 { font-size: 1.25rem; }
+html.phone .sheet-in h2 .hcount { font-size: 15px; }
+html.phone .field > label { font-size: 13px; }
+html.phone .seg button { font-size: 15px; }
+html.phone select { font-size: 17px; }
+html.phone .btn { font-size: 15px; }
+html.phone .btn.sm { font-size: 15px; }
+html.phone .about { font-size: 15px; }
+html.phone input.search { font-size: 17px; }
+html.phone .hint { font-size: 15px; }
+html.phone .prow .pn b { font-size: 1.05rem; }
+html.phone .prow .pn small { font-size: 13px; }
+html.phone table.kv { font-size: 15px; }
+html.phone pre.log { font-size: 13px; }
+html.phone #toast { font-size: 15px; }
+html.phone .zones span { font-size: 13px; }
+html.phone .mapcredit { font-size: 13px; }
+html.phone .mkt b { font-size: 15px; }
+html.phone .mkt span { font-size: 13px; }
+html.phone .mkt small { font-size: 13px; }
+html.phone .mview button { font-size: 13px; }
+html.phone .mstyle button { font-size: 13px; }
+html.phone .mswitch button { font-size: 13px; }
+html.phone .mcard.clock .mcbig .mctime { font-size: 1.8rem; }
+html.phone .mcard.clock .mct { font-size: 1.1rem; }
+html.phone .mcn { font-size: 17px; }
+html.phone .mcs { font-size: 13px; }
+html.phone .srow { font-size: 13px; }
+html.phone .mch b { font-size: 1.05rem; }
+html.phone .mch small { font-size: 13px; }
+html.phone .mcbig .mctime { font-size: 2.3rem; }
+html.phone .mcbig .mct { font-size: 1.7rem; }
+html.phone .tedit { font-size: 13px; }
+html.phone .editband { font-size: 13px; }
+html.phone .tadds span { font-size: 13px; }
+html.phone .tadd { font-size: 15px; }
+html.phone .card .hhead h2 { font-size: 1.05rem; }
+html.phone .hsub { font-size: 13px; }
+html.phone .hpop { font-size: 15px; }
+html.phone .hwv b { font-size: 1.25rem; }
+html.phone .hwv small { font-size: 13px; }
+html.phone .dmm { font-size: 15px; }
+html.phone .dpop { font-size: 17px; }
+html.phone .drange { font-size: 17px; }
+html.phone .drange small { font-size: 15px; }
+html.phone .port .mkt b { font-size: 13px; }
+html.phone .port .mkt span { font-size: 13px; }
+html.phone .port .mkt small { font-size: 13px; }
+html.phone .tpbtn { font-size: 17px; }
+html.phone .tpcol p { font-size: 13px; }
+html.phone .tplist button { font-size: 15px; }
+html.phone .tpfoot button { font-size: 15px; }
+html.phone .vends { font-size: 13px; }
+html.phone #hbar .seg button { font-size: 15px; }
+html.phone .gspeed button { font-size: 13px; }
+html.phone #logview h2, html.phone #bkview h2 { font-size: 1.15rem; }
+html.phone #logview .lgn, html.phone #bkview .lgn { font-size: 13px; }
+html.phone .lgbody { font-size: 13px; }
+html.phone .lrow.low { font-size: 15px; }
+html.phone .lname b { font-size: 1.3rem; }
+html.phone .lname small { font-size: 15px; }
+html.phone .ltemp { font-size: 2.7rem; }
+
+/* En-tête : boutons sur la première ligne (lieux à gauche, vues et réglages à droite), nom du lieu dessous, sur
+   toute la largeur. Les points des lieux ne sont qu'un repère : on change de lieu en glissant. */
+html.phone header.top { -webkit-flex-wrap: wrap; flex-wrap: wrap; height: auto; padding: 4px 16px 0; }
+html.phone .hside { -webkit-flex: none; flex: none; -webkit-order: 1; order: 1; }
+html.phone .hside.r { -webkit-flex: 1; flex: 1; -webkit-order: 2; order: 2; }
+html.phone .ptitle { -webkit-order: 3; order: 3; width: 100%; max-width: none; margin-top: 6px; }
+html.phone .ptitle > div:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.phone #hbar { -webkit-order: 4; order: 4; width: 100%; }
+html.phone .iconbtn { width: 44px; height: 44px; }
+html.phone .iconbtn .ic { width: 22px; height: 22px; }
+html.phone .hside.r .iconbtn { margin-left: 8px; }
+html.phone #pname { font-size: 22px; }
+html.phone #dots { height: 12px; margin-top: 6px; pointer-events: none; }
+
+/* Zones tactiles : 44 px de haut au moins pour tout ce qui se touche. */
+html.phone .seg button, html.phone .btn, html.phone .tpbtn { min-height: 44px; min-width: 44px; }
+html.phone header.top { padding-bottom: 8px; }
+html.phone .tedit { min-height: 44px; padding: 0 16px; }
+
+/* Blocs des détails : deux colonnes (les blocs larges en prennent deux). Boussole agrandie : ses lettres
+   à 13 px à l'écran, l'unité (mention dans le dessin) à 11 px. */
+html.phone .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-gap: 10px; }
+html.phone .compass { width: 9rem; height: 9rem; }
+html.phone .compass .cv { font-size: 13px; }
+html.phone .compass .cu { font-size: 7.7px; }
+html.phone .hview button { width: 48px; height: 44px; border-radius: 22px; }
+html.phone .hview { border-radius: 24px; }
+html.phone .hview button .ic { width: 22px; height: 22px; }
+html.phone .tile.wide { grid-column: span 2; }
+
+/* 10 jours : jour, pictogramme, probabilité, min, barre, max (les millimètres sont dans le détail du jour). */
+html.phone .drow { grid-template-columns: 5.6rem 2.2rem 2.8rem 2rem 1fr 2.3rem; grid-column-gap: 4px; min-height: 48px; }
+html.phone .drow .dp .mm { display: none; }
+html.phone .drow.vprecip { grid-template-columns: 5.6rem 1fr 3.8rem 4.4rem; }
+html.phone .drow.vwind { grid-template-columns: 5.6rem 1fr 7.6rem; }
+/* Bien-être et « Pourquoi cette note » sur toute la largeur : leurs jauges et leurs listes ne tiennent pas en demi-largeur. */
+html.phone .tslot[data-tile="comfort"], html.phone .tslot[data-tile="comfortWhy"] { grid-column: span 2; }
+html.phone .cwr { font-size: 15px; margin-top: 6px; }
+html.phone .cwr span { width: 7.5rem; }
+html.phone .cwr b { width: 2.2rem; }
+html.phone .cwb { height: 6px; border-radius: 3px; }
+html.phone .cmfbar { height: 8px; border-radius: 4px; }
+/* Premier élément sous les points des lieux : un vrai espace, comme sur l'iPad en paysage. */
+html.phone .port .hero { padding-top: 22px; }
+
+/* Feuilles (Lieux, Réglages, Diagnostic, Calibration) : plein écran, titre et fermeture en haut, sous la barre d'état. */
+html.phone .sheet-in { width: 100%; max-width: none; height: 100%; max-height: none; border: 0; border-radius: 0;
+  padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; }
+html.phone .sheet-in > header { padding: 8px 12px 8px 16px; }
+html.phone .sheet-in h2 { font-size: 22px; }
+html.phone .sheet-body { padding: 4px 16px 24px; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+html.phone .seg button { padding: 0 16px; margin: 0 8px 8px 0; }
+html.phone .field > label { margin: 22px 0 8px; }
+html.phone .vrange { height: 44px; margin: 4px 0 0; }
+html.phone .vrange::-webkit-slider-thumb { width: 28px; height: 28px; margin-top: -11px; }
+html.phone .vrange::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; }
+html.phone .btnrow .btn { margin: 0 8px 8px 0; }
+/* Calibration : la note collée en haut sur une colonne, petite, pour laisser les curseurs visibles. */
+html.phone .cbres { display: block; margin: 0 -16px; padding: 8px 16px; }
+html.phone .cbwhy { margin-top: 10px; min-height: 0; }
+html.phone .field.cbf > label { margin: 16px 0 0; }
+html.phone table.cbcases tbody tr { height: 48px; }
+html.phone .prow { min-height: 56px; padding: 4px 0; }
+html.phone .prow .mini { width: 44px; height: 44px; }
+html.phone .prow .pn { min-height: 44px; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-justify-content: center; justify-content: center; }
+html.phone .prow .grip { width: 44px; height: 44px; }
+html.phone table.cbcases { table-layout: fixed; }
+html.phone table.cbcases .n { width: 3.6rem; padding-left: 6px; }
+html.phone table.cbcases thead th:first-child { width: auto; }
+html.phone .cwr em { width: 3.6rem; white-space: nowrap; }
+
+/* Carte du monde : une heure sur deux au-dessus de la carte (24 heures à 13 px ne tiennent pas), l'heure du lieu
+   toujours affichée ; le crédit des images, qui recouvrait la carte, est dans les Réglages (À propos). */
+html.phone .zones span:nth-child(even):not(.me) { visibility: hidden; }
+html.phone .mapcredit { display: none; }
+html.phone .clk text { font-size: 11.6px; }
+html.phone .seg .dsw button, html.phone #hbar .seg .dsw button { width: 44px; height: 44px; min-width: 44px; margin: 0 8px 8px 0; }
+
+/* Téléphone en paysage : l'en-tête sur une seule ligne, le contenu sur une colonne centrée qui défile. */
+@media (orientation: landscape) {
+  html.phone header.top { -webkit-flex-wrap: nowrap; flex-wrap: nowrap; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  html.phone .ptitle { -webkit-order: 2; order: 2; width: auto; max-width: 50%; margin-top: 0; }
+  html.phone .hside.r { -webkit-order: 3; order: 3; }
+  html.phone .port .hero, html.phone .port .side-in { max-width: 620px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+}
+@media (orientation: landscape) { html.phone .hside { -webkit-flex: 1; flex: 1; } }
+/* Réglages de la carte : panneau sur la largeur de l'écran, pastilles de couleur sur deux lignes au besoin. */
+html.phone .mapmode #hbar.open { left: 8px; right: 8px; width: auto; max-width: none; -webkit-transform: none; transform: none; box-sizing: border-box; }
+html.phone #hbar .seg button { margin: 0 8px 8px 0; padding: 0 14px; }
+html.phone .dsw { -webkit-flex-wrap: wrap; flex-wrap: wrap; }

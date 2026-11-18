@@ -52,6 +52,8 @@
   // En paysage, jamais plus de 5 cartes par colonne : au-delà de 20 lieux, une colonne de plus.
   var ROWS = 5;
   function columns(n, land) {
+    // Téléphone : une carte par ligne en portrait, deux en paysage, à leur hauteur naturelle (la liste défile).
+    if (SM.app.phone) return land ? 2 : 1;
     if (land) return Math.max(n <= 8 ? 2 : (n <= 15 ? 3 : 4), Math.ceil(n / ROWS));
     return n <= 8 ? 1 : 2;
   }
@@ -84,7 +86,7 @@
       if (!grid) return;
       var cards = grid.children, land = document.getElementById('app').className.indexOf('land') >= 0;
       var h = '';
-      if (land && cards.length) {
+      if (land && cards.length && !SM.app.phone) {
         var cs = getComputedStyle(grid), m = parseFloat(getComputedStyle(cards[0]).marginTop) || 0;
         var avail = view.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
         h = Math.floor(avail / ROWS - 2 * m) + 'px';

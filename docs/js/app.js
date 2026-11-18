@@ -104,14 +104,15 @@
 
   /* ---------- rendu ---------- */
   function appClass() {
-    var land = isLand(), w = innerWidth, base = parseFloat(document.documentElement.style.fontSize) || 16;
+    // Téléphone en paysage : trop bas pour deux colonnes (le cadran n'y tient pas), tout défile sur une colonne.
+    var land = isLand() && !A.phone, w = innerWidth, base = parseFloat(document.documentElement.style.fontSize) || 16;
     // Colonne des prévisions trop étroite pour les 7 colonnes du tableau des jours : version resserrée.
     var narrow = (land ? w * 0.55 : w) < 31 * base;
     el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' + (A.mapFull ? ' mapfull' : '') : '') + (A.mode === 'list' ? ' listmode' : '');
     // Bouton plein écran de l'en-tête : flèches vers l'extérieur pour y entrer, vers l'intérieur pour en sortir.
     var fb = U.$('header [data-act=mapfull]'), want = A.mapFull ? 'shrink' : 'expand';
     if (fb && fb.getAttribute('data-icon') !== want) { fb.innerHTML = IC.ui(want); fb.setAttribute('data-icon', want); }
-    var hc = A.mode === 'map' ? 'mapmode' : (A.mode === 'list' ? 'listmode' : '');
+    var hc = (A.mode === 'map' ? 'mapmode' : (A.mode === 'list' ? 'listmode' : '')) + (A.phone ? (A.mode === 'place' ? '' : ' ') + 'phone' : '');
     if (document.documentElement.className !== hc) document.documentElement.className = hc;
   }
 
@@ -778,6 +779,13 @@
     var base = U.clamp(Math.min(w, h) / 768 * 16, 11, 19);
     // En paysage, le cadran (23,9 rem avec son anneau) doit tenir dans sa colonne de 45 %.
     if (isLand()) base = Math.min(base, w * 0.45 / 25.5);
+    /* Téléphone (plus petit côté sous 500 px) : taille de base fixe de 16 px, comme le texte courant d'iOS, au lieu
+       d'un iPad réduit (11 px sur un iPhone). Les règles propres au téléphone sont préfixées html.phone (app.css). */
+    A.phone = Math.min(w, h) < 500;
+    if (A.phone) base = 16;
+    // Téléphone : le zoom à deux doigts reste possible (sur l'iPad, borne fixe, il reste bloqué).
+    var vp = document.querySelector('meta[name=viewport]');
+    if (A.phone && vp && vp.content.indexOf('user-scalable=no') >= 0) vp.content = 'width=device-width, initial-scale=1, viewport-fit=cover';
     document.documentElement.style.fontSize = base.toFixed(2) + 'px';
     var hs = h + 'px';
     document.documentElement.style.height = hs; document.body.style.height = hs; el.app.style.height = hs;
