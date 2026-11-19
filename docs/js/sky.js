@@ -437,8 +437,6 @@
     var wc = weatherColors(alt, rising, info, cover, daylight);
     var cols = wc.cols, gray = wc.gray, kind = info.kind, lvl = info.level;
     S.light = cols;
-    S.top = cols[0];   // haut du ciel : la barre d'état du téléphone prend cette couleur (app.js, barColor)
-    if (SM.app && SM.app.barColor) SM.app.barColor();
     S.brightness = U.clamp(U.luma(cols[1]) * 0.6 + U.luma(cols[2]) * 0.4, 0, 1);
 
     var sp = screenPos(sun.az, alt, sc.lat);
@@ -486,7 +484,13 @@
     var deckC = mix3(gray, cols, 0.25)[0];
     var deckBg = 'linear-gradient(to bottom, ' + U.rgb(deckC, 0.95) + ' 0%, ' + U.rgb(deckC, 0.6) + ' 35%, ' + U.rgb(deckC, 0) + ' 75%)';
     if (deckBg !== S.deckKey) { S.deckKey = deckBg; deck.style.backgroundImage = deckBg; }
-    layer(deck, U.clamp((cover - 0.55) / 0.45, 0, 1), instant);
+    var deckA = U.clamp((cover - 0.55) / 0.45, 0, 1);
+    layer(deck, deckA, instant);
+    /* Couleur de la première ligne de pixels sous la barre d'état du téléphone (app.js, barColor) : haut du dégradé
+       du ciel, recouvert par le voile nuageux (opacité 0,95 en haut, fois celle de la couche). Mesuré sur 64 scènes
+       (8 moments × 8 temps) : écart de 0 à 2 sur 255 avec le rendu. */
+    S.top = U.mix(cols[0], deckC, 0.95 * deckA);
+    if (SM.app && SM.app.barColor) SM.app.barColor();
     };
 
     var partB = function () {

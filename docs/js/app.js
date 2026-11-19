@@ -682,9 +682,10 @@
   A.barColor = function () {
     if (!A.phone) return;
     var c;
-    if (A.sheet) c = [16, 24, 44];
+    // Feuille : son fond à 97 % sur le ciel voilé ; carte : moyenne de la première ligne de son dégradé radial.
+    if (A.sheet) c = [17, 25, 45];
     else if (A.mode === 'list') c = [38, 45, 56];
-    else if (A.mode === 'map') c = [9, 18, 40];
+    else if (A.mode === 'map') c = [7, 14, 29];
     else c = SM.sky.top || [11, 18, 38];
     var v = veilKey && veilKey !== '0' ? parseFloat(veilKey) : 0;
     if (v) c = U.mix(c, [0, 0, 0], v);

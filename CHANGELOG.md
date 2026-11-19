@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.31.2 · 19/11/2026
+
+- Téléphone, barre d'état : couleur mesurée sur le rendu réel. 64 scènes capturées (nuit, aube, lever, matin, midi, soir, coucher, crépuscule × clair, voilé, nuageux, couvert, brouillard, pluie, neige, orage) et comparées à la couleur donnée à la barre. Ciels clairs, voilés et nuageux : exacts. Couvert, brouillard, pluie, neige, orage : la 1.31.1 oubliait le voile nuageux du haut de l'écran (écart jusqu'à 21 sur 255) ; il est maintenant compté, écart de 3 sur 255 au plus. Liste, carte et feuilles : couleur de leur fond réel.
+
 ## 1.31.1 · 19/11/2026
 
 - Téléphone, barre d'état : en 1.31.0 elle restait bleu nuit (#0b1226, le fond de la page) au lieu de la couleur du ciel. iOS 26 et suivants teintent la barre avec le fond de la page et ignorent la couleur indiquée à part. Le fond de la page prend maintenant la couleur mesurée du haut du ciel (ou de la liste, de la carte, d'une feuille), dès la première image grâce à la dernière couleur connue. Pas besoin de refaire l'icône.
