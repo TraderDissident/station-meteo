@@ -1,4 +1,4 @@
-/* Mises à jour : compare la version en ligne à celle qui tourne, et sait repartir de zéro (service worker et caches effacés). */
+/* Mises à jour : compare la version en ligne à celle qui tourne, et recharge la page quand une autre version est en ligne. */
 (function () {
   'use strict';
   var KEY = 'sm-update-try';
@@ -16,21 +16,15 @@
     });
   };
 
-  // Efface tout ce qui garde l'ancienne version, puis recharge depuis le réseau.
+  /* Mise à jour : un simple rechargement, sans rien effacer. La page vient du réseau d'abord (sw.js), ses fichiers
+     portent la nouvelle version dans leur adresse, et le nouveau service worker remplace l'ancien cache quand il
+     s'active. Jusqu'à la 1.30.6, on effaçait les caches et on désinscrivait le service worker avant de recharger :
+     sur l'iPad (iOS 12), la page repartait alors gelée dès la première seconde, par blocs d'une à deux minutes
+     (journal du 19/11 : FROZEN 64 s, 89 s puis 126 s juste après « clearing caches and reloading »). */
   U.force = function () {
     try { localStorage.setItem(KEY, String(Date.now())); } catch (e) { /* stockage indisponible */ }
-    SM.diag.info('update: clearing caches and reloading'); SM.diag.flush();
-    var jobs = [];
-    if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
-      jobs.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
-        return Promise.all(regs.map(function (r) { return r.unregister(); }));
-      }));
-    }
-    if (window.caches) {
-      jobs.push(caches.keys().then(function (keys) { return Promise.all(keys.filter(function (k) { return k !== 'sm-diag'; }).map(function (k) { return caches.delete(k); })); }));
-    }
-    var go = function () { location.replace(location.pathname + '?r=' + Date.now()); };
-    Promise.all(jobs).then(go, go);
+    SM.diag.info('update: reloading, nothing cleared'); SM.diag.flush();
+    location.replace(location.pathname + '?r=' + Date.now());
   };
 
   /* Bouton « Forcer la mise à jour » : seulement si une autre version est en ligne. Une app à jour n'efface plus
