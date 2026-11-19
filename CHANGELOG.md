@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.31.0 · 19/11/2026
+
+- Téléphone : la barre d'état n'est plus une bande noire. Elle reste opaque (pas de flou), mais prend la couleur de ce qui est juste dessous : le haut du ciel en vue d'un lieu (elle suit les changements de ciel et de lieu), le fond de la liste ou de la carte, le fond d'une feuille ouverte, et elle s'assombrit avec le voile de nuit. Réglage figé par iOS à l'ajout de l'icône : supprimer l'icône du téléphone, recharger le site dans Safari jusqu'à voir 1.31.0 dans les Réglages, puis la rajouter.
+- iPad : barre d'état translucide comme à l'origine (iOS 12 ne sait pas colorer une barre opaque). Rien ne change pour une icône déjà installée.
+
 ## 1.30.8 · 19/11/2026
 
 - Version de test, sans autre changement : première mise à jour qui passe par le nouveau mécanisme (rechargement sans effacement), pour vérifier sur l'iPad qu'elle ne gèle plus. Le journal doit montrer « update: reloading, nothing cleared », puis un démarrage normal.

@@ -437,6 +437,8 @@
     var wc = weatherColors(alt, rising, info, cover, daylight);
     var cols = wc.cols, gray = wc.gray, kind = info.kind, lvl = info.level;
     S.light = cols;
+    S.top = cols[0];   // haut du ciel : la barre d'état du téléphone prend cette couleur (app.js, barColor)
+    if (SM.app && SM.app.barColor) SM.app.barColor();
     S.brightness = U.clamp(U.luma(cols[1]) * 0.6 + U.luma(cols[2]) * 0.4, 0, 1);
 
     var sp = screenPos(sun.az, alt, sc.lat);

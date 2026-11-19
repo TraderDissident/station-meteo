@@ -114,6 +114,7 @@
     if (fb && fb.getAttribute('data-icon') !== want) { fb.innerHTML = IC.ui(want); fb.setAttribute('data-icon', want); }
     var hc = (A.mode === 'map' ? 'mapmode' : (A.mode === 'list' ? 'listmode' : '')) + (A.phone ? (A.mode === 'place' ? '' : ' ') + 'phone' : '');
     if (document.documentElement.className !== hc) document.documentElement.className = hc;
+    A.barColor();
   }
 
   /* iOS 12 en plein écran garde parfois les dimensions d'avant la rotation : window.orientation fait foi. */
@@ -601,6 +602,7 @@
     else if (which === 'calib') SM.calib.open(body);
     else SM.settings.openDiag(body);
     sh.className = 'sheet open';
+    A.barColor();
   };
   /* Fermer une feuille ne reconstruit la vue et le ciel que si un réglage, un lieu ou la démo a changé pendant
      qu'elle était ouverte. Sans changement, la feuille disparaît, c'est tout : reconstruire figeait l'iPad 2 s.
@@ -612,6 +614,7 @@
     A.sheet = null;
     el.sheet.className = 'sheet';
     U.$('.sheet-body', el.sheet).innerHTML = '';
+    A.barColor();
     if (silent) return;
     if (sheetDirty) { sheetDirty = false; render(0); scene(true); did = 'changed · view and sky rebuilt'; }
     else if (A.mode === 'place') {
@@ -669,7 +672,28 @@
     SM.diag.info(on ? 'night dim on (' + key + ')' : 'night dim off');
     el.veil.style.opacity = key;
     el.veil.className = on ? 'on' : '';
+    A.barColor();
   }
+  /* Barre d'état du téléphone (réglage « default » d'iOS, opaque, sans le flou de la barre translucide) : elle
+     prend la couleur de ce qui est juste dessous, pour ne pas faire une bande noire. Haut du ciel en vue lieu, fond
+     de la liste ou de la carte, fond d'une feuille ouverte ; assombrie comme l'écran par le voile de nuit.
+     iOS 12 ne colore pas la barre : sur l'iPad, rien ne change (barre translucide, voir layout). */
+  var barKey = '';
+  A.barColor = function () {
+    if (!A.phone) return;
+    var c;
+    if (A.sheet) c = [16, 24, 44];
+    else if (A.mode === 'list') c = [38, 45, 56];
+    else if (A.mode === 'map') c = [9, 18, 40];
+    else c = SM.sky.top || [11, 18, 38];
+    var v = veilKey && veilKey !== '0' ? parseFloat(veilKey) : 0;
+    if (v) c = U.mix(c, [0, 0, 0], v);
+    var hex = '#' + c.map(function (x) { var h = Math.round(U.clamp(x, 0, 255)).toString(16); return h.length < 2 ? '0' + h : h; }).join('');
+    if (hex === barKey) return;
+    barKey = hex;
+    var m = document.querySelector('meta[name=theme-color]');
+    if (m) m.setAttribute('content', hex);
+  };
   var veilKey = '', veilTimer = 0;
   // Un seul réveil programmé pour la fin du délai d'inactivité, au lieu d'une vérification toutes les 2 s.
   function veilLater() {
@@ -802,6 +826,10 @@
     // Téléphone : le zoom à deux doigts reste possible (sur l'iPad, borne fixe, il reste bloqué).
     var vp = document.querySelector('meta[name=viewport]');
     if (A.phone && vp && vp.content.indexOf('user-scalable=no') >= 0) vp.content = 'width=device-width, initial-scale=1, viewport-fit=cover';
+    /* Barre d'état, réglage lu par iOS quand on ajoute l'icône : opaque et colorée sur téléphone (A.barColor),
+       translucide sur l'iPad comme à l'origine (iOS 12 ne sait pas colorer une barre opaque). */
+    var sb = document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]'), want = A.phone ? 'default' : 'black-translucent';
+    if (sb && sb.getAttribute('content') !== want) sb.setAttribute('content', want);
     document.documentElement.style.fontSize = base.toFixed(2) + 'px';
     var hs = h + 'px';
     document.documentElement.style.height = hs; document.body.style.height = hs; el.app.style.height = hs;
