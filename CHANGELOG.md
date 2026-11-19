@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.31.5 · 19/11/2026
+
+- Barre d'état colorée comme le haut du ciel sur tout iOS récent, iPad compris (elle restait noire sur un iPad sous iOS 27). La règle ne dépend plus de la taille de l'écran mais de la version d'iOS : seul iOS 12 et avant (l'iPad mini de la station) garde la barre translucide et la hauteur de l'écran. Sur un iPad récent, l'icône doit être refaite une fois (réglage figé par iOS à l'ajout).
+- Limite mesurée au simulateur d'iPad (iOS 27, app installée) : iOS y fixe la couleur de la barre au lancement de l'app et ne la change plus ensuite, ni en changeant de lieu ni en tournant l'iPad. La barre prend donc le ciel du lieu affiché au lancement. Sur iPhone, elle suit en direct.
+
 ## 1.31.4 · 19/11/2026
 
 - Téléphone, app installée : le bas de l'écran était coupé (boutons « Forcer la mise à jour » et « Diagnostic » sous la barre d'accueil, fin des feuilles et des listes). Depuis la barre d'état opaque (1.31), la page commence sous la barre, mais l'app prenait encore la hauteur totale de l'écran : elle dépassait d'autant en bas. Sur téléphone, elle prend maintenant la hauteur réelle de la page ; l'iPad (barre translucide) garde la hauteur de l'écran.

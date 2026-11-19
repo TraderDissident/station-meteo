@@ -124,12 +124,15 @@
   }
 
   /* Hauteur réelle de l'écran : en plein écran avec barre d'état translucide, iOS 12 retire 20 px en bas. */
+  /* iOS 12 et avant (l'iPad mini de la station) : barre d'état translucide, hauteur de l'écran, pas de couleur de
+     barre. Tout iOS récent, iPhone comme iPad (iPadOS 13+ se présente comme un Mac) : barre opaque colorée par l'app. */
+  A.oldIOS = (function () { var m = /OS (\d+)_\d+.* like Mac OS X/.exec(navigator.userAgent); return !!m && +m[1] < 13; })();
   function screenSize() {
     var w = innerWidth, h = innerHeight;
     /* Téléphone : barre d'état opaque (1.31), la page commence sous la barre ; la hauteur de l'écran la dépasserait
        d'autant et couperait le bas (boutons des feuilles, fin des listes). Seul l'iPad (iOS 12, barre translucide)
        a besoin de la hauteur de l'écran. */
-    if (navigator.standalone && screen.width && screen.height && Math.min(screen.width, screen.height) >= 500) {
+    if (navigator.standalone && screen.width && screen.height && A.oldIOS) {
       var a = Math.min(screen.width, screen.height), b = Math.max(screen.width, screen.height);
       w = isLand() ? b : a; h = isLand() ? a : b;
     }
@@ -683,7 +686,7 @@
      iOS 12 ne colore pas la barre : sur l'iPad, rien ne change (barre translucide, voir layout). */
   var barKey = '';
   A.barColor = function () {
-    if (!A.phone) return;
+    if (A.oldIOS) return;
     var c;
     // Feuille : son fond à 97 % sur le ciel voilé ; carte : moyenne de la première ligne de son dégradé radial.
     if (A.sheet) c = [17, 25, 45];
@@ -836,7 +839,7 @@
     if (A.phone && vp && vp.content.indexOf('user-scalable=no') >= 0) vp.content = 'width=device-width, initial-scale=1, viewport-fit=cover';
     /* Barre d'état, réglage lu par iOS quand on ajoute l'icône : opaque et colorée sur téléphone (A.barColor),
        translucide sur l'iPad comme à l'origine (iOS 12 ne sait pas colorer une barre opaque). */
-    var sb = document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]'), want = A.phone ? 'default' : 'black-translucent';
+    var sb = document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]'), want = A.oldIOS ? 'black-translucent' : 'default';
     if (sb && sb.getAttribute('content') !== want) sb.setAttribute('content', want);
     document.documentElement.style.fontSize = base.toFixed(2) + 'px';
     var hs = h + 'px';
