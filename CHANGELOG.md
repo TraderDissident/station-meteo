@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.31.1 · 19/11/2026
+
+- Téléphone, barre d'état : en 1.31.0 elle restait bleu nuit (#0b1226, le fond de la page) au lieu de la couleur du ciel. iOS 26 et suivants teintent la barre avec le fond de la page et ignorent la couleur indiquée à part. Le fond de la page prend maintenant la couleur mesurée du haut du ciel (ou de la liste, de la carte, d'une feuille), dès la première image grâce à la dernière couleur connue. Pas besoin de refaire l'icône.
+
 ## 1.31.0 · 19/11/2026
 
 - Téléphone : la barre d'état n'est plus une bande noire. Elle reste opaque (pas de flou), mais prend la couleur de ce qui est juste dessous : le haut du ciel en vue d'un lieu (elle suit les changements de ciel et de lieu), le fond de la liste ou de la carte, le fond d'une feuille ouverte, et elle s'assombrit avec le voile de nuit. Réglage figé par iOS à l'ajout de l'icône : supprimer l'icône du téléphone, recharger le site dans Safari jusqu'à voir 1.31.0 dans les Réglages, puis la rajouter.

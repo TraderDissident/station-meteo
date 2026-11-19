@@ -691,8 +691,11 @@
     var hex = '#' + c.map(function (x) { var h = Math.round(U.clamp(x, 0, 255)).toString(16); return h.length < 2 ? '0' + h : h; }).join('');
     if (hex === barKey) return;
     barKey = hex;
+    // iOS 26 et suivants teintent la barre avec le fond de la page (html), pas avec theme-color : les deux suivent.
+    document.documentElement.style.backgroundColor = hex;
     var m = document.querySelector('meta[name=theme-color]');
     if (m) m.setAttribute('content', hex);
+    try { localStorage.setItem('sm.bar', hex); } catch (e) { /* rien */ }
   };
   var veilKey = '', veilTimer = 0;
   // Un seul réveil programmé pour la fin du délai d'inactivité, au lieu d'une vérification toutes les 2 s.
