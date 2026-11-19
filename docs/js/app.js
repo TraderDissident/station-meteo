@@ -694,6 +694,10 @@
     barKey = hex;
     // iOS 26 et suivants teintent la barre avec le fond de la page (html), pas avec theme-color : les deux suivent.
     document.documentElement.style.backgroundColor = hex;
+    document.body.style.backgroundColor = hex;
+    var strip = document.getElementById('barstrip');
+    if (!strip) { strip = document.createElement('div'); strip.id = 'barstrip'; document.body.appendChild(strip); }
+    strip.style.backgroundColor = hex;
     var m = document.querySelector('meta[name=theme-color]');
     if (m) m.setAttribute('content', hex);
     try { localStorage.setItem('sm.bar', hex); } catch (e) { /* rien */ }

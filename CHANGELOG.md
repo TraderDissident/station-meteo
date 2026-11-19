@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.31.3 · 19/11/2026
+
+- Téléphone, barre d'état : la couleur n'était pas appliquée. Mesuré au simulateur iOS 27 avec une page d'essai : iOS teinte la barre avec la couleur unie d'un élément fixe collé en haut de la page, sinon avec le fond de body, et seulement en dernier avec celui de html (le seul que les 1.31.1 et 1.31.2 réglaient). L'app pose maintenant une fine bande fixe en haut, à la couleur du haut du ciel, et règle aussi body ; la barre suit en direct les changements de lieu et de vue.
+- Vérifié au simulateur iOS 27, dans Safari (8 scènes, écart de 1 sur 255 entre la barre et le ciel) puis en app installée sur l'écran d'accueil : Lisbonne de jour, barre #4373b3, ciel #4373b2 ; liste et nuit sans cassure.
+
 ## 1.31.2 · 19/11/2026
 
 - Téléphone, barre d'état : couleur mesurée sur le rendu réel. 64 scènes capturées (nuit, aube, lever, matin, midi, soir, coucher, crépuscule × clair, voilé, nuageux, couvert, brouillard, pluie, neige, orage) et comparées à la couleur donnée à la barre. Ciels clairs, voilés et nuageux : exacts. Couvert, brouillard, pluie, neige, orage : la 1.31.1 oubliait le voile nuageux du haut de l'écran (écart jusqu'à 21 sur 255) ; il est maintenant compté, écart de 3 sur 255 au plus. Liste, carte et feuilles : couleur de leur fond réel.

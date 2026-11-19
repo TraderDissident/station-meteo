@@ -775,6 +775,10 @@ html.listmode { background: #262d38; }
 /* Bouton inactif (mise à jour quand l'app est déjà à jour) : visible, mais grisé et sans effet. */
 .btn:disabled { opacity: .4; cursor: default; }
 
+/* Barre d'état du téléphone : iOS 26+ la teinte avec la couleur unie d'un élément fixe collé en haut de la page
+   (mesuré au simulateur iOS 27 : ni le fond de html, ni un dégradé ne sont pris quand cet élément existe). */
+#barstrip { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 0; pointer-events: none; }
+
 /* ========== Téléphone (html.phone, plus petit côté sous 500 px ; jamais sur l’iPad) ==========
    1 rem = 16 px (app.js, layout). Échelle de texte d’iOS : courant 17 px, secondaire 15 px, légende 13 px ; rien de
    lisible sous 13 px, sauf les unités dans un dessin. Zones tactiles de 44 px au moins. */
