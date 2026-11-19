@@ -126,7 +126,10 @@
   /* Hauteur réelle de l'écran : en plein écran avec barre d'état translucide, iOS 12 retire 20 px en bas. */
   function screenSize() {
     var w = innerWidth, h = innerHeight;
-    if (navigator.standalone && screen.width && screen.height) {
+    /* Téléphone : barre d'état opaque (1.31), la page commence sous la barre ; la hauteur de l'écran la dépasserait
+       d'autant et couperait le bas (boutons des feuilles, fin des listes). Seul l'iPad (iOS 12, barre translucide)
+       a besoin de la hauteur de l'écran. */
+    if (navigator.standalone && screen.width && screen.height && Math.min(screen.width, screen.height) >= 500) {
       var a = Math.min(screen.width, screen.height), b = Math.max(screen.width, screen.height);
       w = isLand() ? b : a; h = isLand() ? a : b;
     }
@@ -695,9 +698,6 @@
     // iOS 26 et suivants teintent la barre avec le fond de la page (html), pas avec theme-color : les deux suivent.
     document.documentElement.style.backgroundColor = hex;
     document.body.style.backgroundColor = hex;
-    var strip = document.getElementById('barstrip');
-    if (!strip) { strip = document.createElement('div'); strip.id = 'barstrip'; document.body.appendChild(strip); }
-    strip.style.backgroundColor = hex;
     var m = document.querySelector('meta[name=theme-color]');
     if (m) m.setAttribute('content', hex);
     try { localStorage.setItem('sm.bar', hex); } catch (e) { /* rien */ }

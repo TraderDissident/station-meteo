@@ -775,10 +775,6 @@ html.listmode { background: #262d38; }
 /* Bouton inactif (mise à jour quand l'app est déjà à jour) : visible, mais grisé et sans effet. */
 .btn:disabled { opacity: .4; cursor: default; }
 
-/* Barre d'état du téléphone : iOS 26+ la teinte avec la couleur unie d'un élément fixe collé en haut de la page
-   (mesuré au simulateur iOS 27 : ni le fond de html, ni un dégradé ne sont pris quand cet élément existe). */
-#barstrip { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 0; pointer-events: none; }
-
 /* ========== Téléphone (html.phone, plus petit côté sous 500 px ; jamais sur l’iPad) ==========
    1 rem = 16 px (app.js, layout). Échelle de texte d’iOS : courant 17 px, secondaire 15 px, légende 13 px ; rien de
    lisible sous 13 px, sauf les unités dans un dessin. Zones tactiles de 44 px au moins. */
@@ -1002,3 +998,9 @@ html.phone .port .hero { padding-top: 18px; }
 /* Lune : pictogramme plus petit en demi-largeur, le texte prend la place qui reste et passe à la ligne. */
 html.phone .moonrow svg { width: 2.8rem; height: 2.8rem; margin-right: 10px; }
 html.phone .moonrow > div { min-width: 0; }
+/* Bas de l'écran du téléphone : le contenu défilant finit au-dessus de la barre d'accueil d'iOS, avec une marge. */
+html.phone .sheet-body { padding-bottom: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+html.phone .sheet-in { padding-bottom: 0; }
+html.phone .port .side-in { padding-bottom: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+html.phone .lgrid { padding-bottom: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+html.phone .mcards { padding-bottom: 24px !important; padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important; }

@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.31.4 · 19/11/2026
+
+- Téléphone, app installée : le bas de l'écran était coupé (boutons « Forcer la mise à jour » et « Diagnostic » sous la barre d'accueil, fin des feuilles et des listes). Depuis la barre d'état opaque (1.31), la page commence sous la barre, mais l'app prenait encore la hauteur totale de l'écran : elle dépassait d'autant en bas. Sur téléphone, elle prend maintenant la hauteur réelle de la page ; l'iPad (barre translucide) garde la hauteur de l'écran.
+- Marge de bas au-dessus de la barre d'accueil d'iOS pour tout ce qui défile : feuilles, écran d'un lieu, liste, cartes de la vue carte.
+- Barre d'état : la bande de 2 px de la 1.31.3 est retirée. Mesuré au simulateur iOS 27 : iOS l'ignore et prend la couleur du fond de body (fixe), que l'app règle déjà. Reste ouvert : avec une feuille ouverte (Réglages, Lieux…), la barre garde la couleur du ciel ; aucun réglage essayé au simulateur ne la fait changer.
+
 ## 1.31.3 · 19/11/2026
 
 - Téléphone, barre d'état : la couleur n'était pas appliquée. Mesuré au simulateur iOS 27 avec une page d'essai : iOS teinte la barre avec la couleur unie d'un élément fixe collé en haut de la page, sinon avec le fond de body, et seulement en dernier avec celui de html (le seul que les 1.31.1 et 1.31.2 réglaient). L'app pose maintenant une fine bande fixe en haut, à la couleur du haut du ciel, et règle aussi body ; la barre suit en direct les changements de lieu et de vue.
