@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.30.8 · 19/11/2026
+
+- Version de test, sans autre changement : première mise à jour qui passe par le nouveau mécanisme (rechargement sans effacement), pour vérifier sur l'iPad qu'elle ne gèle plus. Le journal doit montrer « update: reloading, nothing cleared », puis un démarrage normal.
+
 ## 1.30.7 · 19/11/2026
 
 - Mise à jour sans effacement : l'app recharge simplement la page, qu'elle se mette à jour seule ou par le bouton. Jusqu'ici elle effaçait d'abord ses fichiers en réserve et désinscrivait son service worker. Sur l'iPad (iOS 12), la page repartait alors gelée dès la première seconde, par blocs d'une à deux minutes pendant cinq à six minutes : toucher, boutons et défilement morts, seules les animations continuaient (journal de l'iPad du 19/11 : FROZEN 64 s, 89 s puis 126 s juste après le forçage). Cause exacte dans iOS non établie. La page vient déjà du réseau à chaque ouverture et le nouveau service worker remplace l'ancien cache de lui-même : l'effacement n'était plus nécessaire depuis la 1.5.0. Le passage de la 1.30.6 à cette version utilise encore l'ancien mécanisme une dernière fois.
