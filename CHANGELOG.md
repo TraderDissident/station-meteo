@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.30.6 · 19/11/2026
+
+- Fermer une feuille (Réglages, Lieux, Diagnostic, Calibration) sans rien changer ne reconstruit plus la vue ni le ciel : l'iPad se figeait 2 s à chaque fermeture (défaut ancien, déjà présent en 1.28.2). La vue et le ciel ne sont reconstruits que si un réglage, un lieu ou la démo a changé ; une météo arrivée entre-temps est affichée sans toucher au ciel. Le journal note chaque fermeture (« sheet closed · settings · unchanged · 0 ms »).
+
 ## 1.30.5 · 18/11/2026
 
 - Réglages, « Forcer la mise à jour » : le bouton n'est actif que si une autre version est en ligne. Il est grisé pendant la vérification, hors connexion et quand l'app est à jour ; le texte au-dessus dit l'état (« Recherche de la version en ligne… », « C'est la dernière version. », « Version x disponible. »). Le code refuse aussi le forçage dans ces cas, même sans passer par le bouton. La mise à jour automatique au démarrage ne change pas.

@@ -578,6 +578,7 @@
     var cur = A.places[A.idx] && A.places[A.idx].id;
     A.places = list;
     SM.store.savePlaces(list);
+    sheetDirty = true;
     var i = 0;
     list.forEach(function (p, k) { if (p.id === cur) i = k; });
     A.idx = i;
@@ -589,6 +590,7 @@
 
   /* ---------- feuilles ---------- */
   A.open = function (which) {
+    if (!A.sheet) sheetDirty = false;
     A.close(true);
     A.sheet = which;
     var sh = el.sheet, tt = I.t();
@@ -600,12 +602,23 @@
     else SM.settings.openDiag(body);
     sh.className = 'sheet open';
   };
+  /* Fermer une feuille ne reconstruit la vue et le ciel que si un réglage, un lieu ou la démo a changé pendant
+     qu'elle était ouverte. Sans changement, la feuille disparaît, c'est tout : reconstruire figeait l'iPad 2 s.
+     La météo arrivée entre-temps (everyMinute saute le rendu sous une feuille) est rattrapée, sans toucher au ciel. */
+  var sheetDirty = false;
   A.close = function (silent) {
     if (!A.sheet) return;
+    var which = A.sheet, t0 = Date.now(), did = 'unchanged';
     A.sheet = null;
     el.sheet.className = 'sheet';
     U.$('.sheet-body', el.sheet).innerHTML = '';
-    if (!silent) { render(0); scene(true); }
+    if (silent) return;
+    if (sheetDirty) { sheetDirty = false; render(0); scene(true); did = 'changed · view and sky rebuilt'; }
+    else if (A.mode === 'place') {
+      var p = A.places[A.idx], w = p && A.data[p.id];
+      if (w && hourKey(w) !== A.hourKey) { render(0); did = 'unchanged · newer weather shown'; }
+    }
+    SM.diag.info('sheet closed · ' + which + ' · ' + did + ' · ' + (Date.now() - t0) + ' ms');
   };
 
   A.render = function () { render(0); };
@@ -613,6 +626,7 @@
   A.setSetting = function (key, v) {
     A.settings[key] = v;
     SM.store.saveSettings(A.settings);
+    sheetDirty = true;
     if (key === 'lang') { A.settings.langChosen = true; SM.store.saveSettings(A.settings); I.setLang(v); if (A.sheet) A.open(A.sheet); }
     if (key === 'motion') SM.sky.setMotion(v);
     if (key === 'veil' || key === 'veilLevel' || key === 'veilFrom' || key === 'veilTo') veil();
@@ -620,6 +634,7 @@
 
   A.setDemo = function (d) {
     Object.keys(d).forEach(function (k) { A.demo[k] = d[k]; });
+    sheetDirty = true;
     if (d.cycle) { A.demo.cycleStart = demoMs(A.places[A.idx], 'nuit'); A.demo.cycleRealStart = Date.now(); }
     restartSkyTimer();
     scene(true);
