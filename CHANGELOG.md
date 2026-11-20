@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.32.1 · 20/11/2026 · Lieu · Alertes à la taille du résumé
+
+- Les alertes prennent la taille du résumé (texte, pictogramme, marges, coins) ; résumé, alertes et Conditions sont espacés pareil.
+
 ## 1.32.0 · 20/11/2026
 
 - Bannière « Installer Station Météo » dans Safari (la même que dans les autres apps) : la marche à suivre pour l'ajouter à l'écran d'accueil.

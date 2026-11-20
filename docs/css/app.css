@@ -195,16 +195,16 @@ header.top {
 .card h2 .ic, .tile h3 .ic { width: 1rem; height: 1rem; margin-right: .45rem; }
 .summary { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; font-size: 1.18rem; padding: .85rem 1rem; }
 .summary .ic { width: 1.5rem; height: 1.5rem; margin-right: .7rem; -webkit-flex: none; flex: none; color: #9fd4ff; }
-.alerts { margin-bottom: .8rem; }
+/* Alertes à la taille du résumé, même espacement que les cartes. */
 .alert {
   display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
-  padding: .55rem .9rem; margin-bottom: .45rem; border-radius: .85rem; font-size: .95rem;
+  padding: .85rem 1rem; margin-bottom: .8rem; border-radius: 1.1rem; font-size: 1.18rem;
   background: rgba(110, 72, 8, .42); border: 1px solid rgba(255, 205, 120, .5);
 }
 .alert .ic { color: #ffd479; }
 .alert.l2 { background: rgba(120, 28, 18, .48); border-color: rgba(255, 150, 130, .55); }
 .alert.l2 .ic { color: #ff9d8f; }
-.alert .ic { width: 1.15rem; height: 1.15rem; margin-right: .6rem; -webkit-flex: none; flex: none; }
+.alert .ic { width: 1.5rem; height: 1.5rem; margin-right: .7rem; -webkit-flex: none; flex: none; }
 
 /* Pluie dans les 3 heures */
 .nbars { display: -webkit-flex; display: flex; height: 5.2rem; -webkit-align-items: flex-end; align-items: flex-end; }
@@ -797,7 +797,6 @@ html.phone .empty .dial .label { font-size: 1.1rem; }
 html.phone .status { font-size: 13px; }
 html.phone .card h2, html.phone .tile h3 { font-size: 13px; }
 html.phone .summary { font-size: 1.18rem; }
-html.phone .alert { font-size: 15px; }
 html.phone .nb span { font-size: 13px; }
 html.phone .ht { font-size: 15px; }
 html.phone .tl { font-size: 17px; }
