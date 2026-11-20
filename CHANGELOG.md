@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.32.0 · 20/11/2026
+
+- Bannière « Installer Station Météo » dans Safari (la même que dans les autres apps) : la marche à suivre pour l'ajouter à l'écran d'accueil.
+
 ## 1.31.5 · 19/11/2026
 
 - Barre d'état colorée comme le haut du ciel sur tout iOS récent, iPad compris (elle restait noire sur un iPad sous iOS 27). La règle ne dépend plus de la taille de l'écran mais de la version d'iOS : seul iOS 12 et avant (l'iPad mini de la station) garde la barre translucide et la hauteur de l'écran. Sur un iPad récent, l'icône doit être refaite une fois (réglage figé par iOS à l'ajout).
