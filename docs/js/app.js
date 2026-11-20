@@ -1071,6 +1071,17 @@
       navigator.serviceWorker.register('sw.js').then(function (r) { if (r.update) r.update(); }).catch(function (e) { SM.diag.warn('service worker: ' + e.message); });
     }
     setTimeout(SM.update.check, 5000);
+
+    // « Installer Station Météo » : la bannière commune du socle (docs/socle, la même que dans les autres
+    // apps de Matt), dans Safari seulement ; jamais dans l'app ouverte depuis l'écran d'accueil.
+    if (window.SocleInstallation) {
+      window.SocleInstallation.monter({
+        produit: 'stationmeteo',
+        nom: function (l) { return l === 'fr' ? 'Station Météo' : 'Weather'; },
+        icone: 'img/icon-180.png',
+        langue: function () { return I.lang; }
+      });
+    }
   };
 
   window.addEventListener('load', function () { if (SM.ui) SM.ui.align(); });

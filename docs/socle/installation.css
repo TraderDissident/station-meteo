@@ -1,0 +1,96 @@
+/*
+ * LA BANNIÈRE D'INSTALLATION · Autonome, comme les pages d'erreur : ni Tailwind ni composant du
+ * socle, pour qu'elle soit la même dans toutes les apps, Tailwind 3 ou 4 (Trading Hub). Ses couleurs
+ * sont celles que chaque app donne déjà à ses pages d'erreur (`--er-*`, erreurs.css) ; une app peut
+ * les changer ici seulement par `--inst-*`.
+ *
+ * Lisible par Safari 12 (Station Météo, iPad sous iOS 12, la reçoit telle quelle avec
+ * sans-construction.js, Matt 20/11/2026) : ni écart de flex, ni raccourci de position, ni mélange de
+ * couleurs, ni anneau du clavier, ni flou sans préfixe (tests/installation-sans-construction.test.ts
+ * et tools/check.js de Station Météo, qui lit aussi les commentaires). Ce que les navigateurs récents savent en plus
+ * (carte à 95 % et flou, anneau du clavier) est dans installation-moderne.css, que la bannière React
+ * importe après celle-ci : dans les apps, le rendu est le même qu'avant.
+ */
+.inst-cadre {
+  --inst-carte: var(--er-carte, var(--card, #ffffff));
+  --inst-texte: var(--er-texte, var(--foreground, #111111));
+  --inst-doux: var(--er-doux, var(--muted-foreground, #6b6b6b));
+  --inst-bord: var(--er-bord, var(--border, rgba(0, 0, 0, 0.12)));
+  --inst-accent: var(--er-accent, var(--primary, #111111));
+  --inst-sur-accent: var(--er-sur-accent, var(--primary-foreground, #ffffff));
+  --inst-survol: var(--er-survol, var(--muted, rgba(0, 0, 0, 0.06)));
+  --inst-rayon: var(--er-rayon, 0.75rem);
+
+  position: fixed;
+  top: auto;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  /* Un message, devant un plein écran (45) : l'échelle du socle, ou son repli. */
+  z-index: var(--z-message, 70);
+  padding: 0.75rem 0.75rem calc(env(safe-area-inset-bottom) + 0.75rem);
+  /* Le cadre laisse passer le doigt : seule la carte le reçoit. */
+  pointer-events: none;
+  font-family: inherit;
+}
+.inst-carte {
+  pointer-events: auto;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  max-width: 28rem;
+  padding: 0.75rem;
+  border: 1px solid var(--inst-bord);
+  border-radius: calc(var(--inst-rayon) + 4px);
+  background: var(--inst-carte);
+  color: var(--inst-texte);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.12);
+  -webkit-backdrop-filter: blur(12px);
+  animation: inst-entree 220ms ease-out;
+}
+/* L'écart entre l'icône, les textes et les boutons (un `gap` que Safari 12 ne connaît pas en flex). */
+.inst-carte > * + * { margin-left: 0.75rem; }
+@keyframes inst-entree {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .inst-carte { animation: none; }
+}
+.inst-icone {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 0.75rem;
+}
+.inst-textes { min-width: 0; flex: 1; }
+.inst-titre { margin: 0; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; }
+.inst-corps { margin: 0.125rem 0 0; font-size: 0.75rem; line-height: 1.35; color: var(--inst-doux); }
+.inst-corps svg { display: inline; width: 0.875rem; height: 0.875rem; vertical-align: -0.15em; }
+.inst-installer {
+  flex-shrink: 0;
+  height: 2rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: calc(var(--inst-rayon) - 2px);
+  background: var(--inst-accent);
+  color: var(--inst-sur-accent);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.inst-installer:hover { filter: brightness(1.06); }
+.inst-fermer {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: calc(var(--inst-rayon) - 4px);
+  background: transparent;
+  color: var(--inst-doux);
+  cursor: pointer;
+}
+.inst-fermer:hover { background: var(--inst-survol); color: var(--inst-texte); }

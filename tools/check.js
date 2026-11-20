@@ -30,7 +30,8 @@ function stripJS(src) {
 }
 
 console.log('JavaScript (ES2017, API de Safari 12)');
-const jsFiles = files(path.join(DOCS, 'js'), '.js').concat([path.join(DOCS, 'sw.js')]);
+// docs/socle : les fichiers diffusés par le socle (bannière d'installation), contrôlés comme les nôtres.
+const jsFiles = files(path.join(DOCS, 'js'), '.js').concat([path.join(DOCS, 'sw.js')], files(path.join(DOCS, 'socle'), '.js'));
 const inline = [];
 for (const h of files(DOCS, '.html')) {
   const src = fs.readFileSync(h, 'utf8');
@@ -66,7 +67,7 @@ for (const [name, src] of jsFiles.map((f) => [rel(f), fs.readFileSync(f, 'utf8')
 }
 
 console.log('CSS (propriétés de Safari 12)');
-const cssSources = files(path.join(DOCS, 'css'), '.css').map((f) => [rel(f), fs.readFileSync(f, 'utf8')]);
+const cssSources = files(path.join(DOCS, 'css'), '.css').concat(files(path.join(DOCS, 'socle'), '.css')).map((f) => [rel(f), fs.readFileSync(f, 'utf8')]);
 for (const h of files(DOCS, '.html')) {
   const src = fs.readFileSync(h, 'utf8');
   const re = /<style>([\s\S]*?)<\/style>/g;

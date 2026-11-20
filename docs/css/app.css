@@ -1004,3 +1004,15 @@ html.phone .sheet-in { padding-bottom: 0; }
 html.phone .port .side-in { padding-bottom: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 html.phone .lgrid { padding-bottom: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 html.phone .mcards { padding-bottom: 24px !important; padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important; }
+
+/* ---------- bannière d'installation (socle, docs/socle/installation.css) ---------- */
+/* Les couleurs de l'app : un panneau de nuit, comme les feuilles des lieux et des réglages. */
+.banniere-installation.inst-cadre {
+  --inst-carte: rgba(11, 18, 38, .9);
+  --inst-texte: #fff;
+  --inst-doux: rgba(255, 255, 255, .72);
+  --inst-bord: rgba(255, 255, 255, .14);
+  --inst-accent: #fff;
+  --inst-sur-accent: #0b1226;
+  --inst-survol: rgba(255, 255, 255, .1);
+}
