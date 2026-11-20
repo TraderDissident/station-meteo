@@ -155,7 +155,12 @@ if (stale.length) fail('index.html ou sw.js pointent vers une autre version que 
 else if (sw.indexOf("'sm-" + ver + "'") < 0) fail('sw.js : cache pas à la version ' + ver);
 else ok('version ' + ver + ' partout');
 const log = fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf8');
-if (log.indexOf('## ' + ver) < 0) fail('CHANGELOG.md sans entrée ' + ver); else ok('CHANGELOG.md à jour');
+const tete = (/^## (\d+\.\d+\.\d+)/m.exec(log) || [])[1];
+if (tete !== ver) fail('CHANGELOG.md : l\'entrée de tête est ' + tete + ', pas ' + ver); else ok('CHANGELOG.md à jour');
+// docs/version.json : le numéro publié, lu en ligne par Fleet Monitor (20/11/2026).
+let publique = null;
+try { publique = JSON.parse(fs.readFileSync(path.join(DOCS, 'version.json'), 'utf8')).version; } catch (e) { /* absent */ }
+if (publique !== ver) fail('docs/version.json (' + publique + ') n\'a pas la version ' + ver + ' : la version se monte par node tools/monter.js'); else ok('version.json à jour');
 
 console.log(errors ? '\n' + errors + ' problème(s)' : '\nTout est conforme.');
 process.exit(errors ? 1 : 0);
