@@ -1,0 +1,10 @@
+{
+  "source": "docs/js/config.js",
+  "motif": "SM.VERSION = '{v}'",
+  "copies": [
+    { "fichier": "docs/index.html", "motifs": ["?v={v}"] },
+    { "fichier": "docs/sw.js", "motifs": ["?v={v}", "'sm-{v}'"] }
+  ],
+  "publique": "docs/version.json",
+  "ensuite": "tools/publier.sh"
+}

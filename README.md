@@ -46,7 +46,7 @@ Exemple : `index.html?demo=crepuscule,clair`
 
 Le code n'a ni dépendance ni étape de compilation : `docs/` est publié tel quel. Tout ce qui y est écrit doit tourner sur Safari 12 ; la liste des interdits est dans `PLAN.md` (section 4.1) et dans `tools/check.js`.
 
-À chaque publication : `node tools/monter.js --correctif -m "Ce qui change"` (`--nouveaute` pour le chiffre du milieu), puis `tools/publier.sh`. La commande monte `SM.VERSION`, tous les `?v=`, le cache de `sw.js`, écrit l'entrée de `CHANGELOG.md` et `docs/version.json`. Jamais de numéro écrit à la main (règle du 20/11/2026, la même que dans les sites du socle) ; `check.sh` refuse une version qui n'est pas la même partout, et `publier.sh` pose l'étiquette `vX.Y.Z`.
+À chaque publication : `node tools/version/monter.mjs --correctif -m "Ce qui change"` (`--nouveaute` pour le chiffre du milieu), puis `tools/publier.sh`. La commande monte `SM.VERSION`, tous les `?v=`, le cache de `sw.js`, écrit l'entrée de `CHANGELOG.md` et `docs/version.json`. Jamais de numéro écrit à la main (règle du 20/11/2026 ; `tools/version/monter.mjs` est l'outil du socle `~/Developer/socle`, diffusé ici et piloté par `version.config.json` : ne pas le modifier dans ce dépôt) ; `check.sh` refuse une version qui n'est pas la même partout, et `publier.sh` pose l'étiquette `vX.Y.Z`.
 
 ## Données
 

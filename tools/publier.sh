@@ -1,6 +1,7 @@
 #!/bin/zsh
 # Publie la version courante sur GitHub Pages après les contrôles.
-# Avant : node tools/monter.js --correctif|--nouveaute -m "…" (numéro partout, journal, version.json).
+# Avant : node tools/version/monter.mjs --correctif|--nouveaute -m "…" (numéro partout, journal, version.json).
+# tools/version/monter.mjs est une copie diffusée par le socle (~/Developer/socle) : ne pas la modifier ici.
 # Jamais de numéro écrit à la main (Matt, 20/11/2026).
 set -e
 cd "${0:A:h}/.."

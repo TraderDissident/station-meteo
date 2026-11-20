@@ -147,20 +147,11 @@ for (const c of WMO) {
 if (codesOk) ok(WMO.length + ' codes avec libellé, icônes jour et nuit, scène');
 
 console.log('Version');
-const ver = /SM\.VERSION = '([^']+)'/.exec(fs.readFileSync(path.join(DOCS, 'js', 'config.js'), 'utf8'))[1];
-const idx = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8');
-const sw = fs.readFileSync(path.join(DOCS, 'sw.js'), 'utf8');
-const stale = (idx.match(/\?v=([\d.]+)/g) || []).concat(sw.match(/\?v=([\d.]+)/g) || []).filter((v) => v !== '?v=' + ver);
-if (stale.length) fail('index.html ou sw.js pointent vers une autre version que ' + ver);
-else if (sw.indexOf("'sm-" + ver + "'") < 0) fail('sw.js : cache pas à la version ' + ver);
-else ok('version ' + ver + ' partout');
-const log = fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf8');
-const tete = (/^## (\d+\.\d+\.\d+)/m.exec(log) || [])[1];
-if (tete !== ver) fail('CHANGELOG.md : l\'entrée de tête est ' + tete + ', pas ' + ver); else ok('CHANGELOG.md à jour');
-// docs/version.json : le numéro publié, lu en ligne par Fleet Monitor (20/11/2026).
-let publique = null;
-try { publique = JSON.parse(fs.readFileSync(path.join(DOCS, 'version.json'), 'utf8')).version; } catch (e) { /* absent */ }
-if (publique !== ver) fail('docs/version.json (' + publique + ') n\'a pas la version ' + ver + ' : la version se monte par node tools/monter.js'); else ok('version.json à jour');
+// Le contrôle est celui du socle (tools/version/monter.mjs, copie diffusée), piloté par
+// version.config.json : le même numéro dans config.js, tous les ?v=, le cache de sw.js, la tête du
+// journal et version.json.
+const verif = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'version', 'monter.mjs'), '--verifier'], { encoding: 'utf8' });
+if (verif.status === 0) ok(verif.stdout.trim()); else fail((verif.stdout || verif.stderr || 'contrôle de version en échec').trim());
 
 console.log(errors ? '\n' + errors + ' problème(s)' : '\nTout est conforme.');
 process.exit(errors ? 1 : 0);
