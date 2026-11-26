@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weather Hub</title>
+<!-- Station Météo s'appelle Weather Hub depuis le 26/11/2026 : l'ancienne adresse renvoie vers la nouvelle,
+     avec le même chemin, les mêmes paramètres et la même ancre. -->
+<script>
+(function () {
+  var p = location.pathname.replace(/^\/station-meteo(\/|$)/, '/weather-hub/');
+  location.replace(p + location.search + location.hash);
+})();
+</script>
+<meta http-equiv="refresh" content="0; url=https://traderdissident.github.io/weather-hub/">
+<style>body{margin:0;background:#0b1226;color:#fff;font:17px -apple-system,Helvetica,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh}a{color:#9fd4ff}</style>
+</head><body><p>Weather Hub a déménagé : <a href="https://traderdissident.github.io/weather-hub/">traderdissident.github.io/weather-hub</a></p></body></html>
